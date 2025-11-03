@@ -1,13 +1,13 @@
 
 <!DOCTYPE html>
-<html lang="en,zh-cn,default">
+<html lang="zh-cn,en,default">
     
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="Hexo">
     <title>all-archives - Hexo</title>
-    <meta name="author" content="John Doe">
+    <meta name="author" content="shaver">
     
     
     
@@ -15,20 +15,22 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"Website","@id":"http://example.com","author":{"@type":"Person","name":"John Doe","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"]},"name":"Hexo","description":"","url":"http://example.com"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"Website","@id":"http://example.com","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"name":"Hexo","description":"","url":"http://example.com"}</script>
     <meta property="og:type" content="blog">
 <meta property="og:title" content="all-archives">
 <meta property="og:url" content="http://example.com/all-archives/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:locale" content="en_US">
+<meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-11-03T06:12:00.068Z">
 <meta property="article:modified_time" content="2025-11-03T06:12:00.061Z">
-<meta property="article:author" content="John Doe">
+<meta property="article:author" content="shaver">
 <meta name="twitter:card" content="summary">
     
     
         
     
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.png"/>
     
     
     
@@ -51,6 +53,10 @@
 
 
     
+        
+            
+        
+    
 
 <header id="header" data-behavior="1">
     <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
@@ -68,9 +74,11 @@
             <a
                 class="header-right-picture "
                 href="#about"
-                aria-label="Open the link: /#about"
+                aria-label="打开链接: /#about"
             >
         
+        
+            <img class="header-picture" src="/assets/images/avatar.png" alt="作者的图片"/>
         
         </a>
     
@@ -79,8 +87,26 @@
             <!-- Define author's picture -->
 
 
+
+        
+    
+
 <nav id="sidebar" data-behavior="1">
     <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.png" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">shaver</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>筑基期工程师</p>
+</h5>
+                
+            </div>
         
         
             <ul class="sidebar-buttons">
@@ -92,10 +118,10 @@
                             href="/"
                             
                             rel="noopener"
-                            title="Home"
+                            title="首页"
                         >
                         <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Home</span>
+                        <span class="sidebar-button-desc">首页</span>
                     </a>
             </li>
             
@@ -106,10 +132,10 @@
                             href="/all-categories"
                             
                             rel="noopener"
-                            title="Categories"
+                            title="分类"
                         >
                         <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Categories</span>
+                        <span class="sidebar-button-desc">分类</span>
                     </a>
             </li>
             
@@ -120,10 +146,10 @@
                             href="/all-tags"
                             
                             rel="noopener"
-                            title="Tags"
+                            title="标签"
                         >
                         <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Tags</span>
+                        <span class="sidebar-button-desc">标签</span>
                     </a>
             </li>
             
@@ -134,10 +160,10 @@
                             href="/all-archives"
                             
                             rel="noopener"
-                            title="Archives"
+                            title="归档"
                         >
                         <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Archives</span>
+                        <span class="sidebar-button-desc">归档</span>
                     </a>
             </li>
             
@@ -148,10 +174,10 @@
                             href="#search"
                             
                             rel="noopener"
-                            title="Search"
+                            title="搜索"
                         >
                         <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Search</span>
+                        <span class="sidebar-button-desc">搜索</span>
                     </a>
             </li>
             
@@ -162,10 +188,10 @@
                             href="#about"
                             
                             rel="noopener"
-                            title="About"
+                            title="关于"
                         >
                         <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">About</span>
+                        <span class="sidebar-button-desc">关于</span>
                     </a>
             </li>
             
@@ -246,10 +272,10 @@
                                 target="_blank"
                             
                             rel="noopener"
-                            title="Google +"
+                            title="Google Plus"
                         >
                         <i class="sidebar-button-icon fab fa-google-plus" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Google +</span>
+                        <span class="sidebar-button-desc">Google Plus</span>
                     </a>
             </li>
             
@@ -276,10 +302,10 @@
                             href="/mailto"
                             
                             rel="noopener"
-                            title="Mail"
+                            title="邮箱"
                         >
                         <i class="sidebar-button-icon fa fa-envelope" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Mail</span>
+                        <span class="sidebar-button-desc">邮箱</span>
                     </a>
             </li>
             
@@ -314,12 +340,12 @@
                 
 <div id="archives" class="main-content-wrap">
     <form id="filter-form" action="#">
-        <input name="date" type="text" class="form-control input--xlarge" placeholder="Search date (YYYY/MM/DD)" autofocus="autofocus">
+        <input name="date" type="text" class="form-control input--xlarge" placeholder="搜索日期 (YYYY/MM/DD)" autofocus="autofocus">
     </form>
     <h5 class="archive-result text-color-base text-xlarge"
-        data-message-zero="no post found"
-        data-message-one="1 post found"
-        data-message-other="{n} posts found"></h5>
+        data-message-zero="没有找到文章"
+        data-message-one="找到 1 篇文章"
+        data-message-other="找到 {n} 篇文章"></h5>
     <section class="boxes">
         
             
@@ -336,13 +362,22 @@
                 
                 <ul class="archive-posts archive-month" data-date="202511">
                     <h5 class="archive-title">
-                        <a class="link-unstyled" href="/archives/2025/11">November</a>
+                        <a class="link-unstyled" href="/archives/2025/11">十一月</a>
                     </h5>
                 
             
             <li class="archive-post archive-day" data-date="20251103">
-                <a class="archive-post-title" href="/2025/11/03/hello-world/">Hello World</a>
-                <span class="archive-post-date"> - nov 03, 2025</span>
+                <a class="archive-post-title" href="/2025/11/03/hello-world/">欢迎来到我的博客</a>
+                <span class="archive-post-date"> - 2025 年 11 月 3 日</span>
+            </li>
+        
+            
+            
+            
+            
+            <li class="archive-post archive-day" data-date="20251103">
+                <a class="archive-post-title" href="/2025/11/03/hello-world%E7%9A%84%E5%89%AF%E6%9C%AC/">Hello World</a>
+                <span class="archive-post-date"> - 2025 年 11 月 3 日</span>
             </li>
         
     </section>
@@ -350,7 +385,7 @@
 
                 <footer id="footer" class="main-content-wrap">
     <span class="copyrights">
-        Copyrights &copy; 2025 John Doe. All Rights Reserved.
+        Copyrights &copy; 2025 shaver. All Rights Reserved.
     </span>
 </footer>
 
@@ -360,25 +395,37 @@
         
 
 
+    
+        
+    
+
 <div id="about">
     <div id="about-card">
         <div id="about-btn-close">
             <i class="fa fa-times"></i>
         </div>
         
-            <h4 id="about-card-name">John Doe</h4>
+            <img id="about-card-picture" src="/assets/images/avatar.png" alt="作者的图片"/>
         
-            <div id="about-card-bio"><p>author.bio</p>
+            <h4 id="about-card-name">shaver</h4>
+        
+            <div id="about-card-bio"><p>筑基期工程师</p>
 </div>
         
         
             <div id="about-card-job">
                 <i class="fa fa-briefcase"></i>
                 <br/>
-                <p>author.job</p>
+                <p>java工程师,大模型应用开发</p>
 
             </div>
         
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                shenzhen, guangdong, china
+            </div>
         
     </div>
 </div>
