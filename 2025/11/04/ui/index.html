@@ -508,17 +508,17 @@
   
   <script>
     var gitalk = new Gitalk({
-      clientID: '',
-      clientSecret: '',
+      clientID: 'Ov23lixY4RNkL6GaPepq',
+      clientSecret: '5bb8a010339dc3e6b5655b8ac336d3c0d0be226e',
       repo: 'blog-comments',
       owner: 'shaver92',
       admin: [''],
       id: md5(location.pathname),  // 使用MD5避免长度限制
-      distractionFreeMode: ,
-      language: '',
-      perPage: ,
-      pagerDirection: '',
-      proxy: ''
+      distractionFreeMode: false,
+      language: 'zh-CN',
+      perPage: 10,
+      pagerDirection: 'last',
+      proxy: 'https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token'
     });
     
     gitalk.render('gitalk-container');
