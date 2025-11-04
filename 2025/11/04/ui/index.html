@@ -508,17 +508,17 @@
   
   <script>
     var gitalk = new Gitalk({
-      clientID: 'e97890731e732067e25a',
-      clientSecret: '85077b37be24e2f91406d05349c9f297e7f1c42f',
+      clientID: '',
+      clientSecret: '',
       repo: 'blog-comments',
       owner: 'shaver92',
-      admin: ['shaver92'],
+      admin: [''],
       id: md5(location.pathname),  // 使用MD5避免长度限制
-      distractionFreeMode: false,
-      language: 'zh-CN',
-      perPage: 10,
-      pagerDirection: 'last',
-      proxy: 'https://gh-oauth.egoist.sh/'
+      distractionFreeMode: ,
+      language: '',
+      perPage: ,
+      pagerDirection: '',
+      proxy: ''
     });
     
     gitalk.render('gitalk-container');
@@ -846,13 +846,13 @@
         <script type="text/javascript">
           (function() {
             new Gitalk({
-              clientID: '',
-              clientSecret: '',
+              clientID: 'Ov23lixY4RNkL6GaPepq',
+              clientSecret: '5bb8a010339dc3e6b5655b8ac336d3c0d0be226e',
               repo: 'blog-comments',
               owner: 'shaver92',
               admin: ['shaver92'],
               id: '2025/11/04/ui/',
-              ...
+              ...{"language":"zh-CN","perPage":10,"distractionFreeMode":false,"createIssueManually":true,"labels":["Gitalk"],"pagerDirection":"last","proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"}
             }).render('gitalk')
           })()
         </script>
