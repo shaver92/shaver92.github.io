@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="shaver&#39;s blog">
-    <title>欢迎来到我的博客 - shaver&#39;s blog</title>
+    <title>OpenClaw安装部署 - shaver&#39;s blog</title>
     <meta name="author" content="shaver">
     
     
@@ -15,18 +15,25 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"开始记录，让自己了解世界，让世界了解自己!\n查看最新文章\n","dateCreated":"2025-11-03T11:38:54+08:00","dateModified":"2025-11-03T20:00:50+08:00","datePublished":"2025-11-03T11:38:54+08:00","description":"","headline":"欢迎来到我的博客","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2025/11/03/hello-world/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"http://example.com/2025/11/03/hello-world/"}</script>
-    <meta name="description" content="开始记录，让自己了解世界，让世界了解自己! 查看最新文章">
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"\n博客地址\n1 OpenClaw三大阵营云端部署ArkClaw &#x2F; KimiClaw &#x2F; MaxClaw类似deepseek客户段，云端厂商已经集成在自己app中，可以开箱即用，无需安装\n本地安装 QClaw &#x2F; AutoClaw &#x2F; Molili 需要本地安装app，但是安装成本低，只需要傻瓜式点击下一步即可\n开源自部署openclaw-cn &#x2F; LinClaw &#x2F; CoPaw需要下载源码以及对应依赖，再进行部署，有一定上手难度\n2 开源自部署我们现在采用本地部署的是openclaw，官网有比较详细的操作，我们目前采用的是npm操作\t\thttps://openclaw.ai/现在AI相关知识和技能更新速度极快，尽量养成浏览官网的习惯\n2.1 安装最新的openclaw1234567# npm install -g openclaw@latest 各部分含义：# npm → Node.js 的包管理器（Package Manager）# install → 安装# -g → global，全局安装（整台电脑都能⽤，⽽⾮仅当前项⽬）# openclaw → 要安装的软件包名称# @latest → 安装最新版本（也可以指定版本号如 @2026.3.13）$ npm install -g openclaw@latest --verbose\n\n2.2 验证是否安装成功1openclaw -v\n\n1openclaw onboard\n\n第一次安装会出现对应安装向导，比如模型选择，接入方式等\n后续可以修改对应主目录下的.openclaw&#x2F;openclaw.json配置文件重启即可\n2.3 常用命令2.3.1 日常使用命令1234567891011# 开启界面openclaw dashboard# 网管相关命令openclaw gateway stratopenclaw gateway stopopenclaw gateway restartopenclaw gateway status# 查看版本号openclaw --version\n\n2.3.2 日常诊断命令1234567891011# 全面系统诊断，出现问题第一个使用的命令openclaw doctor# 查看通道健康和会话列表 了解全局状态openclaw status# 快速检测联通性 查看Gateway是否健康openclaw gateway health# 实时查看日志 排查详细错误openclaw logs --follow\n\n2.3.3 配置管理命令12345678# 获取对应配置信息openclaw config  get &lt;key&gt;# 设置对应配置信息openclaw config set &lt;key&gt; &lt;value&gt;# 查找配置文件路径openclaw config file\n\n2.3.4 进阶命令123456789# skills列表openclaw skills list# 记忆状态openclaw memmory status# 深度安全审计openclaw security audit --deep\n\n2.4 openclaw的记忆文件\n","dateCreated":"2026-03-27T15:15:05+08:00","dateModified":"2026-04-02T17:04:58+08:00","datePublished":"2026-03-27T15:15:05+08:00","description":"","headline":"OpenClaw安装部署","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/","keywords":"OpenClaw"}</script>
+    <meta name="description" content="博客地址 1 OpenClaw三大阵营云端部署ArkClaw &#x2F; KimiClaw &#x2F; MaxClaw类似deepseek客户段，云端厂商已经集成在自己app中，可以开箱即用，无需安装 本地安装 QClaw &#x2F; AutoClaw &#x2F; Molili 需要本地安装app，但是安装成本低，只需要傻瓜式点击下一步即可 开源自部署openclaw-cn &#x2F;">
 <meta property="og:type" content="blog">
-<meta property="og:title" content="欢迎来到我的博客">
-<meta property="og:url" content="http://example.com/2025/11/03/hello-world/index.html">
+<meta property="og:title" content="OpenClaw安装部署">
+<meta property="og:url" content="http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/index.html">
 <meta property="og:site_name" content="shaver&#39;s blog">
-<meta property="og:description" content="开始记录，让自己了解世界，让世界了解自己! 查看最新文章">
+<meta property="og:description" content="博客地址 1 OpenClaw三大阵营云端部署ArkClaw &#x2F; KimiClaw &#x2F; MaxClaw类似deepseek客户段，云端厂商已经集成在自己app中，可以开箱即用，无需安装 本地安装 QClaw &#x2F; AutoClaw &#x2F; Molili 需要本地安装app，但是安装成本低，只需要傻瓜式点击下一步即可 开源自部署openclaw-cn &#x2F;">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-11-03T03:38:54.078Z">
-<meta property="article:modified_time" content="2025-11-03T12:00:50.170Z">
+<meta property="og:image" content="http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3-IMG-20260402153934980.png">
+<meta property="og:image" content="http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3-IMG-20260402153935064.png">
+<meta property="og:image" content="http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3-IMG-20260402153935174.png">
+<meta property="og:image" content="http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3-IMG-20260402153935258.png">
+<meta property="og:image" content="http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3.png">
+<meta property="article:published_time" content="2026-03-27T07:15:05.000Z">
+<meta property="article:modified_time" content="2026-04-02T09:04:58.951Z">
 <meta property="article:author" content="shaver">
+<meta property="article:tag" content="OpenClaw">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3-IMG-20260402153934980.png">
     
     
         
@@ -356,14 +363,14 @@
         <div class="post-header main-content-wrap text-left">
     
         <h1 class="post-title">
-            欢迎来到我的博客
+            OpenClaw安装部署
         </h1>
     
     
         <div class="post-meta">
-    <time datetime="2025-11-03T11:38:54+08:00">
+    <time datetime="2026-03-27T15:15:05+08:00">
 	
-		    2025 年 11 月 3 日
+		    2026 年 3 月 27 日
     	
     </time>
     
@@ -375,8 +382,29 @@
     
     <div class="post-content markdown">
         <div class="main-content-wrap">
-            <p>开始记录，让自己了解世界，让世界了解自己!</p>
-<p><a href="#latest-posts">查看最新文章</a></p>
+            <h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-OpenClaw%E4%B8%89%E5%A4%A7%E9%98%B5%E8%90%A5"><span class="toc-number">1</span> <span class="toc-text">1 OpenClaw三大阵营</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%91%E7%AB%AF%E9%83%A8%E7%BD%B2"><span class="toc-number">1.1</span> <span class="toc-text">云端部署</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E5%AE%89%E8%A3%85"><span class="toc-number">1.2</span> <span class="toc-text">本地安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%80%E6%BA%90%E8%87%AA%E9%83%A8%E7%BD%B2"><span class="toc-number">1.3</span> <span class="toc-text">开源自部署</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-%E5%BC%80%E6%BA%90%E8%87%AA%E9%83%A8%E7%BD%B2"><span class="toc-number">2</span> <span class="toc-text">2 开源自部署</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E5%AE%89%E8%A3%85%E6%9C%80%E6%96%B0%E7%9A%84openclaw"><span class="toc-number">2.1</span> <span class="toc-text">2.1 安装最新的openclaw</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E9%AA%8C%E8%AF%81%E6%98%AF%E5%90%A6%E5%AE%89%E8%A3%85%E6%88%90%E5%8A%9F"><span class="toc-number">2.2</span> <span class="toc-text">2.2 验证是否安装成功</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-number">2.3</span> <span class="toc-text">2.3 常用命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-1-%E6%97%A5%E5%B8%B8%E4%BD%BF%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-number">2.3.1</span> <span class="toc-text">2.3.1 日常使用命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-2-%E6%97%A5%E5%B8%B8%E8%AF%8A%E6%96%AD%E5%91%BD%E4%BB%A4"><span class="toc-number">2.3.2</span> <span class="toc-text">2.3.2 日常诊断命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-3-%E9%85%8D%E7%BD%AE%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4"><span class="toc-number">2.3.3</span> <span class="toc-text">2.3.3 配置管理命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-4-%E8%BF%9B%E9%98%B6%E5%91%BD%E4%BB%A4"><span class="toc-number">2.3.4</span> <span class="toc-text">2.3.4 进阶命令</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-openclaw%E7%9A%84%E8%AE%B0%E5%BF%86%E6%96%87%E4%BB%B6"><span class="toc-number">2.4</span> <span class="toc-text">2.4 openclaw的记忆文件</span></a></li></ol></li></ol>
+<p><a target="_blank" rel="noopener" href="https://shaver92.github.io/">博客地址</a></p>
+<h1 id="1-OpenClaw三大阵营"><a href="#1-OpenClaw三大阵营" class="headerlink" title="1 OpenClaw三大阵营"></a>1 OpenClaw三大阵营</h1><h2 id="云端部署"><a href="#云端部署" class="headerlink" title="云端部署"></a>云端部署</h2><p>ArkClaw &#x2F; KimiClaw &#x2F; MaxClaw<br>类似deepseek客户段，云端厂商已经集成在自己app中，可以开箱即用，无需安装</p>
+<h2 id="本地安装"><a href="#本地安装" class="headerlink" title="本地安装"></a>本地安装</h2><p> QClaw &#x2F; AutoClaw &#x2F; Molili<br> 需要本地安装app，但是安装成本低，只需要傻瓜式点击下一步即可</p>
+<h2 id="开源自部署"><a href="#开源自部署" class="headerlink" title="开源自部署"></a>开源自部署</h2><p>openclaw-cn &#x2F; LinClaw &#x2F; CoPaw<br>需要下载源码以及对应依赖，再进行部署，有一定上手难度</p>
+<h1 id="2-开源自部署"><a href="#2-开源自部署" class="headerlink" title="2 开源自部署"></a>2 开源自部署</h1><p>我们现在采用本地部署的是openclaw，官网有比较详细的操作，我们目前采用的是npm操作<br>		<a target="_blank" rel="noopener" href="https://openclaw.ai/">https://openclaw.ai/</a><br><em>现在AI相关知识和技能更新速度极快，尽量养成浏览官网的习惯</em><br><img src="/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3-IMG-20260402153934980.png"></p>
+<h2 id="2-1-安装最新的openclaw"><a href="#2-1-安装最新的openclaw" class="headerlink" title="2.1 安装最新的openclaw"></a>2.1 安装最新的openclaw</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">npm install -g openclaw@latest 各部分含义：</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">npm → Node.js 的包管理器（Package Manager）</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">install → 安装</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">-g → global，全局安装（整台电脑都能⽤，⽽⾮仅当前项⽬）</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">openclaw → 要安装的软件包名称</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">@latest → 安装最新版本（也可以指定版本号如 @2026.3.13）</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">npm install -g openclaw@latest --verbose</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-验证是否安装成功"><a href="#2-2-验证是否安装成功" class="headerlink" title="2.2 验证是否安装成功"></a>2.2 验证是否安装成功</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openclaw -v</span><br></pre></td></tr></table></figure>
+<p><img src="/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3-IMG-20260402153935064.png"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openclaw onboard</span><br></pre></td></tr></table></figure>
+
+<p>第一次安装会出现对应安装向导，比如模型选择，接入方式等<br><img src="/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3-IMG-20260402153935174.png"></p>
+<p>后续可以修改对应主目录下的.openclaw&#x2F;openclaw.json配置文件重启即可<br><img src="/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3-IMG-20260402153935258.png"></p>
+<h2 id="2-3-常用命令"><a href="#2-3-常用命令" class="headerlink" title="2.3 常用命令"></a>2.3 常用命令</h2><h3 id="2-3-1-日常使用命令"><a href="#2-3-1-日常使用命令" class="headerlink" title="2.3.1 日常使用命令"></a>2.3.1 日常使用命令</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">开启界面</span></span><br><span class="line">openclaw dashboard</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">网管相关命令</span></span><br><span class="line">openclaw gateway strat</span><br><span class="line">openclaw gateway stop</span><br><span class="line">openclaw gateway restart</span><br><span class="line">openclaw gateway status</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看版本号</span></span><br><span class="line">openclaw --version</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-2-日常诊断命令"><a href="#2-3-2-日常诊断命令" class="headerlink" title="2.3.2 日常诊断命令"></a>2.3.2 日常诊断命令</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">全面系统诊断，出现问题第一个使用的命令</span></span><br><span class="line">openclaw doctor</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看通道健康和会话列表 了解全局状态</span></span><br><span class="line">openclaw status</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">快速检测联通性 查看Gateway是否健康</span></span><br><span class="line">openclaw gateway health</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">实时查看日志 排查详细错误</span></span><br><span class="line">openclaw logs --follow</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-3-配置管理命令"><a href="#2-3-3-配置管理命令" class="headerlink" title="2.3.3 配置管理命令"></a>2.3.3 配置管理命令</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">获取对应配置信息</span></span><br><span class="line">openclaw config  get &lt;key&gt;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置对应配置信息</span></span><br><span class="line">openclaw config set &lt;key&gt; &lt;value&gt;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查找配置文件路径</span></span><br><span class="line">openclaw config file</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-4-进阶命令"><a href="#2-3-4-进阶命令" class="headerlink" title="2.3.4 进阶命令"></a>2.3.4 进阶命令</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">skills列表</span></span><br><span class="line">openclaw skills list</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">记忆状态</span></span><br><span class="line">openclaw memmory status</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">深度安全审计</span></span><br><span class="line">openclaw security audit --deep</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-4-openclaw的记忆文件"><a href="#2-4-openclaw的记忆文件" class="headerlink" title="2.4 openclaw的记忆文件"></a>2.4 openclaw的记忆文件</h2><p><img src="/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3.png"></p>
 
             
 
@@ -385,24 +413,17 @@
     </div>
     <div id="post-footer" class="post-footer main-content-wrap">
         
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/OpenClaw/" rel="tag">OpenClaw</a>
+
+            </div>
+        
         
             <div class="post-actions-wrap">
     <nav>
         <ul class="post-actions post-action-nav">
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/11/04/%E5%88%A9%E7%94%A8Hexo%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/"
-                    data-tooltip="利用Hexo搭建自己的博客"
-                    aria-label="上一篇: 利用Hexo搭建自己的博客"
-                >
-                    
-                        <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
-                    </a>
-            </li>
             <li class="post-action">
                 
                     <a
@@ -410,6 +431,20 @@
                         aria-hidden="true"
                     >
                         
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2025/11/04/%E5%88%A9%E7%94%A8Hexo%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/"
+                    data-tooltip="利用Hexo搭建自己的博客"
+                    aria-label="下一篇: 利用Hexo搭建自己的博客"
+                >
+                    
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
@@ -432,7 +467,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2025/11/03/hello-world/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -445,7 +480,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2025/11/03/hello-world/"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -458,7 +493,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2025/11/03/hello-world/"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -481,7 +516,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -515,25 +550,25 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/11/04/%E5%88%A9%E7%94%A8Hexo%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/"
-                    data-tooltip="利用Hexo搭建自己的博客"
-                    aria-label="上一篇: 利用Hexo搭建自己的博客"
-                >
-                    
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
                         <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
                     </a>
             </li>
             <li class="post-action">
                 
-                    <a
-                        class="post-action-btn btn btn--disabled"
-                        aria-hidden="true"
-                    >
-                        
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2025/11/04/%E5%88%A9%E7%94%A8Hexo%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/"
+                    data-tooltip="利用Hexo搭建自己的博客"
+                    aria-label="下一篇: 利用Hexo搭建自己的博客"
+                >
+                    
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
                         <i class="fa fa-angle-right" aria-hidden="true"></i>
                     </a>
@@ -556,7 +591,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2025/11/03/hello-world/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -569,7 +604,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2025/11/03/hello-world/"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -582,7 +617,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=http://example.com/2025/11/03/hello-world/"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -605,7 +640,7 @@
         
         <li class="post-action">
             
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
             
                 <i class="fa fa-list" aria-hidden="true"></i>
             </a>
@@ -626,7 +661,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2025/11/03/hello-world/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -639,7 +674,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=http://example.com/2025/11/03/hello-world/"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -652,7 +687,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=http://example.com/2025/11/03/hello-world/"
+                        href="https://plus.google.com/share?url=http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
@@ -827,7 +862,7 @@
               repo: 'blog-comments',
               owner: 'shaver92',
               admin: ['shaver92'],
-              id: '2025/11/03/hello-world/',
+              id: '2026/03/27/OpenClaw安装部署和命令了解/',
               ...{"language":"zh-CN","perPage":10,"distractionFreeMode":false,"createIssueManually":true,"labels":["Gitalk"],"pagerDirection":"last","proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"}
             }).render('gitalk')
           })()

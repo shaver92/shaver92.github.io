@@ -1,0 +1,49 @@
+/**
+ * Hexo toc() 已在 HTML 中输出层级编号（如 2.1.1）到 .toc-number。
+ * 嵌套 <ol> 的浏览器默认序号会在每层重置，需关闭默认 marker。
+ */
+
+article.post .post-content ol.toc,
+article.post .post-content ol.toc-child,
+article.post .post-content.markdown ol.toc,
+article.post .post-content.markdown ol.toc-child,
+#table-of-contents + ol.toc,
+#table-of-contents + ol.toc ol.toc-child {
+    list-style: none;
+    padding-left: 1.15em;
+    margin: 0.35em 0;
+}
+
+article.post .post-content ol.toc,
+#table-of-contents + ol.toc {
+    padding-left: 0;
+}
+
+article.post .post-content ol.toc > li.toc-item,
+article.post .post-content ol.toc-child > li.toc-item,
+#table-of-contents + ol.toc > li.toc-item,
+#table-of-contents + ol.toc > li.toc-item,
+#table-of-contents + ol.toc ol.toc-child > li.toc-item {
+    list-style: none;
+    list-style-type: none;
+    display: block;
+}
+
+/* 显式保留 Hexo 生成的编号，避免被其它规则影响 */
+.post-content ol.toc .toc-link .toc-number,
+.post-content ol.toc-child .toc-link .toc-number,
+#table-of-contents + ol.toc .toc-number {
+    display: inline;
+    font-weight: 700;
+    margin-right: 0.4em;
+    font-variant-numeric: tabular-nums;
+    visibility: visible;
+    opacity: 1;
+    color: inherit;
+}
+
+.post-content ol.toc .toc-link .toc-text,
+#table-of-contents + ol.toc .toc-text {
+    display: inline;
+    visibility: visible;
+}
