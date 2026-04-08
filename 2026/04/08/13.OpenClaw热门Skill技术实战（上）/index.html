@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"\n博客地址\n文档信息\n来源：[[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519528.pdf|14.OpenClaw热门Skill技术实战（上）.pdf]]\n阅读范围：全书约 65 页\n笔记目标：提炼可复用的方法、关键命令与落地清单\n\n一句话总览这份文档围绕 安全加固、Skill 体系、飞书集成 展开，核心价值是把 OpenClaw 从概念讲解落到可执行步骤，并给出稳定运行与排障的实操路径。\n\n1  内容结构与重点1.1 章节脉络\n429 限流错误。Agent 学到了”OpenAI API 有限流保护，需要实现退避重试策略”。这条进⼊ Rules 区\n33 秒，378 个词，成本不到 1 美分。Summarize 把这篇关于 AI Agent ⾏业趋势的长⽂压缩成了⼏段核\n2026 年是 Agent 集中落地之年\n2026 年 2 ⽉起取消了传统免费层，改为 $5 ⽉度信⽤额度（约 1,000 次）\n5 分钟后触发\n5 分钟后，Cron 任务⾃动触发。⽤ cron runs 命令查看执⾏结果：\n5 分钟后触发⼀次\n0 8 * * 1-5\n0 7 * * *\n0 7 * * 1-5\n0 9,18 * * *\n5 分钟后执⾏⼀次（调试⽤）\n\n1.2 核心收获\n形成了从“理解概念”到“可执行落地”的完整路径。\n给出了配置、验证、排障的可操作检查点。\n可直接沉淀为团队 SOP 或个人复盘清单。\n\n2  关键结论\n先搭框架再追求高级能力：优先打通主链路，再做性能与扩展。\n诊断与日志是稳定运行的基础能力，应和功能开发同等重视。\n版本、模型、技能与通道配置需要“变更即验证”的操作习惯。\n\n3  核心命令速查3.1 安装与升级1234pip 源配置，没有检查代理设置，也没有把这个教训记下来。下次再遇到同样的问题，它还是会盲⽬重openclaw skills install self-improvingpip3 install 失败时直接重试openclaw skills install tavily-search\n\n3.2 配置与接入12345678Cron（OpenClaw 内置）openclaw skills info summarizeCron + 飞书推送：每⽇简报⾃动化OpenClaw 的 cron 功能本质上就是&quot;定时任务 + Agent 对话 + 消息推送&quot;的组合：openclaw cron listopenclaw cron add \\\\openclaw cron runs --id &#123;任务ID&#125; --limit 1Cron 表达式\n\n3.3 验证与巡检1# 未提取到稳定命令，请按正文章节手动补充\n\n3.4 排障与恢复12345cat &gt; ~/self-improving/memory.md &lt;&lt; &#x27;EOF&#x27;cat &gt; ~/self-improving/corrections.md &lt;&lt; &#x27;EOF&#x27;docker-compose 不存在，命令失败。Agent ⾃动捕获了这个错误，记录到 corrections.md ：&quot;假node index.js -loopPython 脚本 tavily_search.py ，Agent 通过这个脚本调⽤ Tavily API，拿到搜索结果后整理成\n\n4  实操建议\n把本笔记命令按“安装→配置→验证→排障”整理为你自己的执行脚本。\n每次升级前做配置备份，升级后执行完整健康检查。\n先在单机或测试环境验证，再推到长期运行环境。\n\n5  归纳截图![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519798.png]]\n![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519863.png]]\n![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519904.png]]\n![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519945.png]]\n![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519988.png]]\n\n6  个人行动清单\n 跑通至少 1 条端到端任务链\n 完成 1 次配置备份与恢复演练\n 记录关键命令与异常日志样例\n 形成自己的复用模板\n\n","dateCreated":"2026-04-08T11:59:45+08:00","dateModified":"2026-04-08T12:28:48+08:00","datePublished":"2026-04-08T11:59:45+08:00","description":"","headline":"14.OpenClaw热门Skill技术实战（上）","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"http://example.com/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/","keywords":"OpenClaw, 安全防护, Skill, 飞书, Workspace, 版本升级, 安装部署, 配置实战"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"\n博客地址\n文档信息\n来源：[[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519528.pdf|14.OpenClaw热门Skill技术实战（上）.pdf]]\n阅读范围：全书约 65 页\n笔记目标：提炼可复用的方法、关键命令与落地清单\n\n一句话总览这份文档围绕 安全加固、Skill 体系、飞书集成 展开，核心价值是把 OpenClaw 从概念讲解落到可执行步骤，并给出稳定运行与排障的实操路径。\n\n1  内容结构与重点1.1 章节脉络\n429 限流错误。Agent 学到了”OpenAI API 有限流保护，需要实现退避重试策略”。这条进⼊ Rules 区\n33 秒，378 个词，成本不到 1 美分。Summarize 把这篇关于 AI Agent ⾏业趋势的长⽂压缩成了⼏段核\n2026 年是 Agent 集中落地之年\n2026 年 2 ⽉起取消了传统免费层，改为 $5 ⽉度信⽤额度（约 1,000 次）\n5 分钟后触发\n5 分钟后，Cron 任务⾃动触发。⽤ cron runs 命令查看执⾏结果：\n5 分钟后触发⼀次\n0 8 * * 1-5\n0 7 * * *\n0 7 * * 1-5\n0 9,18 * * *\n5 分钟后执⾏⼀次（调试⽤）\n\n1.2 核心收获\n形成了从“理解概念”到“可执行落地”的完整路径。\n给出了配置、验证、排障的可操作检查点。\n可直接沉淀为团队 SOP 或个人复盘清单。\n\n2  关键结论\n先搭框架再追求高级能力：优先打通主链路，再做性能与扩展。\n诊断与日志是稳定运行的基础能力，应和功能开发同等重视。\n版本、模型、技能与通道配置需要“变更即验证”的操作习惯。\n\n3  核心命令速查3.1 安装与升级1234pip 源配置，没有检查代理设置，也没有把这个教训记下来。下次再遇到同样的问题，它还是会盲⽬重openclaw skills install self-improvingpip3 install 失败时直接重试openclaw skills install tavily-search\n\n3.2 配置与接入12345678Cron（OpenClaw 内置）openclaw skills info summarizeCron + 飞书推送：每⽇简报⾃动化OpenClaw 的 cron 功能本质上就是&quot;定时任务 + Agent 对话 + 消息推送&quot;的组合：openclaw cron listopenclaw cron add \\\\openclaw cron runs --id &#123;任务ID&#125; --limit 1Cron 表达式\n\n3.3 验证与巡检1# 未提取到稳定命令，请按正文章节手动补充\n\n3.4 排障与恢复12345cat &gt; ~/self-improving/memory.md &lt;&lt; &#x27;EOF&#x27;cat &gt; ~/self-improving/corrections.md &lt;&lt; &#x27;EOF&#x27;docker-compose 不存在，命令失败。Agent ⾃动捕获了这个错误，记录到 corrections.md ：&quot;假node index.js -loopPython 脚本 tavily_search.py ，Agent 通过这个脚本调⽤ Tavily API，拿到搜索结果后整理成\n\n4  实操建议\n把本笔记命令按“安装→配置→验证→排障”整理为你自己的执行脚本。\n每次升级前做配置备份，升级后执行完整健康检查。\n先在单机或测试环境验证，再推到长期运行环境。\n\n5  归纳截图![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519798.png]]\n![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519863.png]]\n![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519904.png]]\n![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519945.png]]\n![[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519988.png]]\n\n6  个人行动清单\n 跑通至少 1 条端到端任务链\n 完成 1 次配置备份与恢复演练\n 记录关键命令与异常日志样例\n 形成自己的复用模板\n\n","dateCreated":"2026-04-08T11:59:45+08:00","dateModified":"2026-04-08T12:28:48+08:00","datePublished":"2026-04-08T11:59:45+08:00","description":"","headline":"14.OpenClaw热门Skill技术实战（上）","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"http://example.com/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/","keywords":"OpenClaw, 安全防护, Skill, 飞书, 版本升级, 安装部署, 配置实战, Workspace"}</script>
     <meta name="description" content="博客地址 文档信息 来源：[[13.OpenClaw热门Skill技术实战（上）-IMG-20260408121519528.pdf|14.OpenClaw热门Skill技术实战（上）.pdf]] 阅读范围：全书约 65 页 笔记目标：提炼可复用的方法、关键命令与落地清单  一句话总览这份文档围绕 安全加固、Skill 体系、飞书集成 展开，核心价值是把 OpenClaw 从概念讲解落到可执行步">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="14.OpenClaw热门Skill技术实战（上）">
@@ -465,9 +465,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/"
-                    data-tooltip="11.20场景Workspace模板库"
-                    aria-label="上一篇: 11.20场景Workspace模板库"
+                    href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/"
+                    data-tooltip="13.OpenClaw Skill快速入门实战"
+                    aria-label="上一篇: 13.OpenClaw Skill快速入门实战"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -479,9 +479,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/"
-                    data-tooltip="2.OpenClaw安装部署流程详解"
-                    aria-label="下一篇: 2.OpenClaw安装部署流程详解"
+                    href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/"
+                    data-tooltip="11.20场景Workspace模板库"
+                    aria-label="下一篇: 11.20场景Workspace模板库"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
@@ -592,9 +592,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/"
-                    data-tooltip="11.20场景Workspace模板库"
-                    aria-label="上一篇: 11.20场景Workspace模板库"
+                    href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/"
+                    data-tooltip="13.OpenClaw Skill快速入门实战"
+                    aria-label="上一篇: 13.OpenClaw Skill快速入门实战"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -606,9 +606,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/"
-                    data-tooltip="2.OpenClaw安装部署流程详解"
-                    aria-label="下一篇: 2.OpenClaw安装部署流程详解"
+                    href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/"
+                    data-tooltip="11.20场景Workspace模板库"
+                    aria-label="下一篇: 11.20场景Workspace模板库"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
@@ -874,10 +874,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/"
-                            aria-label=": 10.OpenClaw进阶功能与飞书接入指南"
+                            href="http://example.com/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/"
+                            aria-label=": 12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)"
                         >
-                            <h3 class="media-heading">10.OpenClaw进阶功能与飞书接入指南</h3>
+                            <h3 class="media-heading">12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -897,10 +897,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/"
-                            aria-label=": 12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)"
+                            href="http://example.com/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/"
+                            aria-label=": 10.OpenClaw进阶功能与飞书接入指南"
                         >
-                            <h3 class="media-heading">12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)</h3>
+                            <h3 class="media-heading">10.OpenClaw进阶功能与飞书接入指南</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -943,10 +943,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/"
-                            aria-label=": 11.20场景Workspace模板库"
+                            href="http://example.com/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/"
+                            aria-label=": 14.OpenClaw热门Skill技术实战（上）"
                         >
-                            <h3 class="media-heading">11.20场景Workspace模板库</h3>
+                            <h3 class="media-heading">14.OpenClaw热门Skill技术实战（上）</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -966,10 +966,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/"
-                            aria-label=": 14.OpenClaw热门Skill技术实战（上）"
+                            href="http://example.com/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/"
+                            aria-label=": 11.20场景Workspace模板库"
                         >
-                            <h3 class="media-heading">14.OpenClaw热门Skill技术实战（上）</h3>
+                            <h3 class="media-heading">11.20场景Workspace模板库</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
