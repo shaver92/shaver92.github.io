@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"\n博客地址\n文档信息\n来源：[[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501032.pdf|12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2).pdf]]\n阅读范围：全书约 27 页\n笔记目标：提炼可复用的方法、关键命令与落地清单\n\n一句话总览这份文档围绕 安全加固、Skill 体系、飞书集成 展开，核心价值是把 OpenClaw 从概念讲解落到可执行步骤，并给出稳定运行与排障的实操路径。\n\n1  内容结构与重点1.1 章节脉络\n§1 OpenClaw ⼀周四连发\n§2 升级实操：从 v2026.3.23-2 到 v2026.3.31\n2.1 实操：npm ⼿动升级五步法\n2.2 升级⽅式对⽐：npm ⼿动 vs openclaw update\n总结：当前阶段推荐 npm ⼿动⽅式（稳定优先），等你对 OpenClaw 升级流程⾜够熟悉后，⽇常\n§3 v2026.3.23 变更速览：给 3.22 擦屁股\n§4 v2026.3.24 重点功能：OpenClaw 迈向通\n4.1 Gateway OpenAI 兼容端点：让 OpenClaw 成为统⼀ AI ⼊\n4.2 实操：curl 测试 &#x2F;v1&#x2F;models 端点\n4.3 实操：&#x2F;tools 新界⾯体验\n4.4 实操：查看并体验内置 Skill\n4.5 v2026.3.24 其他变更速览\n\n1.2 核心收获\n形成了从“理解概念”到“可执行落地”的完整路径。\n给出了配置、验证、排障的可操作检查点。\n可直接沉淀为团队 SOP 或个人复盘清单。\n\n2  关键结论\n先搭框架再追求高级能力：优先打通主链路，再做性能与扩展。\n诊断与日志是稳定运行的基础能力，应和功能开发同等重视。\n版本、模型、技能与通道配置需要“变更即验证”的操作习惯。\n\n3  核心命令速查3.1 安装与升级12345npm install -g openclaw@latestopenclaw 。对于全局安装的包，两者在⼤多数情况下效果相同——但 install @latest 明确npm ⼿动⽅式openclaw update ⼀键⽅式openclaw update 确实更⽅便，但在实际使⽤中存在两个已知问题：\n\n3.2 配置与接入123456openclaw gateway stopopenclaw gateway startcurl -sS http://127.0.0.1:18789/v1/models \\\\openclaw skills 可以看到完整列表：openclaw skillsopenclaw skills 列出了 57 个可⽤ Skill（其中 7 个为 openclaw-bundled 官⽅内置，其余为\n\n3.3 验证与巡检123openclaw --versionopenclaw doctor --fixopenclaw status\n\n3.4 排障与恢复12345678GitHub Releases 页⾯ 是查看 OpenClaw 每个版本完整变更⽇志的权威来源——但全英⽂、罗列Git commit 短哈希，⽤于精确定位代码版本。OpenClaw 不再只是⼀个聊天客户端——它正在成为你本地的统⼀ AI ⽹关。类似定位的开源⼯具OpenClaw 的 Agent：openclawopenclaw/defaultopenclaw/mainopenclaw-extra 额外来源）。官⽅内置的这 7 个 Skill 开箱即⽤，不需要从 ClawHub 下载。对国内\n\n4  实操建议\n把本笔记命令按“安装→配置→验证→排障”整理为你自己的执行脚本。\n每次升级前做配置备份，升级后执行完整健康检查。\n先在单机或测试环境验证，再推到长期运行环境。\n\n5  归纳截图![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501107.png]]\n![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501181.png]]\n![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501265.png]]\n![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501297.png]]\n![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501329.png]]\n\n6  个人行动清单\n 跑通至少 1 条端到端任务链\n 完成 1 次配置备份与恢复演练\n 记录关键命令与异常日志样例\n 形成自己的复用模板\n\n","dateCreated":"2026-04-08T11:59:45+08:00","dateModified":"2026-04-08T12:28:33+08:00","datePublished":"2026-04-08T11:59:45+08:00","description":"","headline":"12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"http://example.com/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/","keywords":"OpenClaw, 安全防护, Skill, 飞书, 版本升级, 安装部署, 配置实战, 命令速查"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"\n博客地址\n文档信息\n来源：[[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501032.pdf|12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2).pdf]]\n阅读范围：全书约 27 页\n笔记目标：提炼可复用的方法、关键命令与落地清单\n\n一句话总览这份文档围绕 安全加固、Skill 体系、飞书集成 展开，核心价值是把 OpenClaw 从概念讲解落到可执行步骤，并给出稳定运行与排障的实操路径。\n\n1  内容结构与重点1.1 章节脉络\n§1 OpenClaw ⼀周四连发\n§2 升级实操：从 v2026.3.23-2 到 v2026.3.31\n2.1 实操：npm ⼿动升级五步法\n2.2 升级⽅式对⽐：npm ⼿动 vs openclaw update\n总结：当前阶段推荐 npm ⼿动⽅式（稳定优先），等你对 OpenClaw 升级流程⾜够熟悉后，⽇常\n§3 v2026.3.23 变更速览：给 3.22 擦屁股\n§4 v2026.3.24 重点功能：OpenClaw 迈向通\n4.1 Gateway OpenAI 兼容端点：让 OpenClaw 成为统⼀ AI ⼊\n4.2 实操：curl 测试 &#x2F;v1&#x2F;models 端点\n4.3 实操：&#x2F;tools 新界⾯体验\n4.4 实操：查看并体验内置 Skill\n4.5 v2026.3.24 其他变更速览\n\n1.2 核心收获\n形成了从“理解概念”到“可执行落地”的完整路径。\n给出了配置、验证、排障的可操作检查点。\n可直接沉淀为团队 SOP 或个人复盘清单。\n\n2  关键结论\n先搭框架再追求高级能力：优先打通主链路，再做性能与扩展。\n诊断与日志是稳定运行的基础能力，应和功能开发同等重视。\n版本、模型、技能与通道配置需要“变更即验证”的操作习惯。\n\n3  核心命令速查3.1 安装与升级12345npm install -g openclaw@latestopenclaw 。对于全局安装的包，两者在⼤多数情况下效果相同——但 install @latest 明确npm ⼿动⽅式openclaw update ⼀键⽅式openclaw update 确实更⽅便，但在实际使⽤中存在两个已知问题：\n\n3.2 配置与接入123456openclaw gateway stopopenclaw gateway startcurl -sS http://127.0.0.1:18789/v1/models \\\\openclaw skills 可以看到完整列表：openclaw skillsopenclaw skills 列出了 57 个可⽤ Skill（其中 7 个为 openclaw-bundled 官⽅内置，其余为\n\n3.3 验证与巡检123openclaw --versionopenclaw doctor --fixopenclaw status\n\n3.4 排障与恢复12345678GitHub Releases 页⾯ 是查看 OpenClaw 每个版本完整变更⽇志的权威来源——但全英⽂、罗列Git commit 短哈希，⽤于精确定位代码版本。OpenClaw 不再只是⼀个聊天客户端——它正在成为你本地的统⼀ AI ⽹关。类似定位的开源⼯具OpenClaw 的 Agent：openclawopenclaw/defaultopenclaw/mainopenclaw-extra 额外来源）。官⽅内置的这 7 个 Skill 开箱即⽤，不需要从 ClawHub 下载。对国内\n\n4  实操建议\n把本笔记命令按“安装→配置→验证→排障”整理为你自己的执行脚本。\n每次升级前做配置备份，升级后执行完整健康检查。\n先在单机或测试环境验证，再推到长期运行环境。\n\n5  归纳截图![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501107.png]]\n![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501181.png]]\n![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501265.png]]\n![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501297.png]]\n![[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501329.png]]\n\n6  个人行动清单\n 跑通至少 1 条端到端任务链\n 完成 1 次配置备份与恢复演练\n 记录关键命令与异常日志样例\n 形成自己的复用模板\n\n","dateCreated":"2026-04-08T11:59:45+08:00","dateModified":"2026-04-08T12:28:33+08:00","datePublished":"2026-04-08T11:59:45+08:00","description":"","headline":"12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"http://example.com/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/","keywords":"OpenClaw, 安全防护, 飞书, 版本升级, 安装部署, 配置实战, 命令速查, Skill"}</script>
     <meta name="description" content="博客地址 文档信息 来源：[[11.OpenClaw-v2026.3.31 最新版升级与新功能上手-IMG-20260408121501032.pdf|12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2).pdf]] 阅读范围：全书约 27 页 笔记目标：提炼可复用的方法、关键命令与落地清单  一句话总览这份文档围绕 安全加固、Skill 体系、飞书集成 展开，核心价值是把">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)">
@@ -465,9 +465,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/"
-                    data-tooltip="10.OpenClaw进阶功能与飞书接入指南"
-                    aria-label="上一篇: 10.OpenClaw进阶功能与飞书接入指南"
+                    href="/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/"
+                    data-tooltip="1.OpenClaw项目生态介绍"
+                    aria-label="上一篇: 1.OpenClaw项目生态介绍"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -592,9 +592,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/"
-                    data-tooltip="10.OpenClaw进阶功能与飞书接入指南"
-                    aria-label="上一篇: 10.OpenClaw进阶功能与飞书接入指南"
+                    href="/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/"
+                    data-tooltip="1.OpenClaw项目生态介绍"
+                    aria-label="上一篇: 1.OpenClaw项目生态介绍"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -851,10 +851,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/"
-                            aria-label=": 1.OpenClaw项目生态介绍"
+                            href="http://example.com/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/"
+                            aria-label=": 10.OpenClaw进阶功能与飞书接入指南"
                         >
-                            <h3 class="media-heading">1.OpenClaw项目生态介绍</h3>
+                            <h3 class="media-heading">10.OpenClaw进阶功能与飞书接入指南</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -874,10 +874,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/"
-                            aria-label=": 10.OpenClaw进阶功能与飞书接入指南"
+                            href="http://example.com/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/"
+                            aria-label=": 1.OpenClaw项目生态介绍"
                         >
-                            <h3 class="media-heading">10.OpenClaw进阶功能与飞书接入指南</h3>
+                            <h3 class="media-heading">1.OpenClaw项目生态介绍</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
