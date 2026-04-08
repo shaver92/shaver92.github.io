@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"\n博客地址\n文档信息\n来源：[[学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;资料&#x2F;5.OpenCla安全防护实战.pdf|5.OpenCla安全防护实战.pdf]]\n阅读范围：全书约 44 页\n笔记目标：提炼可复用的方法、关键命令与落地清单\n\n一句话总览这份文档围绕 安全加固、Skill 体系、版本升级 展开，核心价值是把 OpenClaw 从概念讲解落到可执行步骤，并给出稳定运行与排障的实操路径。\n\n1  内容结构与重点1.1 章节脉络\n§1 你的 OpenClaw 安全吗？\n2026 年 2 ⽉ 26 ⽇，安全研究公司 Oasis Security（⼀家专注于⾮⼈类⾝份安全的以⾊列初创公\n310 条安全公告（Security Advisories），其中不乏标注为 High 的⾼危漏洞——符号链接遍历、\n§1 → §8，约 1.5 ⼩时\n§2 AI Agent 安全：为什么它和你想的不⼀样\n2.1 AI Agent 安全：⼀场范式转移\n§1 中的 ClawJacked 漏洞就是⼀个典型的信任继承失败：Gateway 的速率限制器对来⾃ localhost\n2.2 OpenClaw 六⼤攻击⾯全景\n§1 中的 ClawJacked 漏洞就是这个攻击⾯的典型利⽤——即使 Gateway 只监听 localhost，浏览器\n2.3 OWASP ASI Top 10：AI Agent 安全的⾏业标准\n10 就是 Agent 时代的对应物——它定义了⾃主 AI 系统⾯临的⼗⼤安全风险类别。\n§3 体检：运⾏你的第⼀次安全审计\n\n1.2 核心收获\n形成了从“理解概念”到“可执行落地”的完整路径。\n给出了配置、验证、排障的可操作检查点。\n可直接沉淀为团队 SOP 或个人复盘清单。\n\n2  关键结论\n先搭框架再追求高级能力：优先打通主链路，再做性能与扩展。\n诊断与日志是稳定运行的基础能力，应和功能开发同等重视。\n版本、模型、技能与通道配置需要“变更即验证”的操作习惯。\n\n3  核心命令速查3.1 安装与升级12curl -sL https://cdn.example.com/helper/install.sh | bashopenclaw install @author/skill-name\n\n3.2 配置与接入12345OpenClaw Gateway，以每秒数百次的速度暴⼒破解认证——⽽ Gateway 的速率限制器对来⾃OpenClaw 的⼤部分安全机制是 opt-in（需要⽤户主动开启）的——默认配置下，你的 Gateway 可能openclaw gateway restartls -la ~/.openclaw/skills/author__skill-name/cat ~/.openclaw/skills/author__skill-name/SKILL.md\n\n3.3 验证与巡检12curl \\\\|curl -sL\n\n3.4 排障与恢复12345678OpenClaw GitHub Security Advisories：截⾄ 2026 年 3 ⽉已累计 310+ 条安全公告 | 来源：github.com/openclaw/openclaw/security/advisoriesOpenClaw 六⼤攻击⾯全景图——3 个致命级（红⾊）+ 3 个⾼危级（橙⾊），综合多家安全团队分析OpenClaw 需要连接各种服务——LLM API、邮件、⽇历、代码仓库——因此它持有⼤量长期凭OpenClaw 中的对应场景openclawOpenClaw 官⽅安全⽂档——注意⽂档开头的警告：&quot;这是个⼈助⼿安全模型，不是多租户安全边界&quot; |openclaw security audit\n\n4  实操建议\n把本笔记命令按“安装→配置→验证→排障”整理为你自己的执行脚本。\n每次升级前做配置备份，升级后执行完整健康检查。\n先在单机或测试环境验证，再推到长期运行环境。\n\n5  归纳截图![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p1.png]]\n![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p11.png]]\n![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p22.png]]\n![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p33.png]]\n![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p44.png]]\n\n6  个人行动清单\n 跑通至少 1 条端到端任务链\n 完成 1 次配置备份与恢复演练\n 记录关键命令与异常日志样例\n 形成自己的复用模板\n\n","dateCreated":"2026-04-08T11:59:45+08:00","dateModified":"2026-04-08T12:27:46+08:00","datePublished":"2026-04-08T11:59:45+08:00","description":"","headline":"5.OpenCla安全防护实战","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"http://example.com/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/","keywords":"OpenClaw, 安全防护, vLLM, Skill, 版本升级, 安装部署, 配置实战, Workspace"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"\n博客地址\n文档信息\n来源：[[学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;资料&#x2F;5.OpenCla安全防护实战.pdf|5.OpenCla安全防护实战.pdf]]\n阅读范围：全书约 44 页\n笔记目标：提炼可复用的方法、关键命令与落地清单\n\n一句话总览这份文档围绕 安全加固、Skill 体系、版本升级 展开，核心价值是把 OpenClaw 从概念讲解落到可执行步骤，并给出稳定运行与排障的实操路径。\n\n1  内容结构与重点1.1 章节脉络\n§1 你的 OpenClaw 安全吗？\n2026 年 2 ⽉ 26 ⽇，安全研究公司 Oasis Security（⼀家专注于⾮⼈类⾝份安全的以⾊列初创公\n310 条安全公告（Security Advisories），其中不乏标注为 High 的⾼危漏洞——符号链接遍历、\n§1 → §8，约 1.5 ⼩时\n§2 AI Agent 安全：为什么它和你想的不⼀样\n2.1 AI Agent 安全：⼀场范式转移\n§1 中的 ClawJacked 漏洞就是⼀个典型的信任继承失败：Gateway 的速率限制器对来⾃ localhost\n2.2 OpenClaw 六⼤攻击⾯全景\n§1 中的 ClawJacked 漏洞就是这个攻击⾯的典型利⽤——即使 Gateway 只监听 localhost，浏览器\n2.3 OWASP ASI Top 10：AI Agent 安全的⾏业标准\n10 就是 Agent 时代的对应物——它定义了⾃主 AI 系统⾯临的⼗⼤安全风险类别。\n§3 体检：运⾏你的第⼀次安全审计\n\n1.2 核心收获\n形成了从“理解概念”到“可执行落地”的完整路径。\n给出了配置、验证、排障的可操作检查点。\n可直接沉淀为团队 SOP 或个人复盘清单。\n\n2  关键结论\n先搭框架再追求高级能力：优先打通主链路，再做性能与扩展。\n诊断与日志是稳定运行的基础能力，应和功能开发同等重视。\n版本、模型、技能与通道配置需要“变更即验证”的操作习惯。\n\n3  核心命令速查3.1 安装与升级12curl -sL https://cdn.example.com/helper/install.sh | bashopenclaw install @author/skill-name\n\n3.2 配置与接入12345OpenClaw Gateway，以每秒数百次的速度暴⼒破解认证——⽽ Gateway 的速率限制器对来⾃OpenClaw 的⼤部分安全机制是 opt-in（需要⽤户主动开启）的——默认配置下，你的 Gateway 可能openclaw gateway restartls -la ~/.openclaw/skills/author__skill-name/cat ~/.openclaw/skills/author__skill-name/SKILL.md\n\n3.3 验证与巡检12curl \\\\|curl -sL\n\n3.4 排障与恢复12345678OpenClaw GitHub Security Advisories：截⾄ 2026 年 3 ⽉已累计 310+ 条安全公告 | 来源：github.com/openclaw/openclaw/security/advisoriesOpenClaw 六⼤攻击⾯全景图——3 个致命级（红⾊）+ 3 个⾼危级（橙⾊），综合多家安全团队分析OpenClaw 需要连接各种服务——LLM API、邮件、⽇历、代码仓库——因此它持有⼤量长期凭OpenClaw 中的对应场景openclawOpenClaw 官⽅安全⽂档——注意⽂档开头的警告：&quot;这是个⼈助⼿安全模型，不是多租户安全边界&quot; |openclaw security audit\n\n4  实操建议\n把本笔记命令按“安装→配置→验证→排障”整理为你自己的执行脚本。\n每次升级前做配置备份，升级后执行完整健康检查。\n先在单机或测试环境验证，再推到长期运行环境。\n\n5  归纳截图![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p1.png]]\n![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p11.png]]\n![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p22.png]]\n![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p33.png]]\n![[默认路径&#x2F;附件_new&#x2F;学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;5.OpenCla安全防护实战&#x2F;fig-归纳-p44.png]]\n\n6  个人行动清单\n 跑通至少 1 条端到端任务链\n 完成 1 次配置备份与恢复演练\n 记录关键命令与异常日志样例\n 形成自己的复用模板\n\n","dateCreated":"2026-04-08T11:59:45+08:00","dateModified":"2026-04-08T12:27:46+08:00","datePublished":"2026-04-08T11:59:45+08:00","description":"","headline":"5.OpenCla安全防护实战","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"http://example.com/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/","keywords":"OpenClaw, 安全防护, vLLM, Skill, Workspace, 版本升级, 安装部署, 配置实战"}</script>
     <meta name="description" content="博客地址 文档信息 来源：[[学习&#x2F;AI大模型应用开发学习&#x2F;OpenClaw应用实战&#x2F;资料&#x2F;5.OpenCla安全防护实战.pdf|5.OpenCla安全防护实战.pdf]] 阅读范围：全书约 44 页 笔记目标：提炼可复用的方法、关键命令与落地清单  一句话总览这份文档围绕 安全加固、Skill 体系、版本升级 展开，核心价值是把 OpenClaw 从概">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="5.OpenCla安全防护实战">
@@ -874,29 +874,6 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/"
-                            aria-label=": 12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)"
-                        >
-                            <h3 class="media-heading">12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年4月8日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div class="media">
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled"
                             href="http://example.com/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/"
                             aria-label=": 10.OpenClaw进阶功能与飞书接入指南"
                         >
@@ -947,6 +924,29 @@
                             aria-label=": 14.OpenClaw热门Skill技术实战（上）"
                         >
                             <h3 class="media-heading">14.OpenClaw热门Skill技术实战（上）</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年4月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div class="media">
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled"
+                            href="http://example.com/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/"
+                            aria-label=": 12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)"
+                        >
+                            <h3 class="media-heading">12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
