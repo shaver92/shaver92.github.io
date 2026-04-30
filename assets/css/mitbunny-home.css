@@ -247,6 +247,33 @@ body.is-home-landing #footer {
   text-decoration: underline;
 }
 
+#tags-archives > section:first-of-type {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 22px;
+}
+
+#tags-archives > section:first-of-type .tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #d8e3f4;
+  background: rgba(255, 255, 255, 0.95);
+  color: #36507b;
+  text-decoration: none;
+  line-height: 1.1;
+  transition: all 0.2s ease;
+}
+
+#tags-archives > section:first-of-type .tag:hover {
+  background: #ffffff;
+  border-color: #bcd0ef;
+  color: #1f3e72;
+  transform: translateY(-1px);
+}
+
 .module-page {
   padding: 24px 0 40px;
 }
