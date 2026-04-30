@@ -15,10 +15,10 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"Website","@id":"http://example.com","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"name":"shaver's blog","description":"","url":"http://example.com"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"Website","@id":"https://shaver92.github.io","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"name":"shaver's blog","description":"","url":"https://shaver92.github.io"}</script>
     <meta property="og:type" content="blog">
 <meta property="og:title" content="all-tags">
-<meta property="og:url" content="http://example.com/all-tags/index.html">
+<meta property="og:url" content="https://shaver92.github.io/all-tags/index.html">
 <meta property="og:site_name" content="shaver&#39;s blog">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-11-05T07:29:26.801Z">
@@ -30,14 +30,14 @@
         
     
     
-        <meta property="og:image" content="http://example.com/assets/images/avatar.png"/>
+        <meta property="og:image" content="https://shaver92.github.io/assets/images/avatar.png"/>
     
     
     
     
     <!--STYLES-->
     
-<link rel="stylesheet" href="/assets/css/style-uvnvpghhbudleqtmdfdp8xwl9wzxdpqrs2bjgg3uwesdnai1m19hhj2icoxh.min.css">
+<link rel="stylesheet" href="/assets/css/mitbunny-home.css">
 
     <!--STYLES END-->
     
@@ -45,302 +45,36 @@
     
 
     
-    <!-- 目录层级编号样式：必须在 gitalk/gitment 等之后加载，避免被覆盖 -->
-    
-<link rel="stylesheet" href="/assets/css/toc-hierarchical.css">
-
 </head>
 
-    <body>
+    <body class=" ">
         <div id="blog">
-            <!-- Define author's picture -->
-
-
-    
-        
-            
-        
-    
-
-<header id="header" data-behavior="1">
-    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
-    <div class="header-title">
-        <a
-            class="header-title-link"
-            href="/"
-            aria-label=""
-        >
-            shaver&#39;s blog
-        </a>
-    </div>
-    
-        
-            <a
-                class="header-right-picture "
-                href="#about"
-                aria-label="打开链接: /#about"
-            >
-        
-        
-            <img class="header-picture" src="/assets/images/avatar.png" alt="作者的图片"/>
-        
-        </a>
-    
-</header>
-
-            <!-- Define author's picture -->
-
-
-
-        
-    
-
-<nav id="sidebar" data-behavior="1">
-    <div class="sidebar-container">
-        
-            <div class="sidebar-profile">
-                <a
-                    href="/#about"
-                    aria-label="阅读有关作者的更多信息"
-                >
-                    <img class="sidebar-profile-picture" src="/assets/images/avatar.png" alt="作者的图片"/>
-                </a>
-                <h4 class="sidebar-profile-name">shaver</h4>
+            <div id="main">
                 
-                    <h5 class="sidebar-profile-bio"><p>筑基期工程师</p>
-</h5>
+                    <div class="page-topbar main-content-wrap">
+                        <div class="page-topbar__actions">
+                            <button
+                                class="mitbunny-home__search"
+                                type="button"
+                                aria-label="返回上一层"
+                                onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '/'; }"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">←</span>
+                                <span>上一层</span>
+                            </button>
+                            <button
+                                class="mitbunny-home__search"
+                                type="button"
+                                aria-label="前往下一层"
+                                onclick="window.history.forward();"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">→</span>
+                                <span>下一层</span>
+                            </button>
+                        </div>
+                        
+                    </div>
                 
-            </div>
-        
-        
-            <ul class="sidebar-buttons">
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/"
-                            
-                            rel="noopener"
-                            title="首页"
-                        >
-                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">首页</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/all-categories"
-                            
-                            rel="noopener"
-                            title="分类"
-                        >
-                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">分类</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/all-tags"
-                            
-                            rel="noopener"
-                            title="标签"
-                        >
-                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">标签</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/all-archives"
-                            
-                            rel="noopener"
-                            title="归档"
-                        >
-                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">归档</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link open-algolia-search"
-                            href="#search"
-                            
-                            rel="noopener"
-                            title="搜索"
-                        >
-                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">搜索</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="#about"
-                            
-                            rel="noopener"
-                            title="关于"
-                        >
-                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">关于</span>
-                    </a>
-            </li>
-            
-        </ul>
-        
-            <ul class="sidebar-buttons">
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="https://github.com/"
-                            
-                                target="_blank"
-                            
-                            rel="noopener"
-                            title="GitHub"
-                        >
-                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">GitHub</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="http://stackoverflow.com/users"
-                            
-                                target="_blank"
-                            
-                            rel="noopener"
-                            title="Stack Overflow"
-                        >
-                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Stack Overflow</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="https://twitter.com/"
-                            
-                                target="_blank"
-                            
-                            rel="noopener"
-                            title="Twitter"
-                        >
-                        <i class="sidebar-button-icon fab fa-twitter" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Twitter</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="https://facebook.com/"
-                            
-                                target="_blank"
-                            
-                            rel="noopener"
-                            title="Facebook"
-                        >
-                        <i class="sidebar-button-icon fab fa-facebook" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Facebook</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="https://plus.google.com/"
-                            
-                                target="_blank"
-                            
-                            rel="noopener"
-                            title="Google Plus"
-                        >
-                        <i class="sidebar-button-icon fab fa-google-plus" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">Google Plus</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="https://www.linkedin.com/profile/"
-                            
-                                target="_blank"
-                            
-                            rel="noopener"
-                            title="LinkedIn"
-                        >
-                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">LinkedIn</span>
-                    </a>
-            </li>
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/mailto"
-                            
-                            rel="noopener"
-                            title="邮箱"
-                        >
-                        <i class="sidebar-button-icon fa fa-envelope" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">邮箱</span>
-                    </a>
-            </li>
-            
-        </ul>
-        
-            <ul class="sidebar-buttons">
-            
-                <li class="sidebar-button">
-                    
-                        <a
-                            class="sidebar-button-link "
-                            href="/atom.xml"
-                            
-                            rel="noopener"
-                            title="RSS"
-                        >
-                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
-                        <span class="sidebar-button-desc">RSS</span>
-                    </a>
-            </li>
-            
-        </ul>
-        
-    </div>
-</nav>
-
-            
-            <div id="main" data-behavior="1"
-                 class="
-                        hasCoverMetaIn
-                        ">
                 <div id="tags-archives" class="main-content-wrap">
     <form id="filter-form" action="#">
         <input name="tag" type="text" class="form-control input--xlarge" placeholder="搜索标签" autofocus="autofocus">
@@ -352,73 +86,73 @@
 
         <section>
         
-            <a class="tag tag--primary tag--small" href="#AgentSwarm-list" data-tag="agentswarm">
-                AgentSwarm
-            </a>
-        
-            <a class="tag tag--primary tag--small" href="#Ollama-list" data-tag="ollama">
-                Ollama
+            <a class="tag tag--primary tag--small" href="#Agent-list" data-tag="agent">
+                Agent
             </a>
         
             <a class="tag tag--primary tag--small" href="#OpenClaw-list" data-tag="openclaw">
                 OpenClaw
             </a>
         
-            <a class="tag tag--primary tag--small" href="#Skill-list" data-tag="skill">
-                Skill
-            </a>
-        
-            <a class="tag tag--primary tag--small" href="#Workspace-list" data-tag="workspace">
-                Workspace
-            </a>
-        
             <a class="tag tag--primary tag--small" href="#hexo-list" data-tag="hexo">
                 hexo
             </a>
         
-            <a class="tag tag--primary tag--small" href="#vLLM-list" data-tag="vllm">
-                vLLM
+            <a class="tag tag--primary tag--small" href="#learn-list" data-tag="learn">
+                learn
+            </a>
+        
+            <a class="tag tag--primary tag--small" href="#life-list" data-tag="life">
+                life
+            </a>
+        
+            <a class="tag tag--primary tag--small" href="#note-list" data-tag="note">
+                note
+            </a>
+        
+            <a class="tag tag--primary tag--small" href="#work-list" data-tag="work">
+                work
             </a>
         
             <a class="tag tag--primary tag--small" href="#博客-list" data-tag="博客">
                 博客
             </a>
         
-            <a class="tag tag--primary tag--small" href="#命令速查-list" data-tag="命令速查">
-                命令速查
+            <a class="tag tag--primary tag--small" href="#学习-list" data-tag="学习">
+                学习
             </a>
         
-            <a class="tag tag--primary tag--small" href="#安全防护-list" data-tag="安全防护">
-                安全防护
+            <a class="tag tag--primary tag--small" href="#工作-list" data-tag="工作">
+                工作
             </a>
         
-            <a class="tag tag--primary tag--small" href="#安装部署-list" data-tag="安装部署">
-                安装部署
+            <a class="tag tag--primary tag--small" href="#成本控制-list" data-tag="成本控制">
+                成本控制
             </a>
         
-            <a class="tag tag--primary tag--small" href="#版本升级-list" data-tag="版本升级">
-                版本升级
+            <a class="tag tag--primary tag--small" href="#生态选型-list" data-tag="生态选型">
+                生态选型
             </a>
         
-            <a class="tag tag--primary tag--small" href="#离线部署-list" data-tag="离线部署">
-                离线部署
+            <a class="tag tag--primary tag--small" href="#生活-list" data-tag="生活">
+                生活
             </a>
         
-            <a class="tag tag--primary tag--small" href="#配置实战-list" data-tag="配置实战">
-                配置实战
+            <a class="tag tag--primary tag--small" href="#部署平台-list" data-tag="部署平台">
+                部署平台
             </a>
         
-            <a class="tag tag--primary tag--small" href="#飞书-list" data-tag="飞书">
-                飞书
+            <a class="tag tag--primary tag--small" href="#随笔-list" data-tag="随笔">
+                随笔
             </a>
         
     </section>
     <section class="boxes">
         
-            <div id="AgentSwarm-list" class="archive box" data-tag="agentswarm">
+            <div id="Agent-list" class="archive box" data-tag="agent">
                 <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/AgentSwarm">
-                        AgentSwarm (2)
+                    <a class="link-unstyled" href="/tags/Agent">
+                        Agent (1)
                     </a>
                 </h4>
                 <ul class="archive-posts">
@@ -426,53 +160,6 @@
                         <li class="archive-post">
                             <a class="archive-post-title" href="/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/">
                                 1.OpenClaw项目生态介绍
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/7.Agent%20Swarm%20%E4%B8%80%E4%BA%BA%E5%85%AC%E5%8F%B8%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9AYC%20%E5%88%9B%E5%A7%8B%E4%BA%BA%20GStack%20%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">
-                                7.Agent Swarm 一人公司最佳实践：YC 创始人 GStack 项目实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                </ul>
-            </div>
-        
-            <div id="Ollama-list" class="archive box" data-tag="ollama">
-                <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/Ollama">
-                        Ollama (3)
-                    </a>
-                </h4>
-                <ul class="archive-posts">
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/">
-                                1.OpenClaw项目生态介绍
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/">
-                                2.OpenClaw安装部署流程详解
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/4.%E5%B7%A5%E4%B8%9A%E7%8E%AF%E5%A2%83OpenClaw-100%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E6%8C%87%E5%8D%97/">
-                                4.工业环境OpenClaw 100%离线运行指南
                             </a>
                             <span class="archive-post-date">
                                  - 2026 年 4 月 8 日
@@ -485,7 +172,7 @@
             <div id="OpenClaw-list" class="archive box" data-tag="openclaw">
                 <h4 class="archive-title">
                     <a class="link-unstyled" href="/tags/OpenClaw">
-                        OpenClaw (15)
+                        OpenClaw (1)
                     </a>
                 </h4>
                 <ul class="archive-posts">
@@ -493,334 +180,6 @@
                         <li class="archive-post">
                             <a class="archive-post-title" href="/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/">
                                 1.OpenClaw项目生态介绍
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/">
-                                10.OpenClaw进阶功能与飞书接入指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/">
-                                12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/">
-                                13.OpenClaw Skill快速入门实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/3.OpenClaw%20v2026.3.22%20%E7%89%88%E6%9C%AC%E5%85%A8%E8%A7%A3%E8%AF%BB%E4%B8%8E%E9%83%A8%E7%BD%B2%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                3.OpenClaw v2026.3.22 版本全解读与部署上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/">
-                                14.OpenClaw热门Skill技术实战（上）
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/">
-                                2.OpenClaw安装部署流程详解
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/4.%E5%B7%A5%E4%B8%9A%E7%8E%AF%E5%A2%83OpenClaw-100%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E6%8C%87%E5%8D%97/">
-                                4.工业环境OpenClaw 100%离线运行指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/">
-                                5.OpenCla安全防护实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/6.Harness%20Engineering%20%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98/">
-                                6.Harness Engineering 技术实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/">
-                                11.20场景Workspace模板库
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/7.Agent%20Swarm%20%E4%B8%80%E4%BA%BA%E5%85%AC%E5%8F%B8%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9AYC%20%E5%88%9B%E5%A7%8B%E4%BA%BA%20GStack%20%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">
-                                7.Agent Swarm 一人公司最佳实践：YC 创始人 GStack 项目实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/8.OpenClaw%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%E4%B8%8E%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                8.OpenClaw核心指令与上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/9.OpenClaw%E4%B8%8A%E4%B8%8B%E6%96%87%E9%98%9F%E5%88%97%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%8F%90%E7%A4%BA%E6%96%B9%E6%B3%95/">
-                                9.OpenClaw上下文队列与核心提示方法
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/">
-                                OpenClaw安装部署
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 3 月 27 日
-                            </span>
-                        </li>
-                    
-                </ul>
-            </div>
-        
-            <div id="Skill-list" class="archive box" data-tag="skill">
-                <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/Skill">
-                        Skill (11)
-                    </a>
-                </h4>
-                <ul class="archive-posts">
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/">
-                                1.OpenClaw项目生态介绍
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/">
-                                12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/">
-                                13.OpenClaw Skill快速入门实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/3.OpenClaw%20v2026.3.22%20%E7%89%88%E6%9C%AC%E5%85%A8%E8%A7%A3%E8%AF%BB%E4%B8%8E%E9%83%A8%E7%BD%B2%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                3.OpenClaw v2026.3.22 版本全解读与部署上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/">
-                                14.OpenClaw热门Skill技术实战（上）
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/">
-                                2.OpenClaw安装部署流程详解
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/">
-                                5.OpenCla安全防护实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/6.Harness%20Engineering%20%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98/">
-                                6.Harness Engineering 技术实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/7.Agent%20Swarm%20%E4%B8%80%E4%BA%BA%E5%85%AC%E5%8F%B8%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9AYC%20%E5%88%9B%E5%A7%8B%E4%BA%BA%20GStack%20%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">
-                                7.Agent Swarm 一人公司最佳实践：YC 创始人 GStack 项目实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/8.OpenClaw%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%E4%B8%8E%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                8.OpenClaw核心指令与上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/9.OpenClaw%E4%B8%8A%E4%B8%8B%E6%96%87%E9%98%9F%E5%88%97%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%8F%90%E7%A4%BA%E6%96%B9%E6%B3%95/">
-                                9.OpenClaw上下文队列与核心提示方法
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                </ul>
-            </div>
-        
-            <div id="Workspace-list" class="archive box" data-tag="workspace">
-                <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/Workspace">
-                        Workspace (9)
-                    </a>
-                </h4>
-                <ul class="archive-posts">
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/">
-                                10.OpenClaw进阶功能与飞书接入指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/">
-                                13.OpenClaw Skill快速入门实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/3.OpenClaw%20v2026.3.22%20%E7%89%88%E6%9C%AC%E5%85%A8%E8%A7%A3%E8%AF%BB%E4%B8%8E%E9%83%A8%E7%BD%B2%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                3.OpenClaw v2026.3.22 版本全解读与部署上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/">
-                                14.OpenClaw热门Skill技术实战（上）
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/">
-                                2.OpenClaw安装部署流程详解
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/">
-                                5.OpenCla安全防护实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/">
-                                11.20场景Workspace模板库
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/8.OpenClaw%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%E4%B8%8E%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                8.OpenClaw核心指令与上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/9.OpenClaw%E4%B8%8A%E4%B8%8B%E6%96%87%E9%98%9F%E5%88%97%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%8F%90%E7%A4%BA%E6%96%B9%E6%B3%95/">
-                                9.OpenClaw上下文队列与核心提示方法
                             </a>
                             <span class="archive-post-date">
                                  - 2026 年 4 月 8 日
@@ -850,13 +209,22 @@
                 </ul>
             </div>
         
-            <div id="vLLM-list" class="archive box" data-tag="vllm">
+            <div id="learn-list" class="archive box" data-tag="learn">
                 <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/vLLM">
-                        vLLM (5)
+                    <a class="link-unstyled" href="/tags/learn">
+                        learn (2)
                     </a>
                 </h4>
                 <ul class="archive-posts">
+                    
+                        <li class="archive-post">
+                            <a class="archive-post-title" href="/2026/04/30/learn-%E6%AF%8F%E5%91%A8%E5%AD%A6%E4%B9%A0%E6%B8%85%E5%8D%95/">
+                                每周学习清单
+                            </a>
+                            <span class="archive-post-date">
+                                 - 2026 年 4 月 30 日
+                            </span>
+                        </li>
                     
                         <li class="archive-post">
                             <a class="archive-post-title" href="/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/">
@@ -867,39 +235,63 @@
                             </span>
                         </li>
                     
+                </ul>
+            </div>
+        
+            <div id="life-list" class="archive box" data-tag="life">
+                <h4 class="archive-title">
+                    <a class="link-unstyled" href="/tags/life">
+                        life (1)
+                    </a>
+                </h4>
+                <ul class="archive-posts">
+                    
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/">
-                                2.OpenClaw安装部署流程详解
+                            <a class="archive-post-title" href="/2026/04/30/life-%E6%B8%85%E6%99%A8%E6%95%A3%E6%AD%A5%E8%AE%B0%E5%BD%95/">
+                                清晨散步记录
                             </a>
                             <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
+                                 - 2026 年 4 月 30 日
                             </span>
                         </li>
                     
+                </ul>
+            </div>
+        
+            <div id="note-list" class="archive box" data-tag="note">
+                <h4 class="archive-title">
+                    <a class="link-unstyled" href="/tags/note">
+                        note (1)
+                    </a>
+                </h4>
+                <ul class="archive-posts">
+                    
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/4.%E5%B7%A5%E4%B8%9A%E7%8E%AF%E5%A2%83OpenClaw-100%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E6%8C%87%E5%8D%97/">
-                                4.工业环境OpenClaw 100%离线运行指南
+                            <a class="archive-post-title" href="/2026/04/30/note-%E9%9B%A8%E5%A4%A9%E9%9A%8F%E7%AC%94/">
+                                雨天随笔
                             </a>
                             <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
+                                 - 2026 年 4 月 30 日
                             </span>
                         </li>
                     
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/">
-                                5.OpenCla安全防护实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
+                </ul>
+            </div>
+        
+            <div id="work-list" class="archive box" data-tag="work">
+                <h4 class="archive-title">
+                    <a class="link-unstyled" href="/tags/work">
+                        work (1)
+                    </a>
+                </h4>
+                <ul class="archive-posts">
                     
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/8.OpenClaw%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%E4%B8%8E%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                8.OpenClaw核心指令与上手流程
+                            <a class="archive-post-title" href="/2026/04/30/work-%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%E6%A8%A1%E6%9D%BF/">
+                                项目复盘模板
                             </a>
                             <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
+                                 - 2026 年 4 月 30 日
                             </span>
                         </li>
                     
@@ -926,75 +318,68 @@
                 </ul>
             </div>
         
-            <div id="命令速查-list" class="archive box" data-tag="命令速查">
+            <div id="学习-list" class="archive box" data-tag="学习">
                 <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/%E5%91%BD%E4%BB%A4%E9%80%9F%E6%9F%A5">
-                        命令速查 (6)
+                    <a class="link-unstyled" href="/tags/%E5%AD%A6%E4%B9%A0">
+                        学习 (2)
                     </a>
                 </h4>
                 <ul class="archive-posts">
                     
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/">
-                                10.OpenClaw进阶功能与飞书接入指南
+                            <a class="archive-post-title" href="/2026/04/30/learn-%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0-%E4%B8%80/">
+                                阅读笔记（一）
                             </a>
                             <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
+                                 - 2026 年 4 月 30 日
                             </span>
                         </li>
                     
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/">
-                                12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)
+                            <a class="archive-post-title" href="/2026/04/30/learn-%E6%AF%8F%E5%91%A8%E5%AD%A6%E4%B9%A0%E6%B8%85%E5%8D%95/">
+                                每周学习清单
                             </a>
                             <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/6.Harness%20Engineering%20%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98/">
-                                6.Harness Engineering 技术实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/">
-                                11.20场景Workspace模板库
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/7.Agent%20Swarm%20%E4%B8%80%E4%BA%BA%E5%85%AC%E5%8F%B8%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9AYC%20%E5%88%9B%E5%A7%8B%E4%BA%BA%20GStack%20%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">
-                                7.Agent Swarm 一人公司最佳实践：YC 创始人 GStack 项目实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/9.OpenClaw%E4%B8%8A%E4%B8%8B%E6%96%87%E9%98%9F%E5%88%97%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%8F%90%E7%A4%BA%E6%96%B9%E6%B3%95/">
-                                9.OpenClaw上下文队列与核心提示方法
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
+                                 - 2026 年 4 月 30 日
                             </span>
                         </li>
                     
                 </ul>
             </div>
         
-            <div id="安全防护-list" class="archive box" data-tag="安全防护">
+            <div id="工作-list" class="archive box" data-tag="工作">
                 <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4">
-                        安全防护 (14)
+                    <a class="link-unstyled" href="/tags/%E5%B7%A5%E4%BD%9C">
+                        工作 (2)
+                    </a>
+                </h4>
+                <ul class="archive-posts">
+                    
+                        <li class="archive-post">
+                            <a class="archive-post-title" href="/2026/04/30/work-%E4%BC%9A%E8%AE%AE%E7%BA%AA%E8%A6%81%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/">
+                                会议纪要最佳实践
+                            </a>
+                            <span class="archive-post-date">
+                                 - 2026 年 4 月 30 日
+                            </span>
+                        </li>
+                    
+                        <li class="archive-post">
+                            <a class="archive-post-title" href="/2026/04/30/work-%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%E6%A8%A1%E6%9D%BF/">
+                                项目复盘模板
+                            </a>
+                            <span class="archive-post-date">
+                                 - 2026 年 4 月 30 日
+                            </span>
+                        </li>
+                    
+                </ul>
+            </div>
+        
+            <div id="成本控制-list" class="archive box" data-tag="成本控制">
+                <h4 class="archive-title">
+                    <a class="link-unstyled" href="/tags/%E6%88%90%E6%9C%AC%E6%8E%A7%E5%88%B6">
+                        成本控制 (1)
                     </a>
                 </h4>
                 <ul class="archive-posts">
@@ -1008,350 +393,13 @@
                             </span>
                         </li>
                     
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/">
-                                10.OpenClaw进阶功能与飞书接入指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/">
-                                12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/">
-                                13.OpenClaw Skill快速入门实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/3.OpenClaw%20v2026.3.22%20%E7%89%88%E6%9C%AC%E5%85%A8%E8%A7%A3%E8%AF%BB%E4%B8%8E%E9%83%A8%E7%BD%B2%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                3.OpenClaw v2026.3.22 版本全解读与部署上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/">
-                                14.OpenClaw热门Skill技术实战（上）
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/">
-                                2.OpenClaw安装部署流程详解
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/4.%E5%B7%A5%E4%B8%9A%E7%8E%AF%E5%A2%83OpenClaw-100%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E6%8C%87%E5%8D%97/">
-                                4.工业环境OpenClaw 100%离线运行指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/">
-                                5.OpenCla安全防护实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/6.Harness%20Engineering%20%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98/">
-                                6.Harness Engineering 技术实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/">
-                                11.20场景Workspace模板库
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/7.Agent%20Swarm%20%E4%B8%80%E4%BA%BA%E5%85%AC%E5%8F%B8%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9AYC%20%E5%88%9B%E5%A7%8B%E4%BA%BA%20GStack%20%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">
-                                7.Agent Swarm 一人公司最佳实践：YC 创始人 GStack 项目实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/8.OpenClaw%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%E4%B8%8E%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                8.OpenClaw核心指令与上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/9.OpenClaw%E4%B8%8A%E4%B8%8B%E6%96%87%E9%98%9F%E5%88%97%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%8F%90%E7%A4%BA%E6%96%B9%E6%B3%95/">
-                                9.OpenClaw上下文队列与核心提示方法
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
                 </ul>
             </div>
         
-            <div id="安装部署-list" class="archive box" data-tag="安装部署">
+            <div id="生态选型-list" class="archive box" data-tag="生态选型">
                 <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2">
-                        安装部署 (11)
-                    </a>
-                </h4>
-                <ul class="archive-posts">
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/">
-                                10.OpenClaw进阶功能与飞书接入指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/">
-                                12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/">
-                                13.OpenClaw Skill快速入门实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/3.OpenClaw%20v2026.3.22%20%E7%89%88%E6%9C%AC%E5%85%A8%E8%A7%A3%E8%AF%BB%E4%B8%8E%E9%83%A8%E7%BD%B2%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                3.OpenClaw v2026.3.22 版本全解读与部署上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/">
-                                14.OpenClaw热门Skill技术实战（上）
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/4.%E5%B7%A5%E4%B8%9A%E7%8E%AF%E5%A2%83OpenClaw-100%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E6%8C%87%E5%8D%97/">
-                                4.工业环境OpenClaw 100%离线运行指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/">
-                                5.OpenCla安全防护实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/6.Harness%20Engineering%20%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98/">
-                                6.Harness Engineering 技术实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/7.Agent%20Swarm%20%E4%B8%80%E4%BA%BA%E5%85%AC%E5%8F%B8%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9AYC%20%E5%88%9B%E5%A7%8B%E4%BA%BA%20GStack%20%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">
-                                7.Agent Swarm 一人公司最佳实践：YC 创始人 GStack 项目实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/8.OpenClaw%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%E4%B8%8E%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                8.OpenClaw核心指令与上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/9.OpenClaw%E4%B8%8A%E4%B8%8B%E6%96%87%E9%98%9F%E5%88%97%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%8F%90%E7%A4%BA%E6%96%B9%E6%B3%95/">
-                                9.OpenClaw上下文队列与核心提示方法
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                </ul>
-            </div>
-        
-            <div id="版本升级-list" class="archive box" data-tag="版本升级">
-                <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7">
-                        版本升级 (11)
-                    </a>
-                </h4>
-                <ul class="archive-posts">
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/">
-                                10.OpenClaw进阶功能与飞书接入指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/">
-                                12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/">
-                                13.OpenClaw Skill快速入门实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/3.OpenClaw%20v2026.3.22%20%E7%89%88%E6%9C%AC%E5%85%A8%E8%A7%A3%E8%AF%BB%E4%B8%8E%E9%83%A8%E7%BD%B2%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                3.OpenClaw v2026.3.22 版本全解读与部署上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/">
-                                14.OpenClaw热门Skill技术实战（上）
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/4.%E5%B7%A5%E4%B8%9A%E7%8E%AF%E5%A2%83OpenClaw-100%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E6%8C%87%E5%8D%97/">
-                                4.工业环境OpenClaw 100%离线运行指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/">
-                                5.OpenCla安全防护实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/6.Harness%20Engineering%20%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98/">
-                                6.Harness Engineering 技术实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/">
-                                11.20场景Workspace模板库
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/7.Agent%20Swarm%20%E4%B8%80%E4%BA%BA%E5%85%AC%E5%8F%B8%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9AYC%20%E5%88%9B%E5%A7%8B%E4%BA%BA%20GStack%20%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">
-                                7.Agent Swarm 一人公司最佳实践：YC 创始人 GStack 项目实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/8.OpenClaw%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%E4%B8%8E%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                8.OpenClaw核心指令与上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                </ul>
-            </div>
-        
-            <div id="离线部署-list" class="archive box" data-tag="离线部署">
-                <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/%E7%A6%BB%E7%BA%BF%E9%83%A8%E7%BD%B2">
-                        离线部署 (3)
+                    <a class="link-unstyled" href="/tags/%E7%94%9F%E6%80%81%E9%80%89%E5%9E%8B">
+                        生态选型 (1)
                     </a>
                 </h4>
                 <ul class="archive-posts">
@@ -1365,141 +413,33 @@
                             </span>
                         </li>
                     
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/">
-                                2.OpenClaw安装部署流程详解
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/4.%E5%B7%A5%E4%B8%9A%E7%8E%AF%E5%A2%83OpenClaw-100%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E6%8C%87%E5%8D%97/">
-                                4.工业环境OpenClaw 100%离线运行指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
                 </ul>
             </div>
         
-            <div id="配置实战-list" class="archive box" data-tag="配置实战">
+            <div id="生活-list" class="archive box" data-tag="生活">
                 <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/%E9%85%8D%E7%BD%AE%E5%AE%9E%E6%88%98">
-                        配置实战 (11)
+                    <a class="link-unstyled" href="/tags/%E7%94%9F%E6%B4%BB">
+                        生活 (1)
                     </a>
                 </h4>
                 <ul class="archive-posts">
                     
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/">
-                                10.OpenClaw进阶功能与飞书接入指南
+                            <a class="archive-post-title" href="/2026/04/30/life-%E6%B8%85%E6%99%A8%E6%95%A3%E6%AD%A5%E8%AE%B0%E5%BD%95/">
+                                清晨散步记录
                             </a>
                             <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/">
-                                12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/">
-                                13.OpenClaw Skill快速入门实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/3.OpenClaw%20v2026.3.22%20%E7%89%88%E6%9C%AC%E5%85%A8%E8%A7%A3%E8%AF%BB%E4%B8%8E%E9%83%A8%E7%BD%B2%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                3.OpenClaw v2026.3.22 版本全解读与部署上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/">
-                                14.OpenClaw热门Skill技术实战（上）
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/4.%E5%B7%A5%E4%B8%9A%E7%8E%AF%E5%A2%83OpenClaw-100%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E6%8C%87%E5%8D%97/">
-                                4.工业环境OpenClaw 100%离线运行指南
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/5.OpenCla%E5%AE%89%E5%85%A8%E9%98%B2%E6%8A%A4%E5%AE%9E%E6%88%98/">
-                                5.OpenCla安全防护实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/6.Harness%20Engineering%20%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98/">
-                                6.Harness Engineering 技术实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/">
-                                11.20场景Workspace模板库
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/7.Agent%20Swarm%20%E4%B8%80%E4%BA%BA%E5%85%AC%E5%8F%B8%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%EF%BC%9AYC%20%E5%88%9B%E5%A7%8B%E4%BA%BA%20GStack%20%E9%A1%B9%E7%9B%AE%E5%AE%9E%E6%88%98/">
-                                7.Agent Swarm 一人公司最佳实践：YC 创始人 GStack 项目实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/9.OpenClaw%E4%B8%8A%E4%B8%8B%E6%96%87%E9%98%9F%E5%88%97%E4%B8%8E%E6%A0%B8%E5%BF%83%E6%8F%90%E7%A4%BA%E6%96%B9%E6%B3%95/">
-                                9.OpenClaw上下文队列与核心提示方法
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
+                                 - 2026 年 4 月 30 日
                             </span>
                         </li>
                     
                 </ul>
             </div>
         
-            <div id="飞书-list" class="archive box" data-tag="飞书">
+            <div id="部署平台-list" class="archive box" data-tag="部署平台">
                 <h4 class="archive-title">
-                    <a class="link-unstyled" href="/tags/%E9%A3%9E%E4%B9%A6">
-                        飞书 (10)
+                    <a class="link-unstyled" href="/tags/%E9%83%A8%E7%BD%B2%E5%B9%B3%E5%8F%B0">
+                        部署平台 (1)
                     </a>
                 </h4>
                 <ul class="archive-posts">
@@ -1513,84 +453,32 @@
                             </span>
                         </li>
                     
+                </ul>
+            </div>
+        
+            <div id="随笔-list" class="archive box" data-tag="随笔">
+                <h4 class="archive-title">
+                    <a class="link-unstyled" href="/tags/%E9%9A%8F%E7%AC%94">
+                        随笔 (2)
+                    </a>
+                </h4>
+                <ul class="archive-posts">
+                    
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/">
-                                10.OpenClaw进阶功能与飞书接入指南
+                            <a class="archive-post-title" href="/2026/04/30/note-%E6%B7%B1%E5%A4%9C%E7%A2%8E%E7%89%87%E6%83%B3%E6%B3%95/">
+                                深夜碎片想法
                             </a>
                             <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
+                                 - 2026 年 4 月 30 日
                             </span>
                         </li>
                     
                         <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/">
-                                12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)
+                            <a class="archive-post-title" href="/2026/04/30/note-%E9%9B%A8%E5%A4%A9%E9%9A%8F%E7%AC%94/">
+                                雨天随笔
                             </a>
                             <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/">
-                                13.OpenClaw Skill快速入门实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/3.OpenClaw%20v2026.3.22%20%E7%89%88%E6%9C%AC%E5%85%A8%E8%A7%A3%E8%AF%BB%E4%B8%8E%E9%83%A8%E7%BD%B2%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                3.OpenClaw v2026.3.22 版本全解读与部署上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/">
-                                14.OpenClaw热门Skill技术实战（上）
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/">
-                                2.OpenClaw安装部署流程详解
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/6.Harness%20Engineering%20%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98/">
-                                6.Harness Engineering 技术实战
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/14.20%E5%9C%BA%E6%99%AFWorkspace%E6%A8%A1%E6%9D%BF%E5%BA%93/">
-                                11.20场景Workspace模板库
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
-                            </span>
-                        </li>
-                    
-                        <li class="archive-post">
-                            <a class="archive-post-title" href="/2026/04/08/8.OpenClaw%E6%A0%B8%E5%BF%83%E6%8C%87%E4%BB%A4%E4%B8%8E%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/">
-                                8.OpenClaw核心指令与上手流程
-                            </a>
-                            <span class="archive-post-date">
-                                 - 2026 年 4 月 8 日
+                                 - 2026 年 4 月 30 日
                             </span>
                         </li>
                     
@@ -1600,53 +488,10 @@
     </section>
 </div>
 
-                <footer id="footer" class="main-content-wrap">
-    <span class="copyrights">
-        Copyrights &copy; 2026 shaver. All Rights Reserved.
-    </span>
-</footer>
+                
 
             </div>
-            
         </div>
-        
-
-
-    
-        
-    
-
-<div id="about">
-    <div id="about-card">
-        <div id="about-btn-close">
-            <i class="fa fa-times"></i>
-        </div>
-        
-            <img id="about-card-picture" src="/assets/images/avatar.png" alt="作者的图片"/>
-        
-            <h4 id="about-card-name">shaver</h4>
-        
-            <div id="about-card-bio"><p>筑基期工程师</p>
-</div>
-        
-        
-            <div id="about-card-job">
-                <i class="fa fa-briefcase"></i>
-                <br/>
-                <p>java工程师,大模型应用开发</p>
-
-            </div>
-        
-        
-            <div id="about-card-location">
-                <i class="fa fa-map-marker-alt"></i>
-                <br/>
-                shenzhen, guangdong, china
-            </div>
-        
-    </div>
-</div>
-
         
             <div id="algolia-search-modal" class="modal-container">
     <div class="modal">
@@ -1667,12 +512,15 @@
             <div class="no-result text-color-light text-center">没有找到文章</div>
             <div class="results">
                 
-                <div class="media">
+                <div
+                    class="media"
+                    data-search-text="利用hexo搭建自己的博客  hexo 博客"
+                >
                     
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2025/11/04/%E5%88%A9%E7%94%A8Hexo%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/"
+                            href="https://shaver92.github.io/2025/11/04/%E5%88%A9%E7%94%A8Hexo%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/"
                             aria-label=": 利用Hexo搭建自己的博客"
                         >
                             <h3 class="media-heading">利用Hexo搭建自己的博客</h3>
@@ -1690,35 +538,15 @@
                     <hr>
                 </div>
                 
-                <div class="media">
+                <div
+                    class="media"
+                    data-search-text="1.openclaw项目生态介绍  learn openclaw 生态选型 部署平台 成本控制 agent"
+                >
                     
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/03/27/OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E5%92%8C%E5%91%BD%E4%BB%A4%E4%BA%86%E8%A7%A3/"
-                            aria-label=": OpenClaw安装部署"
-                        >
-                            <h3 class="media-heading">OpenClaw安装部署</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年3月27日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div class="media">
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled"
-                            href="http://example.com/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/"
+                            href="https://shaver92.github.io/2026/04/08/1.OpenClaw%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%80%81%E4%BB%8B%E7%BB%8D/"
                             aria-label=": 1.OpenClaw项目生态介绍"
                         >
                             <h3 class="media-heading">1.OpenClaw项目生态介绍</h3>
@@ -1736,20 +564,23 @@
                     <hr>
                 </div>
                 
-                <div class="media">
+                <div
+                    class="media"
+                    data-search-text="清晨散步记录  life 生活"
+                >
                     
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/10.OpenClaw%E8%BF%9B%E9%98%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E9%A3%9E%E4%B9%A6%E6%8E%A5%E5%85%A5%E6%8C%87%E5%8D%97/"
-                            aria-label=": 10.OpenClaw进阶功能与飞书接入指南"
+                            href="https://shaver92.github.io/2026/04/30/life-%E6%B8%85%E6%99%A8%E6%95%A3%E6%AD%A5%E8%AE%B0%E5%BD%95/"
+                            aria-label=": 清晨散步记录"
                         >
-                            <h3 class="media-heading">10.OpenClaw进阶功能与飞书接入指南</h3>
+                            <h3 class="media-heading">清晨散步记录</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
                                 
-                                    2026年4月8日
+                                    2026年4月30日
                                 
                             </span>
                         </span>
@@ -1759,20 +590,23 @@
                     <hr>
                 </div>
                 
-                <div class="media">
+                <div
+                    class="media"
+                    data-search-text="每周学习清单  learn 学习"
+                >
                     
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/11.OpenClaw-v2026.3.31%20%E6%9C%80%E6%96%B0%E7%89%88%E5%8D%87%E7%BA%A7%E4%B8%8E%E6%96%B0%E5%8A%9F%E8%83%BD%E4%B8%8A%E6%89%8B/"
-                            aria-label=": 12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)"
+                            href="https://shaver92.github.io/2026/04/30/learn-%E6%AF%8F%E5%91%A8%E5%AD%A6%E4%B9%A0%E6%B8%85%E5%8D%95/"
+                            aria-label=": 每周学习清单"
                         >
-                            <h3 class="media-heading">12.OpenClaw-v2026.3.31 最新版升级与新功能上手(2)</h3>
+                            <h3 class="media-heading">每周学习清单</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
                                 
-                                    2026年4月8日
+                                    2026年4月30日
                                 
                             </span>
                         </span>
@@ -1782,20 +616,23 @@
                     <hr>
                 </div>
                 
-                <div class="media">
+                <div
+                    class="media"
+                    data-search-text="阅读笔记（一）  学习"
+                >
                     
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/12.OpenClaw%20Skill%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E5%AE%9E%E6%88%98/"
-                            aria-label=": 13.OpenClaw Skill快速入门实战"
+                            href="https://shaver92.github.io/2026/04/30/learn-%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0-%E4%B8%80/"
+                            aria-label=": 阅读笔记（一）"
                         >
-                            <h3 class="media-heading">13.OpenClaw Skill快速入门实战</h3>
+                            <h3 class="media-heading">阅读笔记（一）</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
                                 
-                                    2026年4月8日
+                                    2026年4月30日
                                 
                             </span>
                         </span>
@@ -1805,20 +642,23 @@
                     <hr>
                 </div>
                 
-                <div class="media">
+                <div
+                    class="media"
+                    data-search-text="项目复盘模板  工作 work"
+                >
                     
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/3.OpenClaw%20v2026.3.22%20%E7%89%88%E6%9C%AC%E5%85%A8%E8%A7%A3%E8%AF%BB%E4%B8%8E%E9%83%A8%E7%BD%B2%E4%B8%8A%E6%89%8B%E6%B5%81%E7%A8%8B/"
-                            aria-label=": 3.OpenClaw v2026.3.22 版本全解读与部署上手流程"
+                            href="https://shaver92.github.io/2026/04/30/work-%E9%A1%B9%E7%9B%AE%E5%A4%8D%E7%9B%98%E6%A8%A1%E6%9D%BF/"
+                            aria-label=": 项目复盘模板"
                         >
-                            <h3 class="media-heading">3.OpenClaw v2026.3.22 版本全解读与部署上手流程</h3>
+                            <h3 class="media-heading">项目复盘模板</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
                                 
-                                    2026年4月8日
+                                    2026年4月30日
                                 
                             </span>
                         </span>
@@ -1828,20 +668,23 @@
                     <hr>
                 </div>
                 
-                <div class="media">
+                <div
+                    class="media"
+                    data-search-text="会议纪要最佳实践  工作"
+                >
                     
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/13.OpenClaw%E7%83%AD%E9%97%A8Skill%E6%8A%80%E6%9C%AF%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89/"
-                            aria-label=": 14.OpenClaw热门Skill技术实战（上）"
+                            href="https://shaver92.github.io/2026/04/30/work-%E4%BC%9A%E8%AE%AE%E7%BA%AA%E8%A6%81%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/"
+                            aria-label=": 会议纪要最佳实践"
                         >
-                            <h3 class="media-heading">14.OpenClaw热门Skill技术实战（上）</h3>
+                            <h3 class="media-heading">会议纪要最佳实践</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
                                 
-                                    2026年4月8日
+                                    2026年4月30日
                                 
                             </span>
                         </span>
@@ -1851,20 +694,23 @@
                     <hr>
                 </div>
                 
-                <div class="media">
+                <div
+                    class="media"
+                    data-search-text="雨天随笔  随笔 note"
+                >
                     
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/2.OpenClaw%E5%AE%89%E8%A3%85%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%E8%AF%A6%E8%A7%A3/"
-                            aria-label=": 2.OpenClaw安装部署流程详解"
+                            href="https://shaver92.github.io/2026/04/30/note-%E9%9B%A8%E5%A4%A9%E9%9A%8F%E7%AC%94/"
+                            aria-label=": 雨天随笔"
                         >
-                            <h3 class="media-heading">2.OpenClaw安装部署流程详解</h3>
+                            <h3 class="media-heading">雨天随笔</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
                                 
-                                    2026年4月8日
+                                    2026年4月30日
                                 
                             </span>
                         </span>
@@ -1874,20 +720,23 @@
                     <hr>
                 </div>
                 
-                <div class="media">
+                <div
+                    class="media"
+                    data-search-text="深夜碎片想法  随笔"
+                >
                     
                     <div class="media-body">
                         <a
                             class="link-unstyled"
-                            href="http://example.com/2026/04/08/4.%E5%B7%A5%E4%B8%9A%E7%8E%AF%E5%A2%83OpenClaw-100%E7%A6%BB%E7%BA%BF%E8%BF%90%E8%A1%8C%E6%8C%87%E5%8D%97/"
-                            aria-label=": 4.工业环境OpenClaw 100%离线运行指南"
+                            href="https://shaver92.github.io/2026/04/30/note-%E6%B7%B1%E5%A4%9C%E7%A2%8E%E7%89%87%E6%83%B3%E6%B3%95/"
+                            aria-label=": 深夜碎片想法"
                         >
-                            <h3 class="media-heading">4.工业环境OpenClaw 100%离线运行指南</h3>
+                            <h3 class="media-heading">深夜碎片想法</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
                                 
-                                    2026年4月8日
+                                    2026年4月30日
                                 
                             </span>
                         </span>
@@ -1904,15 +753,13 @@
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 16 篇文章
+                找到 9 篇文章
             </p>
         </div>
     </div>
 </div>
 
         
-        
-<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
         <!--SCRIPTS-->
 
 <script src="/assets/js/script-fy2mgop5xl1tplwujicojo4xhlb80nrzsizgqk4jfrs5njk0qriczldyw7af.min.js"></script>
@@ -1933,6 +780,42 @@
       var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
     </script>
 
+
+<script>
+  (function() {
+    var input = document.getElementById('algolia-search-input');
+    var modal = document.getElementById('algolia-search-modal');
+    if (!input || !modal) return;
+
+    var items = Array.prototype.slice.call(modal.querySelectorAll('.media'));
+    var noResult = modal.querySelector('.no-result');
+    var counter = modal.querySelector('.results-count');
+    var baseCount = items.length;
+
+    function updateCount(visibleCount) {
+      if (!counter) return;
+      counter.textContent = '共找到 ' + visibleCount + ' 篇';
+    }
+
+    function runLocalSearch() {
+      var keyword = (input.value || '').trim().toLowerCase();
+      var visibleCount = 0;
+
+      items.forEach(function(item) {
+        var text = item.getAttribute('data-search-text') || '';
+        var matched = !keyword || text.indexOf(keyword) !== -1;
+        item.style.display = matched ? '' : 'none';
+        if (matched) visibleCount += 1;
+      });
+
+      if (noResult) noResult.style.display = visibleCount === 0 ? '' : 'none';
+      updateCount(visibleCount);
+    }
+
+    input.addEventListener('input', runLocalSearch);
+    updateCount(baseCount);
+  })();
+</script>
 
     </body>
 </html>

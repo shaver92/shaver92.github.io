@@ -1,0 +1,413 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
+  background: #f4f6fb;
+  color: #1f2430;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+}
+
+#main {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.main-content-wrap {
+  width: min(900px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+#main .footer {
+  margin: 40px auto 24px;
+  color: #8b95a7;
+  text-align: center;
+}
+
+#main .footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+body.is-home-landing {
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255, 224, 236, 0.8) 0%, rgba(255, 224, 236, 0) 35%),
+    radial-gradient(circle at 90% 15%, rgba(214, 235, 255, 0.9) 0%, rgba(214, 235, 255, 0) 32%),
+    radial-gradient(circle at 85% 90%, rgba(224, 250, 229, 0.8) 0%, rgba(224, 250, 229, 0) 30%),
+    #fafbff;
+  color: #1f2430;
+}
+
+body.is-home-landing #main {
+  margin-left: 0 !important;
+  min-height: 100vh;
+  width: 100%;
+  background: transparent;
+}
+
+body.is-archive-clean #main {
+  margin-left: 0 !important;
+  width: 100% !important;
+  min-height: 100vh;
+  background: #f4f6fb;
+}
+
+body.is-archive-clean .archive-topbar {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 18px;
+  padding-bottom: 4px;
+}
+
+.page-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 18px;
+  padding-bottom: 6px;
+}
+
+.page-topbar__actions {
+  display: flex;
+  gap: 10px;
+}
+
+body.is-home-landing #main .main-content-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+body.is-home-landing #main .footer,
+body.is-home-landing #footer {
+  display: none;
+}
+
+.mitbunny-home {
+  padding: 40px 24px 56px;
+}
+
+.mitbunny-home__topbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.mitbunny-home__search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid #dce6f5;
+  background: rgba(255, 255, 255, 0.88);
+  color: #5b6475;
+  font-size: 13px;
+  letter-spacing: 0.1px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font: inherit;
+}
+
+.mitbunny-home__icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.mitbunny-home__search:hover {
+  border-color: #d0dcf2;
+  background: #fff;
+  color: #3f4a63;
+}
+
+.mitbunny-home__hero {
+  text-align: center;
+  margin-bottom: 34px;
+}
+
+.mitbunny-home__avatar {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 16px;
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 32px rgba(69, 86, 122, 0.15);
+}
+
+.mitbunny-home__name {
+  margin: 0;
+  font-size: clamp(42px, 6vw, 54px);
+  line-height: 1.06;
+  font-family: "PingFang SC", "MiSans", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #1f2430;
+  background: linear-gradient(90deg, #1f2430 0%, #2d3f64 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 10px rgba(31, 36, 48, 0.08);
+}
+
+.mitbunny-home__bio {
+  margin: 14px 0 0;
+  color: #5e6880;
+  font-size: 17px;
+}
+
+.mitbunny-home__cards {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.mitbunny-home__card {
+  display: block;
+  border: 1px solid #e6edf8;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 18px 20px;
+  box-shadow: 0 10px 26px rgba(55, 76, 115, 0.08);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.mitbunny-home__card:hover {
+  transform: translateY(-2px);
+  border-color: #c9d9f5;
+  box-shadow: 0 16px 36px rgba(55, 76, 115, 0.13);
+}
+
+.mitbunny-home__card-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mitbunny-home__card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #202634;
+}
+
+.mitbunny-home__card-arrow {
+  color: #9aa7c1;
+  font-size: 16px;
+  line-height: 1;
+  transform: translateY(1px);
+}
+
+.mitbunny-home__card-desc {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6a748a;
+}
+
+.post,
+.archive {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e5ecf8;
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 20px;
+}
+
+.archive-result,
+.archive-posts,
+.archive {
+  color: #2e3748;
+}
+
+.archive a,
+.post a {
+  color: #2b5fb3;
+  text-decoration: none;
+}
+
+.archive a:hover,
+.post a:hover {
+  text-decoration: underline;
+}
+
+.module-page {
+  padding: 24px 0 40px;
+}
+
+.module-page__header {
+  margin-bottom: 16px;
+}
+
+.module-page__title {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.module-page__desc {
+  margin: 8px 0 0;
+  color: #68748a;
+}
+
+.module-page__list {
+  display: grid;
+  gap: 14px;
+}
+
+.module-page__item {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #dfe7f6;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.module-page__item-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.module-page__item-title a {
+  text-decoration: none;
+  color: #1e2738;
+}
+
+.module-page__item-title a:hover {
+  color: #2b5fb3;
+}
+
+.module-page__meta {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #71809a;
+}
+
+.module-page__excerpt {
+  margin-top: 10px;
+  color: #445168;
+}
+
+.module-page__empty {
+  color: #71809a;
+}
+
+.post-actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.post-action-nav {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.post-action-nav .post-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #dce6f5;
+  background: rgba(255, 255, 255, 0.88);
+  color: #3f4a63;
+  text-decoration: none;
+}
+
+.post-action-share {
+  display: none;
+}
+
+#algolia-search-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 22, 34, 0.4);
+  z-index: 999;
+  display: none;
+  padding: 24px 16px;
+}
+
+#algolia-search-modal .modal {
+  width: min(900px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #dbe5f5;
+  padding: 16px;
+}
+
+#algolia-search-modal .modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#algolia-search-modal .search-input {
+  width: 100%;
+  border: 1px solid #dbe5f5;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+#algolia-search-modal .media {
+  padding: 10px 0;
+}
+
+@media (max-width: 768px) {
+  .mitbunny-home {
+    padding: 26px 16px 42px;
+  }
+
+  .mitbunny-home__topbar {
+    margin-bottom: 12px;
+  }
+
+  .page-topbar {
+    flex-wrap: wrap;
+  }
+
+  .mitbunny-home__avatar {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 12px;
+  }
+
+  .mitbunny-home__name {
+    font-size: 40px;
+    letter-spacing: 0.8px;
+  }
+
+  .mitbunny-home__bio {
+    font-size: 15px;
+  }
+
+  .mitbunny-home__card {
+    padding: 15px 16px;
+    border-radius: 16px;
+  }
+
+  .mitbunny-home__card-title {
+    font-size: 16px;
+  }
+
+}
