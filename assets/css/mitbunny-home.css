@@ -108,6 +108,19 @@ body.is-home-landing #footer {
   margin-bottom: 18px;
 }
 
+.mitbunny-home__topbar-group {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.mitbunny-home__group-toggle {
+  width: 38px;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
 .mitbunny-home__search {
   display: inline-flex;
   align-items: center;
@@ -134,6 +147,103 @@ body.is-home-landing #footer {
   border-color: #d0dcf2;
   background: #fff;
   color: #3f4a63;
+}
+
+.mitbunny-home__search[aria-expanded="true"] {
+  background: #ffffff;
+  border-color: #b9cef0;
+  color: #27406a;
+}
+
+.mitbunny-home__accordion {
+  margin-bottom: 14px;
+}
+
+.mitbunny-home__panel {
+  border: 1px solid #dce6f5;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 20px rgba(55, 76, 115, 0.08);
+  margin-bottom: 10px;
+}
+
+.mitbunny-home__panel-body {
+  padding: 14px;
+}
+
+.mitbunny-home__panel-desc {
+  margin: 0 0 10px;
+  color: #5f6c85;
+  font-size: 14px;
+}
+
+.mitbunny-home__filter-input {
+  width: 100%;
+  border: 1px solid #d8e3f4;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #fff;
+  color: #2d3850;
+  margin-bottom: 10px;
+}
+
+.mitbunny-home__result-list {
+  display: grid;
+  gap: 8px;
+  max-height: 220px;
+  overflow: auto;
+  margin-bottom: 12px;
+}
+
+.mitbunny-home__result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid #e1e9f7;
+  border-radius: 10px;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.95);
+  text-decoration: none;
+  color: #334361;
+}
+
+.mitbunny-home__result-item small {
+  color: #7c8ba5;
+  white-space: nowrap;
+}
+
+.mitbunny-home__panel-link {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #d8e3f4;
+  border-radius: 999px;
+  background: #fff;
+  color: #2f4d7f;
+  text-decoration: none;
+  padding: 6px 12px;
+  font: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.mitbunny-home__panel-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mitbunny-home__tag-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border: 1px solid #d8e3f4;
+  border-radius: 999px;
+  background: #fff;
+  color: #36507b;
+  text-decoration: none;
+  line-height: 1.1;
 }
 
 .mitbunny-home__hero {
