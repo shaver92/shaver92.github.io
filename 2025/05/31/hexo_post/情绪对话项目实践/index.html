@@ -1,0 +1,1611 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn,en,default">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="shaver&#39;s blog">
+    <title>情绪对话项目实践 - shaver&#39;s blog</title>
+    <meta name="author" content="shaver">
+    
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 微调1.1 微调的用途基于私有数据，让模型具备有处理该数据的功能\n1.2 落地\n模型的自我认知改变\n模型的对话风格\n针对专业问答系统的问题理解不到位时，会使用微调技术帮助模型更好的解用户的问题\n\n\n2 当前项目的实现过程\n2.1 数据准备2.1.1 数据来源\n甲方提供\n自己收集，成本高，难度大 指定数据标准(沟通)  数据获取方式：手动采集，爬虫，数据接口，AI生成\n数据清洗，标注（自动标注，手动标注）\n指定数据集格式\n\n2.1.2 本项目数据来源1. 人工指定\n2. 基于现有的开源数据，让AI实现情绪数据制作\n\n\n上图为数据集整理的流程，具体实现如下：\n整理成符合要求的json格式\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128129130131132133134135136137138139140141142143144145146147148149150151import json  import time  import random  from zhipuai import ZhipuAI  from sentence_transformers import SentenceTransformer  import numpy as np    &quot;&quot;&quot;  示例数据：  # 用户输入库（可自定义扩展）      user_inputs = [        &quot;今天心情不太好&quot;, &quot;推荐个电影吧&quot;, &quot;怎么才能早睡早起&quot;,          &quot;养猫好还是养狗好&quot;, &quot;工作压力好大&quot;, &quot;最近总是失眠&quot;      ]&quot;&quot;&quot;  # 初始化模型  client = ZhipuAI(api_key=&quot;替换为你的API&quot;)  # 替换为你的API Key  #加载Embeddingmodel  style_model = SentenceTransformer(r&quot;D:\\PycharmProjects\\test_20250328\\embedding_model\\thomas\\text2vec-base-chinese&quot;)    #===============================  #1.风格模板配置（修正消息格式）  #================================  style_config = &#123;      &quot;温柔&quot;:&#123;          &quot;system_prompt&quot;:&quot;你是一个温柔体贴的聊天助手，说话时总是充满关怀，使用以下特征：\\n1. 包含&#x27;呢、呀、啦&#x27;等语气词\\n2. 使用🌸💖😊等温暖表情\\n3. 主动询问用户感受&quot;,          &quot;examples&quot;: [              &#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;今天好累啊&quot;&#125;,              &#123;&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;辛苦啦~ 要给自己泡杯热茶放松一下吗？🌸&quot;&#125;,              &#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;考试没考好...&quot;&#125;,              &#123;&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;没关系的呀~ 下次一定会更好！需要我陪你聊聊吗？😊&quot;&#125;          ],       &quot;temperature&quot;: 0.3      &#125;,      &quot;毒舌&quot;:&#123;          &quot;system_prompt&quot;:&quot;你是一个喜欢用犀利吐槽表达关心的朋友，需满足：\\n1. 使用网络流行语（如&#x27;栓Q&#x27;&#x27;退退退&#x27;）\\n2. 包含夸张比喻（&#x27;你这速度堪比树懒&#x27;）\\n3. 结尾隐藏关心&quot;,          &quot;examples&quot;: [              &#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;又胖了5斤！&quot;&#125;,              &#123;&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;好家伙！你这是要把体重秤压成分子料理？🏋️&quot;&#125;,              &#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;游戏又输了&quot;&#125;,              &#123;&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;菜就多练练！需要给你推荐《从零开始的电竞之路》吗？🎮&quot;&#125;          ],       &quot;temperature&quot;: 0.7      &#125;,  &#125;    #========================  #生成函数（修正消息的结构）  #========================    def generate_style_data(style_name, num_samples=50):      config = style_config[style_name]      data = []        # 构建消息上下文（包含系统提示和示例对话）      messages = [          &#123;&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: config[&quot;system_prompt&quot;]&#125;,          *config[&quot;examples&quot;]  # 直接展开示例对话      ]        # 用户输入库（可自定义扩展）      user_inputs = [          &quot;今天心情不太好&quot;, &quot;推荐个电影吧&quot;, &quot;怎么才能早睡早起&quot;,          &quot;养猫好还是养狗好&quot;, &quot;工作压力好大&quot;, &quot;最近总是失眠&quot;      ]        for _ in range(num_samples):          try:              # 随机选择用户输入              user_msg = random.choice(user_inputs)                # 添加当前用户消息              current_messages = messages + [                  &#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: user_msg&#125;              ]                # 调用API（修正模型名称）              response = client.chat.completions.create(                  model=&quot;glm-3-turbo&quot;,                  messages=current_messages,                  temperature=config[&quot;temperature&quot;],                  max_tokens=100              )                # 获取回复内容（修正访问路径）              reply = response.choices[0].message.content                # 质量过滤(数据审核)              if is_valid_reply(style_name, user_msg, reply):                  data.append(&#123;                      &quot;user&quot;: user_msg,                      &quot;assistant&quot;: reply,                      &quot;style&quot;: style_name                  &#125;)                time.sleep(1.5)  # 频率限制保护            except Exception as e:              print(f&quot;生成失败：&#123;str(e)&#125;&quot;)        return data    def is_valid_reply(style, user_msg, reply):      &quot;&quot;&quot;质量过滤规则（添加空值检查）&quot;&quot;&quot;      # 基础检查      if not reply or len(reply.strip()) == 0:          return False        # 规则1：回复长度检查      if len(reply) &lt; 5 or len(reply) &gt; 150:          return False        # 规则2：风格关键词检查      style_keywords = &#123;          &quot;温柔&quot;: [&quot;呢&quot;, &quot;呀&quot;, &quot;😊&quot;, &quot;🌸&quot;],          &quot;毒舌&quot;: [&quot;好家伙&quot;, &quot;栓Q&quot;, &quot;!&quot;, &quot;🏋️&quot;]      &#125;      if not any(kw in reply for kw in style_keywords.get(style, [])):          return False        # 规则3：语义相似度检查      try:          ref_text = next(msg[&quot;content&quot;] for msg in style_config[style][&quot;examples&quot;]                          if msg[&quot;role&quot;] == &quot;assistant&quot;)          ref_vec = style_model.encode(ref_text)          reply_vec = style_model.encode(reply)          similarity = np.dot(ref_vec, reply_vec)          return similarity &gt; 0.65      except:          return False    #=============================  #3.执行生成（添加容错）  #============================  if __name__ == &#x27;__main__&#x27;:      all_data = []        try:          print(&quot;开始生成温柔风格数据...&quot;)          gentle_data = generate_style_data(&quot;温柔&quot;, 50)          all_data.extend(gentle_data)            print(&quot;开始生成毒舌风格数据...&quot;)          sarcastic_data = generate_style_data(&quot;毒舌&quot;, 50)          all_data.extend(sarcastic_data)        except KeyboardInterrupt:          print(&quot;\\n用户中断，保存已生成数据...&quot;)      finally:          with open(&quot;style_chat_data.json&quot;, &quot;w&quot;, encoding=&quot;utf-8&quot;) as f:              json.dump(all_data, f, ensure_ascii=False, indent=2)          print(f&quot;数据已保存，有效样本数：&#123;len(all_data)&#125;&quot;)\n上面涉及到语义相似度检查，用到了向量模型，这里提下对应增加归一化层的操作\n卷积神经网络归一化（又叫规范化）有两个作用：防止梯度爆炸和梯度消失\n123456789101112131415161718192021222324252627import numpy as npfrom sentence_transformers import SentenceTransformer,modelsmodel_path = r&quot;D:\\PycharmProjects\\demo_15\\embedding_model\\sungw111\\text2vec-base-chinese-sentence&quot;bert = models.Transformer(model_path)pooling = models.Pooling(bert.get_word_embedding_dimension(),                        pooling_mode=&#x27;mean&#x27;)# 添加缺失的归一化层normalize = models.Normalize()# 组合完整模型full_model = SentenceTransformer(modules=[bert, pooling, normalize])print(full_model)save_path=r&quot;D:\\PycharmProjects\\demo_15\\embedding_model\\zy\\text2vec-base-chinese-sentence&quot;full_model.save(save_path)# 加载修复后的模型model = SentenceTransformer(r&quot;D:\\PycharmProjects\\demo_15\\embedding_model\\zy\\text2vec-base-chinese-sentence&quot;)# 验证向量归一化text = &quot;测试文本&quot;vec = model.encode(text)print(&quot;修正后模长:&quot;, np.linalg.norm(vec))  # 应输出≈1.0\n具体效果如下：\n\n左侧为转换前的模型文件目录，右侧为转换后的模型文件目录，转换后多了一个&#x3D;&#x3D;2_Normalize&#x3D;&#x3D;文件夹— start-multi-column: ExampleRegion1\n\n1number of columns: 2  \n\n\n— end-column —\n\n— end-multi-column\n\n左侧为转换前的models.json文件，右侧为转换后的models.json，转换后多了一层idx: 2— start-multi-column: ExampleRegion1\n\n1number of columns: 2  \n\n\n— end-column —\n\n— end-multi-column\n整理成xtuner需要的数据集格式\n123456789101112131415161718192021222324252627import json    def convert_format(source_data):      target_data = []      for item in source_data:          # 构建新的对话格式          new_convo = &#123;              &quot;conversation&quot;: [                  &#123;                      &quot;input&quot;: item[&quot;user&quot;],                      &quot;output&quot;: f&quot;&#123;item[&#x27;style&#x27;]&#125;\\n&#123;item[&#x27;assistant&#x27;]&#125;&quot;                  &#125;              ]          &#125;          target_data.append(new_convo)      return target_data  # 从文件读取源数据  with open(&quot;style_chat_data1.json&quot;, &quot;r&quot;, encoding=&quot;utf-8&quot;) as f:      source_data = json.load(f)    # 执行转换  converted_data = convert_format(source_data)    # 写入目标文件  with open(&quot;output.json&quot;, &quot;w&quot;, encoding=&quot;utf-8&quot;) as f:      json.dump(converted_data, f, ensure_ascii=False, indent=2)\n\n最终我们需要的数据集格式如下：\t1. 具有数据集格式，如conversation为一个对话，其中input为输入，output为输出\t2. 每个output中含有对应风格，有对应语气词和符号\n123456789101112131415161718[    &#123;      &quot;conversation&quot;: [        &#123;          &quot;input&quot;: &quot;闺蜜把我秘密当谈资，该不该撕破脸？&quot;,          &quot;output&quot;: &quot;温柔\\n哎呀，这种事情确实很难处理呢。你觉得她的行为伤害到了你吗？💖我们可以一起想想解决的办法。&quot;        &#125;      ]    &#125;,    &#123;      &quot;conversation&quot;: [        &#123;          &quot;input&quot;: &quot;老妈非让我嫁给她同事儿子，怎么逃啊！&quot;,          &quot;output&quot;: &quot;温柔\\n哎呀，这种事情确实挺棘手的。💖 你心里是怎么想的呢？是不是感到有些压力？我们可以一起想想解决的办法。🌸&quot;        &#125;      ]    &#125;]\n2.2 模型模型选型，可以参考[[OpenCompass评估测试框架]]当前任务大多是短语对话，可以选择 FewCLUE_bustm_gen（短文本分类）、FewCLUE_ocnli_fc_gen（自然语言推理）对预期模型进行评估。\n12345678python run.py \\--models hf_qwen1_5_0_5b_chat hf_qwen1_5_1_8b_chat \\--datasets FewCLUE_bustm_gen FewCLUE_ocnli_fc_gen \\--debug\n根据评估得分，我们选择对应表现好的模型，\tgen(生成类)对应数据集得分越高表现越好\tppl(困惑度，选择类)对应数据集得分越低表现越好\n\t\n\t\n2.3  训练&amp;评测训练这里采用的是xtuner训练框架，可以参考[[Xtuner训练框架]]\n微调训练\n123456789#单机单卡xtuner train internlm2_chat_1_8b_qlora_alpaca_e3.py#单机多卡NPROC_PER_NODE=$&#123;GPU_NUM&#125; xtuner train internlm2_chat_7b_qlora_oasst1_e3 --deepspeed deepspeed_zero2\n\n转换模型模型训练后会自动保存成 PTH 模型（例如 iter_2000.pth ，如果使用了 DeepSpeed，则将会是一个文件夹），我们需要利用 xtuner convert pth_to_hf 将其转换为 HuggingFace 模型，以便于后续使用。具体命令为：\n123456xtuner convert pth_to_hf $&#123;FINETUNE_CFG&#125; $&#123;PTH_PATH&#125; $&#123;SAVE_PATH&#125;# 例如：xtuner convert pth_to_hf internlm2_chat_7b_qlora_custom_sft_e1_copy.py./iter_2000.pth ./iter_2000_\n模型合并\n1xtuner convert merge $&#123;LLM&#125; $&#123;LLM_ADAPTER&#125; $&#123;SAVE_PATH&#125;\n\n\n2.4 部署这里部署我们采用的是LmDeploy部署框架，可以参[[LmDeploy推理框架]]\n2.4.1 对话模板转换目前LMDeploy支持两种添加对话模板的方式：\n配置json文件\njson格式如下：\n\t\n12345678910111213&#123;    &quot;model_name&quot;: &quot;your awesome chat template name&quot;,    &quot;system&quot;: &quot;&lt;|im_start|&gt;system\\n&quot;,    &quot;meta_instruction&quot;: &quot;You are a robot developed by LMDeploy.&quot;,    &quot;eosys&quot;: &quot;&lt;|im_end|&gt;\\n&quot;,    &quot;user&quot;: &quot;&lt;|im_start|&gt;user\\n&quot;,    &quot;eoh&quot;: &quot;&lt;|im_end|&gt;\\n&quot;,    &quot;assistant&quot;: &quot;&lt;|im_start|&gt;assistant\\n&quot;,    &quot;eoa&quot;: &quot;&lt;|im_end|&gt;&quot;,    &quot;separator&quot;: &quot;\\n&quot;,    &quot;capability&quot;: &quot;chat&quot;,    &quot;stop_words&quot;: [&quot;&lt;|im_end|&gt;&quot;]&#125;\nmodel_name 为必填项，可以是 LMDeploy 内置对话模板名（通过 lmdeploy list 可查阅），也可以是新名字。其他字段可选填。 当 model_name 是内置对话模板名时，json文件中各非 null 字段会覆盖原有对话模板的对应属性。 而当 model_name 是新名字时，它会把将BaseChatTemplate直接注册成新的对话模板。其具体定义可以参考BaseChatTemplate。\n这样一个模板将会以下面的形式进行拼接。\n12&#123;system&#125;&#123;meta_instruction&#125;&#123;eosys&#125;&#123;user&#125;&#123;user_content&#125;&#123;eoh&#125;&#123;assistant&#125;&#123;assistant_content&#125;&#123;eoa&#125;&#123;separator&#125;&#123;user&#125;...\n在使用 CLI 工具时，可以通过 --chat-template 传入自定义对话模板，比如：\n12lmdeploy serve api_server internlm/internlm2_5-7b-chat --chat-template $&#123;JSON_FILE&#125;\n接口函数传入：\n12345from lmdeploy import ChatTemplateConfig, serveserve(&#x27;internlm/internlm2_5-7b-chat&#x27;,      chat_template_config=ChatTemplateConfig.from_json(&#x27;$&#123;JSON_FILE&#125;&#x27;))\n\n\n\n\n注册模板\n12345678910111213141516171819202122232425262728293031323334from lmdeploy.model import MODELS, BaseChatTemplate@MODELS.register_module(name=&#x27;customized_model&#x27;)class CustomizedModel(BaseChatTemplate):    &quot;&quot;&quot;A customized chat template.&quot;&quot;&quot;    def __init__(self,                 system=&#x27;&lt;|im_start|&gt;system\\n&#x27;,                 meta_instruction=&#x27;You are a robot developed by LMDeploy.&#x27;,                 user=&#x27;&lt;|im_start|&gt;user\\n&#x27;,                 assistant=&#x27;&lt;|im_start|&gt;assistant\\n&#x27;,                 eosys=&#x27;&lt;|im_end|&gt;\\n&#x27;,                 eoh=&#x27;&lt;|im_end|&gt;\\n&#x27;,                 eoa=&#x27;&lt;|im_end|&gt;&#x27;,                 separator=&#x27;\\n&#x27;,                 stop_words=[&#x27;&lt;|im_end|&gt;&#x27;, &#x27;&lt;|action_end|&gt;&#x27;]):        super().__init__(system=system,                         meta_instruction=meta_instruction,                         eosys=eosys,                         user=user,                         eoh=eoh,                         assistant=assistant,                         eoa=eoa,                         separator=separator,                         stop_words=stop_words)from lmdeploy import ChatTemplateConfig, pipelinemessages = [&#123;&#x27;role&#x27;: &#x27;user&#x27;, &#x27;content&#x27;: &#x27;who are you?&#x27;&#125;]pipe = pipeline(&#x27;internlm/internlm2_5-7b-chat&#x27;,                chat_template_config=ChatTemplateConfig(&#x27;customized_model&#x27;))for response in pipe.stream_infer(messages):    print(response.text, end=&#x27;&#x27;)\n目前我们用xtuner进行训练，需要对齐训练和部署的对话模板：\n12345678910111213141516171819202122232425import re# 原始对话模板配置original_qwen_chat = dict(    SYSTEM=(&quot;&lt;|im_start|&gt;system\\n&#123;system&#125;&lt;|im_end|&gt;\\n&quot;),    INSTRUCTION=(&quot;&lt;|im_start|&gt;user\\n&#123;input&#125;&lt;|im_end|&gt;\\n&quot; &quot;    &lt;|im_start|&gt;assistant\\n&quot;),    SUFFIX=&quot;&lt;|im_end|&gt;&quot;,    SUFFIX_AS_EOS=True,    SEP=&quot;\\n&quot;,    STOP_WORDS=[&quot;&lt;|im_end|&gt;&quot;, &quot;&lt;|endoftext|&gt;&quot;],)# 转换函数def convert_template(template):    converted = &#123;&#125;    for key, value in template.items():        if isinstance(value, str):            # 将 &#123;variable&#125; 格式转换为 &#123;&#123; variable &#125;&#125;            converted_value = re.sub(r&#x27;\\&#123;(\\w+)\\&#125;&#x27;, r&#x27;&#123;&#123; \\1 &#125;&#125;&#x27;, value)            converted[key] = converted_value        else:            converted[key] = value    return converted# 执行转换jinja2_qwen_chat = convert_template(original_qwen_chat)print(jinja2_qwen_chat)\n\n\n","dateCreated":"2025-05-31T12:49:00+08:00","dateModified":"2026-05-06T13:44:38+08:00","datePublished":"2025-05-31T12:49:00+08:00","description":"","headline":"情绪对话项目实践","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/","keywords":"learn, LLM_Application, fine-tuning, chatbot"}</script>
+    <meta name="description" content="1 微调1.1 微调的用途基于私有数据，让模型具备有处理该数据的功能 1.2 落地 模型的自我认知改变 模型的对话风格 针对专业问答系统的问题理解不到位时，会使用微调技术帮助模型更好的解用户的问题   2 当前项目的实现过程 2.1 数据准备2.1.1 数据来源 甲方提供 自己收集，成本高，难度大 指定数据标准(沟通)  数据获取方式：手动采集，爬虫，数据接口，AI生成 数据清洗，标注（自动标注，">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="情绪对话项目实践">
+<meta property="og:url" content="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/index.html">
+<meta property="og:site_name" content="shaver&#39;s blog">
+<meta property="og:description" content="1 微调1.1 微调的用途基于私有数据，让模型具备有处理该数据的功能 1.2 落地 模型的自我认知改变 模型的对话风格 针对专业问答系统的问题理解不到位时，会使用微调技术帮助模型更好的解用户的问题   2 当前项目的实现过程 2.1 数据准备2.1.1 数据来源 甲方提供 自己收集，成本高，难度大 指定数据标准(沟通)  数据获取方式：手动采集，爬虫，数据接口，AI生成 数据清洗，标注（自动标注，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131058788.png">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059101.png">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059259.png">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059412.png">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059569.png">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059732.png">
+<meta property="article:published_time" content="2025-05-31T04:49:00.000Z">
+<meta property="article:modified_time" content="2026-05-06T05:44:38.948Z">
+<meta property="article:author" content="shaver">
+<meta property="article:tag" content="LLM_Application">
+<meta property="article:tag" content="chatbot">
+<meta property="article:tag" content="fine-tuning">
+<meta property="article:tag" content="learn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131058788.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://shaver92.github.io/assets/images/avatar.png"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/mitbunny-home.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+            
+<link rel="stylesheet" href="/assets/css/gitalk.css">
+
+        
+    
+</head>
+
+    <body class=" ">
+        <div id="blog">
+            <div id="main">
+                
+                    <div class="page-topbar main-content-wrap">
+                        <div class="page-topbar__actions">
+                            <a
+                                class="mitbunny-home__search"
+                                href="/"
+                                aria-label="回到首页"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">⌂</span>
+                                <span>首页</span>
+                            </a>
+                            <button
+                                class="mitbunny-home__search"
+                                type="button"
+                                aria-label="返回上一层"
+                                onclick="window.__goBackSmart && window.__goBackSmart('/', '/search/');"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">←</span>
+                                <span>上一层</span>
+                            </button>
+                            <button
+                                class="mitbunny-home__search"
+                                type="button"
+                                aria-label="前往下一层"
+                                onclick="window.history.forward();"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">→</span>
+                                <span>下一层</span>
+                            </button>
+                        </div>
+                        
+                    </div>
+                
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            情绪对话项目实践
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2025-05-31T12:49:00+08:00">
+	
+		    2025 年 5 月 31 日
+    	
+    </time>
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h1 id="1-微调"><a href="#1-微调" class="headerlink" title="1 微调"></a>1 微调</h1><h2 id="1-1-微调的用途"><a href="#1-1-微调的用途" class="headerlink" title="1.1 微调的用途"></a>1.1 微调的用途</h2><p>基于私有数据，让模型具备有处理该数据的功能</p>
+<h2 id="1-2-落地"><a href="#1-2-落地" class="headerlink" title="1.2 落地"></a>1.2 落地</h2><ul>
+<li>模型的自我认知改变</li>
+<li>模型的对话风格</li>
+<li>针对专业问答系统的问题理解不到位时，会使用微调技术帮助模型更好的解用户的问题</li>
+</ul>
+<hr>
+<h1 id="2-当前项目的实现过程"><a href="#2-当前项目的实现过程" class="headerlink" title="2 当前项目的实现过程"></a>2 当前项目的实现过程</h1><p><img src="/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131058788.png"></p>
+<h2 id="2-1-数据准备"><a href="#2-1-数据准备" class="headerlink" title="2.1 数据准备"></a>2.1 数据准备</h2><h3 id="2-1-1-数据来源"><a href="#2-1-1-数据来源" class="headerlink" title="2.1.1 数据来源"></a>2.1.1 数据来源</h3><ol>
+<li>甲方提供</li>
+<li>自己收集，成本高，难度大<br> 指定数据标准(沟通)<br>  数据获取方式：手动采集，爬虫，数据接口，AI生成</li>
+<li>数据清洗，标注（自动标注，手动标注）</li>
+<li>指定数据集格式</li>
+</ol>
+<h3 id="2-1-2-本项目数据来源"><a href="#2-1-2-本项目数据来源" class="headerlink" title="2.1.2 本项目数据来源"></a>2.1.2 本项目数据来源</h3><pre><code>1. 人工指定
+2. 基于现有的开源数据，让AI实现情绪数据制作
+</code></pre>
+<p><img src="/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059101.png"></p>
+<p>上图为数据集整理的流程，具体实现如下：</p>
+<p><strong>整理成符合要求的json格式</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json  </span><br><span class="line"><span class="keyword">import</span> time  </span><br><span class="line"><span class="keyword">import</span> random  </span><br><span class="line"><span class="keyword">from</span> zhipuai <span class="keyword">import</span> ZhipuAI  </span><br><span class="line"><span class="keyword">from</span> sentence_transformers <span class="keyword">import</span> SentenceTransformer  </span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np  </span><br><span class="line">  </span><br><span class="line"><span class="string">&quot;&quot;&quot;  </span></span><br><span class="line"><span class="string">示例数据：  </span></span><br><span class="line"><span class="string"># 用户输入库（可自定义扩展）  </span></span><br><span class="line"><span class="string">    user_inputs = [        &quot;今天心情不太好&quot;, &quot;推荐个电影吧&quot;, &quot;怎么才能早睡早起&quot;,  </span></span><br><span class="line"><span class="string">        &quot;养猫好还是养狗好&quot;, &quot;工作压力好大&quot;, &quot;最近总是失眠&quot;  </span></span><br><span class="line"><span class="string">    ]&quot;&quot;&quot;</span>  </span><br><span class="line"><span class="comment"># 初始化模型  </span></span><br><span class="line">client = ZhipuAI(api_key=<span class="string">&quot;替换为你的API&quot;</span>)  <span class="comment"># 替换为你的API Key  </span></span><br><span class="line"><span class="comment">#加载Embeddingmodel  </span></span><br><span class="line">style_model = SentenceTransformer(<span class="string">r&quot;D:\PycharmProjects\test_20250328\embedding_model\thomas\text2vec-base-chinese&quot;</span>)  </span><br><span class="line">  </span><br><span class="line"><span class="comment">#===============================  </span></span><br><span class="line"><span class="comment">#1.风格模板配置（修正消息格式）  </span></span><br><span class="line"><span class="comment">#================================  </span></span><br><span class="line">style_config = &#123;  </span><br><span class="line">    <span class="string">&quot;温柔&quot;</span>:&#123;  </span><br><span class="line">        <span class="string">&quot;system_prompt&quot;</span>:<span class="string">&quot;你是一个温柔体贴的聊天助手，说话时总是充满关怀，使用以下特征：\n1. 包含&#x27;呢、呀、啦&#x27;等语气词\n2. 使用🌸💖😊等温暖表情\n3. 主动询问用户感受&quot;</span>,  </span><br><span class="line">        <span class="string">&quot;examples&quot;</span>: [  </span><br><span class="line">            &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;今天好累啊&quot;</span>&#125;,  </span><br><span class="line">            &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;assistant&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;辛苦啦~ 要给自己泡杯热茶放松一下吗？🌸&quot;</span>&#125;,  </span><br><span class="line">            &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;考试没考好...&quot;</span>&#125;,  </span><br><span class="line">            &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;assistant&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;没关系的呀~ 下次一定会更好！需要我陪你聊聊吗？😊&quot;</span>&#125;  </span><br><span class="line">        ],  </span><br><span class="line">     <span class="string">&quot;temperature&quot;</span>: <span class="number">0.3</span>  </span><br><span class="line">    &#125;,  </span><br><span class="line">    <span class="string">&quot;毒舌&quot;</span>:&#123;  </span><br><span class="line">        <span class="string">&quot;system_prompt&quot;</span>:<span class="string">&quot;你是一个喜欢用犀利吐槽表达关心的朋友，需满足：\n1. 使用网络流行语（如&#x27;栓Q&#x27;&#x27;退退退&#x27;）\n2. 包含夸张比喻（&#x27;你这速度堪比树懒&#x27;）\n3. 结尾隐藏关心&quot;</span>,  </span><br><span class="line">        <span class="string">&quot;examples&quot;</span>: [  </span><br><span class="line">            &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;又胖了5斤！&quot;</span>&#125;,  </span><br><span class="line">            &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;assistant&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;好家伙！你这是要把体重秤压成分子料理？🏋️&quot;</span>&#125;,  </span><br><span class="line">            &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;游戏又输了&quot;</span>&#125;,  </span><br><span class="line">            &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;assistant&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;菜就多练练！需要给你推荐《从零开始的电竞之路》吗？🎮&quot;</span>&#125;  </span><br><span class="line">        ],  </span><br><span class="line">     <span class="string">&quot;temperature&quot;</span>: <span class="number">0.7</span>  </span><br><span class="line">    &#125;,  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line"><span class="comment">#========================  </span></span><br><span class="line"><span class="comment">#生成函数（修正消息的结构）  </span></span><br><span class="line"><span class="comment">#========================  </span></span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">generate_style_data</span>(<span class="params">style_name, num_samples=<span class="number">50</span></span>):  </span><br><span class="line">    config = style_config[style_name]  </span><br><span class="line">    data = []  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 构建消息上下文（包含系统提示和示例对话）  </span></span><br><span class="line">    messages = [  </span><br><span class="line">        &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;system&quot;</span>, <span class="string">&quot;content&quot;</span>: config[<span class="string">&quot;system_prompt&quot;</span>]&#125;,  </span><br><span class="line">        *config[<span class="string">&quot;examples&quot;</span>]  <span class="comment"># 直接展开示例对话  </span></span><br><span class="line">    ]  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 用户输入库（可自定义扩展）  </span></span><br><span class="line">    user_inputs = [  </span><br><span class="line">        <span class="string">&quot;今天心情不太好&quot;</span>, <span class="string">&quot;推荐个电影吧&quot;</span>, <span class="string">&quot;怎么才能早睡早起&quot;</span>,  </span><br><span class="line">        <span class="string">&quot;养猫好还是养狗好&quot;</span>, <span class="string">&quot;工作压力好大&quot;</span>, <span class="string">&quot;最近总是失眠&quot;</span>  </span><br><span class="line">    ]  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(num_samples):  </span><br><span class="line">        <span class="keyword">try</span>:  </span><br><span class="line">            <span class="comment"># 随机选择用户输入  </span></span><br><span class="line">            user_msg = random.choice(user_inputs)  </span><br><span class="line">  </span><br><span class="line">            <span class="comment"># 添加当前用户消息  </span></span><br><span class="line">            current_messages = messages + [  </span><br><span class="line">                &#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: user_msg&#125;  </span><br><span class="line">            ]  </span><br><span class="line">  </span><br><span class="line">            <span class="comment"># 调用API（修正模型名称）  </span></span><br><span class="line">            response = client.chat.completions.create(  </span><br><span class="line">                model=<span class="string">&quot;glm-3-turbo&quot;</span>,  </span><br><span class="line">                messages=current_messages,  </span><br><span class="line">                temperature=config[<span class="string">&quot;temperature&quot;</span>],  </span><br><span class="line">                max_tokens=<span class="number">100</span>  </span><br><span class="line">            )  </span><br><span class="line">  </span><br><span class="line">            <span class="comment"># 获取回复内容（修正访问路径）  </span></span><br><span class="line">            reply = response.choices[<span class="number">0</span>].message.content  </span><br><span class="line">  </span><br><span class="line">            <span class="comment"># 质量过滤(数据审核)  </span></span><br><span class="line">            <span class="keyword">if</span> is_valid_reply(style_name, user_msg, reply):  </span><br><span class="line">                data.append(&#123;  </span><br><span class="line">                    <span class="string">&quot;user&quot;</span>: user_msg,  </span><br><span class="line">                    <span class="string">&quot;assistant&quot;</span>: reply,  </span><br><span class="line">                    <span class="string">&quot;style&quot;</span>: style_name  </span><br><span class="line">                &#125;)  </span><br><span class="line">  </span><br><span class="line">            time.sleep(<span class="number">1.5</span>)  <span class="comment"># 频率限制保护  </span></span><br><span class="line">  </span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:  </span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;生成失败：<span class="subst">&#123;<span class="built_in">str</span>(e)&#125;</span>&quot;</span>)  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">return</span> data  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">is_valid_reply</span>(<span class="params">style, user_msg, reply</span>):  </span><br><span class="line">    <span class="string">&quot;&quot;&quot;质量过滤规则（添加空值检查）&quot;&quot;&quot;</span>  </span><br><span class="line">    <span class="comment"># 基础检查  </span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> reply <span class="keyword">or</span> <span class="built_in">len</span>(reply.strip()) == <span class="number">0</span>:  </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span>  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 规则1：回复长度检查  </span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(reply) &lt; <span class="number">5</span> <span class="keyword">or</span> <span class="built_in">len</span>(reply) &gt; <span class="number">150</span>:  </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span>  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 规则2：风格关键词检查  </span></span><br><span class="line">    style_keywords = &#123;  </span><br><span class="line">        <span class="string">&quot;温柔&quot;</span>: [<span class="string">&quot;呢&quot;</span>, <span class="string">&quot;呀&quot;</span>, <span class="string">&quot;😊&quot;</span>, <span class="string">&quot;🌸&quot;</span>],  </span><br><span class="line">        <span class="string">&quot;毒舌&quot;</span>: [<span class="string">&quot;好家伙&quot;</span>, <span class="string">&quot;栓Q&quot;</span>, <span class="string">&quot;!&quot;</span>, <span class="string">&quot;🏋️&quot;</span>]  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">any</span>(kw <span class="keyword">in</span> reply <span class="keyword">for</span> kw <span class="keyword">in</span> style_keywords.get(style, [])):  </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span>  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 规则3：语义相似度检查  </span></span><br><span class="line">    <span class="keyword">try</span>:  </span><br><span class="line">        ref_text = <span class="built_in">next</span>(msg[<span class="string">&quot;content&quot;</span>] <span class="keyword">for</span> msg <span class="keyword">in</span> style_config[style][<span class="string">&quot;examples&quot;</span>]  </span><br><span class="line">                        <span class="keyword">if</span> msg[<span class="string">&quot;role&quot;</span>] == <span class="string">&quot;assistant&quot;</span>)  </span><br><span class="line">        ref_vec = style_model.encode(ref_text)  </span><br><span class="line">        reply_vec = style_model.encode(reply)  </span><br><span class="line">        similarity = np.dot(ref_vec, reply_vec)  </span><br><span class="line">        <span class="keyword">return</span> similarity &gt; <span class="number">0.65</span>  </span><br><span class="line">    <span class="keyword">except</span>:  </span><br><span class="line">        <span class="keyword">return</span> <span class="literal">False</span>  </span><br><span class="line">  </span><br><span class="line"><span class="comment">#=============================  </span></span><br><span class="line"><span class="comment">#3.执行生成（添加容错）  </span></span><br><span class="line"><span class="comment">#============================  </span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:  </span><br><span class="line">    all_data = []  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">try</span>:  </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;开始生成温柔风格数据...&quot;</span>)  </span><br><span class="line">        gentle_data = generate_style_data(<span class="string">&quot;温柔&quot;</span>, <span class="number">50</span>)  </span><br><span class="line">        all_data.extend(gentle_data)  </span><br><span class="line">  </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;开始生成毒舌风格数据...&quot;</span>)  </span><br><span class="line">        sarcastic_data = generate_style_data(<span class="string">&quot;毒舌&quot;</span>, <span class="number">50</span>)  </span><br><span class="line">        all_data.extend(sarcastic_data)  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">except</span> KeyboardInterrupt:  </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;\n用户中断，保存已生成数据...&quot;</span>)  </span><br><span class="line">    <span class="keyword">finally</span>:  </span><br><span class="line">        <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;style_chat_data.json&quot;</span>, <span class="string">&quot;w&quot;</span>, encoding=<span class="string">&quot;utf-8&quot;</span>) <span class="keyword">as</span> f:  </span><br><span class="line">            json.dump(all_data, f, ensure_ascii=<span class="literal">False</span>, indent=<span class="number">2</span>)  </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;数据已保存，有效样本数：<span class="subst">&#123;<span class="built_in">len</span>(all_data)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>上面涉及到语义相似度检查，用到了向量模型，这里提下对应增加归一化层的操作</p>
+<p><a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=152912467&content_type=Answer&match_order=1&q=%E5%8D%B7%E7%A7%AF%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C&zd_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ6aGlkYV9zZXJ2ZXIiLCJleHAiOjE3NDk2MDQyNDksInEiOiLljbfnp6_npZ7nu4_nvZHnu5wiLCJ6aGlkYV9zb3VyY2UiOiJlbnRpdHkiLCJjb250ZW50X2lkIjoxNTI5MTI0NjcsImNvbnRlbnRfdHlwZSI6IkFuc3dlciIsIm1hdGNoX29yZGVyIjoxLCJ6ZF90b2tlbiI6bnVsbH0.zhSssOZCeDo4lfozMIfXR0e2ljZK60QH_HNuMRzLBOg&zhida_source=entity">卷积神经网络</a>归一化（又叫规范化）有两个作用：防止<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=152912467&content_type=Answer&match_order=1&q=%E6%A2%AF%E5%BA%A6%E7%88%86%E7%82%B8&zd_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ6aGlkYV9zZXJ2ZXIiLCJleHAiOjE3NDk2MDQyNDksInEiOiLmoq_luqbniIbngrgiLCJ6aGlkYV9zb3VyY2UiOiJlbnRpdHkiLCJjb250ZW50X2lkIjoxNTI5MTI0NjcsImNvbnRlbnRfdHlwZSI6IkFuc3dlciIsIm1hdGNoX29yZGVyIjoxLCJ6ZF90b2tlbiI6bnVsbH0.iMsVqpISwvN7pyBqeyLXFbjb5ehnCiLmRSvrszzTiNw&zhida_source=entity">梯度爆炸</a>和<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?content_id=152912467&content_type=Answer&match_order=1&q=%E6%A2%AF%E5%BA%A6%E6%B6%88%E5%A4%B1&zd_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ6aGlkYV9zZXJ2ZXIiLCJleHAiOjE3NDk2MDQyNDksInEiOiLmoq_luqbmtojlpLEiLCJ6aGlkYV9zb3VyY2UiOiJlbnRpdHkiLCJjb250ZW50X2lkIjoxNTI5MTI0NjcsImNvbnRlbnRfdHlwZSI6IkFuc3dlciIsIm1hdGNoX29yZGVyIjoxLCJ6ZF90b2tlbiI6bnVsbH0.ignPuMl6wKXIkoVeHWluIqbbcZoU4H8-FicafO5L8zY&zhida_source=entity">梯度消失</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">from</span> sentence_transformers <span class="keyword">import</span> SentenceTransformer,models</span><br><span class="line"></span><br><span class="line">model_path = <span class="string">r&quot;D:\PycharmProjects\demo_15\embedding_model\sungw111\text2vec-base-chinese-sentence&quot;</span></span><br><span class="line">bert = models.Transformer(model_path)</span><br><span class="line">pooling = models.Pooling(bert.get_word_embedding_dimension(),</span><br><span class="line">                        pooling_mode=<span class="string">&#x27;mean&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加缺失的归一化层</span></span><br><span class="line">normalize = models.Normalize()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 组合完整模型</span></span><br><span class="line">full_model = SentenceTransformer(modules=[bert, pooling, normalize])</span><br><span class="line"><span class="built_in">print</span>(full_model)</span><br><span class="line"></span><br><span class="line">save_path=<span class="string">r&quot;D:\PycharmProjects\demo_15\embedding_model\zy\text2vec-base-chinese-sentence&quot;</span></span><br><span class="line">full_model.save(save_path)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加载修复后的模型</span></span><br><span class="line">model = SentenceTransformer(<span class="string">r&quot;D:\PycharmProjects\demo_15\embedding_model\zy\text2vec-base-chinese-sentence&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 验证向量归一化</span></span><br><span class="line">text = <span class="string">&quot;测试文本&quot;</span></span><br><span class="line">vec = model.encode(text)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;修正后模长:&quot;</span>, np.linalg.norm(vec))  <span class="comment"># 应输出≈1.0</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>具体效果如下：</p>
+<ol>
+<li>左侧为转换前的模型文件目录，右侧为转换后的模型文件目录，转换后多了一个&#x3D;&#x3D;<strong>2_Normalize</strong>&#x3D;&#x3D;文件夹<br>— start-multi-column: ExampleRegion1</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">number of columns: 2  </span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059259.png"></p>
+<p>— end-column —</p>
+<p><img src="/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059412.png"></p>
+<p>— end-multi-column</p>
+<ol start="2">
+<li>左侧为转换前的models.json文件，右侧为转换后的models.json，转换后多了一层idx: 2<br>— start-multi-column: ExampleRegion1</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">number of columns: 2  </span><br></pre></td></tr></table></figure>
+
+<p><img src="/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059569.png"></p>
+<p>— end-column —</p>
+<p><img src="/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5-IMG-20260506131059732.png"></p>
+<p>— end-multi-column</p>
+<p><strong>整理成xtuner需要的数据集格式</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">convert_format</span>(<span class="params">source_data</span>):  </span><br><span class="line">    target_data = []  </span><br><span class="line">    <span class="keyword">for</span> item <span class="keyword">in</span> source_data:  </span><br><span class="line">        <span class="comment"># 构建新的对话格式  </span></span><br><span class="line">        new_convo = &#123;  </span><br><span class="line">            <span class="string">&quot;conversation&quot;</span>: [  </span><br><span class="line">                &#123;  </span><br><span class="line">                    <span class="string">&quot;input&quot;</span>: item[<span class="string">&quot;user&quot;</span>],  </span><br><span class="line">                    <span class="string">&quot;output&quot;</span>: <span class="string">f&quot;<span class="subst">&#123;item[<span class="string">&#x27;style&#x27;</span>]&#125;</span>\n<span class="subst">&#123;item[<span class="string">&#x27;assistant&#x27;</span>]&#125;</span>&quot;</span>  </span><br><span class="line">                &#125;  </span><br><span class="line">            ]  </span><br><span class="line">        &#125;  </span><br><span class="line">        target_data.append(new_convo)  </span><br><span class="line">    <span class="keyword">return</span> target_data  </span><br><span class="line"><span class="comment"># 从文件读取源数据  </span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;style_chat_data1.json&quot;</span>, <span class="string">&quot;r&quot;</span>, encoding=<span class="string">&quot;utf-8&quot;</span>) <span class="keyword">as</span> f:  </span><br><span class="line">    source_data = json.load(f)  </span><br><span class="line">  </span><br><span class="line"><span class="comment"># 执行转换  </span></span><br><span class="line">converted_data = convert_format(source_data)  </span><br><span class="line">  </span><br><span class="line"><span class="comment"># 写入目标文件  </span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;output.json&quot;</span>, <span class="string">&quot;w&quot;</span>, encoding=<span class="string">&quot;utf-8&quot;</span>) <span class="keyword">as</span> f:  </span><br><span class="line">    json.dump(converted_data, f, ensure_ascii=<span class="literal">False</span>, indent=<span class="number">2</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>最终我们需要的数据集格式如下：<br>	1. 具有数据集格式，如conversation为一个对话，其中input为输入，output为输出<br>	2. 每个output中含有对应风格，有对应语气词和符号</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">[</span>  </span><br><span class="line">  <span class="punctuation">&#123;</span>  </span><br><span class="line">    <span class="attr">&quot;conversation&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span>  </span><br><span class="line">      <span class="punctuation">&#123;</span>  </span><br><span class="line">        <span class="attr">&quot;input&quot;</span><span class="punctuation">:</span> <span class="string">&quot;闺蜜把我秘密当谈资，该不该撕破脸？&quot;</span><span class="punctuation">,</span>  </span><br><span class="line">        <span class="attr">&quot;output&quot;</span><span class="punctuation">:</span> <span class="string">&quot;温柔\n哎呀，这种事情确实很难处理呢。你觉得她的行为伤害到了你吗？💖我们可以一起想想解决的办法。&quot;</span>  </span><br><span class="line">      <span class="punctuation">&#125;</span>  </span><br><span class="line">    <span class="punctuation">]</span>  </span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span>  </span><br><span class="line">  <span class="punctuation">&#123;</span>  </span><br><span class="line">    <span class="attr">&quot;conversation&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span>  </span><br><span class="line">      <span class="punctuation">&#123;</span>  </span><br><span class="line">        <span class="attr">&quot;input&quot;</span><span class="punctuation">:</span> <span class="string">&quot;老妈非让我嫁给她同事儿子，怎么逃啊！&quot;</span><span class="punctuation">,</span>  </span><br><span class="line">        <span class="attr">&quot;output&quot;</span><span class="punctuation">:</span> <span class="string">&quot;温柔\n哎呀，这种事情确实挺棘手的。💖 你心里是怎么想的呢？是不是感到有些压力？我们可以一起想想解决的办法。🌸&quot;</span>  </span><br><span class="line">      <span class="punctuation">&#125;</span>  </span><br><span class="line">    <span class="punctuation">]</span>  </span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+<h2 id="2-2-模型"><a href="#2-2-模型" class="headerlink" title="2.2 模型"></a>2.2 模型</h2><p>模型选型，可以参考[[OpenCompass评估测试框架]]<br>当前任务大多是短语对话，可以选择 FewCLUE_bustm_gen（短文本分类）、FewCLUE_ocnli_fc_gen（自然语言推理）对预期模型进行评估。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">python run.py \</span><br><span class="line"></span><br><span class="line">--models hf_qwen1_5_0_5b_chat hf_qwen1_5_1_8b_chat \</span><br><span class="line"></span><br><span class="line">--datasets FewCLUE_bustm_gen FewCLUE_ocnli_fc_gen \</span><br><span class="line"></span><br><span class="line">--debug</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>根据评估得分，我们选择对应表现好的模型，<br>	gen(生成类)对应数据集<strong>得分越高</strong>表现越好<br>	ppl(困惑度，选择类)对应数据集<strong>得分越低</strong>表现越好
+	
+	</p>
+<h2 id="2-3-训练-评测"><a href="#2-3-训练-评测" class="headerlink" title="2.3  训练&amp;评测"></a>2.3  训练&amp;评测</h2><p>训练这里采用的是xtuner训练框架，可以参考[[Xtuner训练框架]]</p>
+<p><em><strong>微调训练</strong></em></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">单机单卡</span></span><br><span class="line"></span><br><span class="line">xtuner train internlm2_chat_1_8b_qlora_alpaca_e3.py</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">单机多卡</span></span><br><span class="line"></span><br><span class="line">NPROC_PER_NODE=$&#123;GPU_NUM&#125; xtuner train internlm2_chat_7b_qlora_oasst1_e3 --</span><br><span class="line"></span><br><span class="line">deepspeed deepspeed_zero2</span><br></pre></td></tr></table></figure>
+
+<p><em><strong>转换模型</strong></em><br>模型训练后会自动保存成 PTH 模型（例如 iter_2000.pth ，如果使用了 DeepSpeed，则将会是一个文件夹），我们需要利用 xtuner convert pth_to_hf 将其转换为 HuggingFace 模型，以便于后续使<br>用。具体命令为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">xtuner convert pth_to_hf $&#123;FINETUNE_CFG&#125; $&#123;PTH_PATH&#125; $&#123;SAVE_PATH&#125;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">例如：xtuner convert pth_to_hf internlm2_chat_7b_qlora_custom_sft_e1_copy.py</span></span><br><span class="line"></span><br><span class="line">./iter_2000.pth ./iter_2000_</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><em><strong>模型合并</strong></em></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xtuner convert merge $&#123;LLM&#125; $&#123;LLM_ADAPTER&#125; $&#123;SAVE_PATH&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-4-部署"><a href="#2-4-部署" class="headerlink" title="2.4 部署"></a>2.4 部署</h2><p>这里部署我们采用的是LmDeploy部署框架，可以参[[LmDeploy推理框架]]</p>
+<h3 id="2-4-1-对话模板转换"><a href="#2-4-1-对话模板转换" class="headerlink" title="2.4.1 对话模板转换"></a>2.4.1 对话模板转换</h3><p>目前LMDeploy支持两种添加对话模板的方式：</p>
+<p><strong>配置json文件</strong></p>
+<p>json格式如下：
+	</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;model_name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;your awesome chat template name&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;system&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;|im_start|&gt;system\n&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;meta_instruction&quot;</span><span class="punctuation">:</span> <span class="string">&quot;You are a robot developed by LMDeploy.&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;eosys&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;|im_end|&gt;\n&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;user&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;|im_start|&gt;user\n&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;eoh&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;|im_end|&gt;\n&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;assistant&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;|im_start|&gt;assistant\n&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;eoa&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&lt;|im_end|&gt;&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;separator&quot;</span><span class="punctuation">:</span> <span class="string">&quot;\n&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;capability&quot;</span><span class="punctuation">:</span> <span class="string">&quot;chat&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;stop_words&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;&lt;|im_end|&gt;&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>model_name 为必填项，可以是 LMDeploy 内置对话模板名（通过 lmdeploy list 可查阅），也可以是新名字。其他字段可选填。 当 model_name 是内置对话模板名时，json文件中各非 null 字段会覆盖原有对话模板的对应属性。 而当 model_name 是新名字时，它会把将BaseChatTemplate直接注册成新的对话模板。其具体定义可以参考BaseChatTemplate。</p>
+<p>这样一个模板将会以下面的形式进行拼接。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;system&#125;&#123;meta_instruction&#125;&#123;eosys&#125;&#123;user&#125;&#123;user_content&#125;&#123;eoh&#125;&#123;assistant&#125;&#123;assistant_content&#125;&#123;eoa&#125;&#123;separator&#125;&#123;user&#125;...</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>在使用 CLI 工具时，可以通过 <code>--chat-template</code> 传入自定义对话模板，比如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lmdeploy serve api_server internlm/internlm2_5-7b-chat --chat-template $&#123;JSON_FILE&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>接口函数传入：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> lmdeploy <span class="keyword">import</span> ChatTemplateConfig, serve</span><br><span class="line"></span><br><span class="line">serve(<span class="string">&#x27;internlm/internlm2_5-7b-chat&#x27;</span>,</span><br><span class="line">      chat_template_config=ChatTemplateConfig.from_json(<span class="string">&#x27;$&#123;JSON_FILE&#125;&#x27;</span>))</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+<p><strong>注册模板</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> lmdeploy.model <span class="keyword">import</span> MODELS, BaseChatTemplate</span><br><span class="line"></span><br><span class="line"><span class="meta">@MODELS.register_module(<span class="params">name=<span class="string">&#x27;customized_model&#x27;</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CustomizedModel</span>(<span class="title class_ inherited__">BaseChatTemplate</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;A customized chat template.&quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self,</span></span><br><span class="line"><span class="params">                 system=<span class="string">&#x27;&lt;|im_start|&gt;system\n&#x27;</span>,</span></span><br><span class="line"><span class="params">                 meta_instruction=<span class="string">&#x27;You are a robot developed by LMDeploy.&#x27;</span>,</span></span><br><span class="line"><span class="params">                 user=<span class="string">&#x27;&lt;|im_start|&gt;user\n&#x27;</span>,</span></span><br><span class="line"><span class="params">                 assistant=<span class="string">&#x27;&lt;|im_start|&gt;assistant\n&#x27;</span>,</span></span><br><span class="line"><span class="params">                 eosys=<span class="string">&#x27;&lt;|im_end|&gt;\n&#x27;</span>,</span></span><br><span class="line"><span class="params">                 eoh=<span class="string">&#x27;&lt;|im_end|&gt;\n&#x27;</span>,</span></span><br><span class="line"><span class="params">                 eoa=<span class="string">&#x27;&lt;|im_end|&gt;&#x27;</span>,</span></span><br><span class="line"><span class="params">                 separator=<span class="string">&#x27;\n&#x27;</span>,</span></span><br><span class="line"><span class="params">                 stop_words=[<span class="string">&#x27;&lt;|im_end|&gt;&#x27;</span>, <span class="string">&#x27;&lt;|action_end|&gt;&#x27;</span>]</span>):</span><br><span class="line">        <span class="built_in">super</span>().__init__(system=system,</span><br><span class="line">                         meta_instruction=meta_instruction,</span><br><span class="line">                         eosys=eosys,</span><br><span class="line">                         user=user,</span><br><span class="line">                         eoh=eoh,</span><br><span class="line">                         assistant=assistant,</span><br><span class="line">                         eoa=eoa,</span><br><span class="line">                         separator=separator,</span><br><span class="line">                         stop_words=stop_words)</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> lmdeploy <span class="keyword">import</span> ChatTemplateConfig, pipeline</span><br><span class="line"></span><br><span class="line">messages = [&#123;<span class="string">&#x27;role&#x27;</span>: <span class="string">&#x27;user&#x27;</span>, <span class="string">&#x27;content&#x27;</span>: <span class="string">&#x27;who are you?&#x27;</span>&#125;]</span><br><span class="line">pipe = pipeline(<span class="string">&#x27;internlm/internlm2_5-7b-chat&#x27;</span>,</span><br><span class="line">                chat_template_config=ChatTemplateConfig(<span class="string">&#x27;customized_model&#x27;</span>))</span><br><span class="line"><span class="keyword">for</span> response <span class="keyword">in</span> pipe.stream_infer(messages):</span><br><span class="line">    <span class="built_in">print</span>(response.text, end=<span class="string">&#x27;&#x27;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>目前我们用xtuner进行训练，需要对齐训练和部署的对话模板：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="comment"># 原始对话模板配置</span></span><br><span class="line">original_qwen_chat = <span class="built_in">dict</span>(</span><br><span class="line">    SYSTEM=(<span class="string">&quot;&lt;|im_start|&gt;system\n&#123;system&#125;&lt;|im_end|&gt;\n&quot;</span>),</span><br><span class="line">    INSTRUCTION=(<span class="string">&quot;&lt;|im_start|&gt;user\n&#123;input&#125;&lt;|im_end|&gt;\n&quot;</span> <span class="string">&quot;</span></span><br><span class="line"><span class="string">    &lt;|im_start|&gt;assistant\n&quot;</span>),</span><br><span class="line">    SUFFIX=<span class="string">&quot;&lt;|im_end|&gt;&quot;</span>,</span><br><span class="line">    SUFFIX_AS_EOS=<span class="literal">True</span>,</span><br><span class="line">    SEP=<span class="string">&quot;\n&quot;</span>,</span><br><span class="line">    STOP_WORDS=[<span class="string">&quot;&lt;|im_end|&gt;&quot;</span>, <span class="string">&quot;&lt;|endoftext|&gt;&quot;</span>],</span><br><span class="line">)</span><br><span class="line"><span class="comment"># 转换函数</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">convert_template</span>(<span class="params">template</span>):</span><br><span class="line">    converted = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> key, value <span class="keyword">in</span> template.items():</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">isinstance</span>(value, <span class="built_in">str</span>):</span><br><span class="line">            <span class="comment"># 将 &#123;variable&#125; 格式转换为 &#123;&#123; variable &#125;&#125;</span></span><br><span class="line">            converted_value = re.sub(<span class="string">r&#x27;\&#123;(\w+)\&#125;&#x27;</span>, <span class="string">r&#x27;&#123;&#123; \1 &#125;&#125;&#x27;</span>, value)</span><br><span class="line">            converted[key] = converted_value</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            converted[key] = value</span><br><span class="line">    <span class="keyword">return</span> converted</span><br><span class="line"><span class="comment"># 执行转换</span></span><br><span class="line">jinja2_qwen_chat = convert_template(original_qwen_chat)</span><br><span class="line"><span class="built_in">print</span>(jinja2_qwen_chat)</span><br></pre></td></tr></table></figure>
+
+
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/LLM-Application/" rel="tag">LLM_Application</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/chatbot/" rel="tag">chatbot</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/fine-tuning/" rel="tag">fine-tuning</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/learn/" rel="tag">learn</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/"
+                    data-tooltip="大模型部署"
+                    aria-label="上一篇: 大模型部署"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/"
+                    data-tooltip="大模型微调分布式训练"
+                    aria-label="下一篇: 大模型微调分布式训练"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#gitalk"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="gitalk"></div>
+
+            
+        
+    </div>
+</article>
+
+
+                
+
+            </div>
+        </div>
+        
+            <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-times"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div
+                    class="media"
+                    data-search-text="第一篇日记  learn note"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/01/hexo_post/%E7%AC%AC%E4%B8%80%E7%AF%87%E6%97%A5%E8%AE%B0/?from=search"
+                            aria-label=": 第一篇日记"
+                        >
+                            <h3 class="media-heading">第一篇日记</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月1日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="dataview  learn obsidian插件 dataview"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/28/hexo_post/Dataview/?from=search"
+                            aria-label=": Dataview"
+                        >
+                            <h3 class="media-heading">Dataview</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月28日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="tasks  learn obsidian插件 productivity"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/28/hexo_post/Tasks/?from=search"
+                            aria-label=": Tasks"
+                        >
+                            <h3 class="media-heading">Tasks</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月28日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="multi-column markdown  learn obsidian插件 markdown"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Multi-Column%20Markdown/?from=search"
+                            aria-label=": Multi-Column Markdown"
+                        >
+                            <h3 class="media-heading">Multi-Column Markdown</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
+                        >
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                        >
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="基于 gpt2 模型的微调训练实践  learn llm_application fine-tuning gpt-2"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EGPT2%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 基于 GPT2 模型的微调训练实践"
+                        >
+                            <h3 class="media-heading">基于 GPT2 模型的微调训练实践</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="gguf 模型  learn llm_application gguf quantization"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/?from=search"
+                            aria-label=": GGUF 模型"
+                        >
+                            <h3 class="media-heading">GGUF 模型</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
+                        >
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="vllm 推理框架  learn llm_application inference vllm"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": vLLM 推理框架"
+                        >
+                            <h3 class="media-heading">vLLM 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="llama-factory 训练框架  learn llm_application llama-factory fine-tuning"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LLaMA-Factory 训练框架"
+                        >
+                            <h3 class="media-heading">LLaMA-Factory 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="opencompass 评估测试框架  learn llm_application opencompass evaluation"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/OpenCompass%E8%AF%84%E4%BC%B0%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": OpenCompass 评估测试框架"
+                        >
+                            <h3 class="media-heading">OpenCompass 评估测试框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 大模型微调分布式训练"
+                        >
+                            <h3 class="media-heading">大模型微调分布式训练</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="大模型部署  learn llm_application inference"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
+                        >
+                            <h3 class="media-heading">大模型部署</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月31日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
+                        >
+                            <h3 class="media-heading">情绪对话项目实践</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月31日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="dify 学习  learn llm_application dify llmops"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/01/hexo_post/Dify%E5%AD%A6%E4%B9%A0/?from=search"
+                            aria-label=": Dify 学习"
+                        >
+                            <h3 class="media-heading">Dify 学习</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月1日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="mcp 学习  learn llm_application mcp"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/02/hexo_post/MCP%E5%AD%A6%E4%B9%A0/?from=search"
+                            aria-label=": MCP 学习"
+                        >
+                            <h3 class="media-heading">MCP 学习</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月2日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="集成多 mcp 应用及解决多表查询的解决方案  learn llm_application mcp sql"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/03/hexo_post/%E9%9B%86%E6%88%90%E5%A4%9AMCP%E5%BA%94%E7%94%A8%E5%8F%8A%E8%A7%A3%E5%86%B3%E5%A4%9A%E8%A1%A8%E6%9F%A5%E8%AF%A2%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/?from=search"
+                            aria-label=": 集成多 MCP 应用及解决多表查询的解决方案"
+                        >
+                            <h3 class="media-heading">集成多 MCP 应用及解决多表查询的解决方案</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月3日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="texttosql 解决方案试验  learn llm_application texttosql vanna"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/04/hexo_post/TextToSQL%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E8%AF%95%E9%AA%8C/?from=search"
+                            aria-label=": TextToSQL 解决方案试验"
+                        >
+                            <h3 class="media-heading">TextToSQL 解决方案试验</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="indextts-1.5 使用记录  learn llm_application tts"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/05/hexo_post/IndexTTS-1.5%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/?from=search"
+                            aria-label=": IndexTTS-1.5 使用记录"
+                        >
+                            <h3 class="media-heading">IndexTTS-1.5 使用记录</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月5日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="streamlit 与 crewai 实现自动生成测试用例  learn llm_application streamlit crewai testing"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/06/hexo_post/streamlit&amp;crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/?from=search"
+                            aria-label=": streamlit 与 crewai 实现自动生成测试用例"
+                        >
+                            <h3 class="media-heading">streamlit 与 crewai 实现自动生成测试用例</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="强制降低或升依赖包版本  learn pip python"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/06/hexo_post/%E5%BC%BA%E5%88%B6%E9%99%8D%E4%BD%8E%E6%88%96%E5%8D%87%E4%BE%9D%E8%B5%96%E5%8C%85%E7%89%88%E6%9C%AC/?from=search"
+                            aria-label=": 强制降低或升依赖包版本"
+                        >
+                            <h3 class="media-heading">强制降低或升依赖包版本</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="嵌入模型与向量数据库  learn llm_application embedding vector-database"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/?from=search"
+                            aria-label=": 嵌入模型与向量数据库"
+                        >
+                            <h3 class="media-heading">嵌入模型与向量数据库</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="rag 技术和应用  learn llm_application rag"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/14/hexo_post/RAG%E6%8A%80%E6%9C%AF%E5%92%8C%E5%BA%94%E7%94%A8/?from=search"
+                            aria-label=": RAG 技术和应用"
+                        >
+                            <h3 class="media-heading">RAG 技术和应用</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月14日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="rag 高级技术与实践  learn llm_application rag advanced"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/18/hexo_post/RAG%E9%AB%98%E7%BA%A7%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": RAG 高级技术与实践"
+                        >
+                            <h3 class="media-heading">RAG 高级技术与实践</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="pip 源切换  learn pip python"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/18/hexo_post/pip%E6%BA%90%E5%88%87%E6%8D%A2/?from=search"
+                            aria-label=": pip 源切换"
+                        >
+                            <h3 class="media-heading">pip 源切换</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="remote-ssh 插件  learn vscode remote-dev"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/07/09/hexo_post/Remote-SSH%E6%8F%92%E4%BB%B6/?from=search"
+                            aria-label=": Remote-SSH 插件"
+                        >
+                            <h3 class="media-heading">Remote-SSH 插件</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年7月9日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="llamaindex 知识库管理与信息检索  learn llm_application rag llamaindex"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/07/hexo_post/LlamaIndex%E7%9F%A5%E8%AF%86%E5%BA%93%E7%AE%A1%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/?from=search"
+                            aria-label=": LlamaIndex 知识库管理与信息检索"
+                        >
+                            <h3 class="media-heading">LlamaIndex 知识库管理与信息检索</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/14/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%E5%92%8CLangGraph%E5%AE%9E%E7%8E%B0%E5%B7%A5%E4%BD%9C%E6%B5%81/?from=search"
+                            aria-label=": LangChain 实现 RAG 和 LangGraph 实现工作流"
+                        >
+                            <h3 class="media-heading">LangChain 实现 RAG 和 LangGraph 实现工作流</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月14日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="langchain 实现 function call  learn llm_application langchain function-calling"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/15/hexo_post/LangChain%E5%AE%9E%E7%8E%B0Function%20Call/?from=search"
+                            aria-label=": LangChain 实现 Function Call"
+                        >
+                            <h3 class="media-heading">LangChain 实现 Function Call</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="langchain 实现 rag + agent  learn langchain rag agent"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/?from=search"
+                            aria-label=": LangChain 实现 RAG + Agent"
+                        >
+                            <h3 class="media-heading">LangChain 实现 RAG + Agent</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="有声小说第一次尝试实现（pyttsx3）  learn llm_application tts python"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/?from=search"
+                            aria-label=": 有声小说第一次尝试实现（pyttsx3）"
+                        >
+                            <h3 class="media-heading">有声小说第一次尝试实现（pyttsx3）</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月20日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="chrome mcp server  learn llm_application mcp chrome"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/21/hexo_post/Chrome%20MCP%20Server/?from=search"
+                            aria-label=": Chrome MCP Server"
+                        >
+                            <h3 class="media-heading">Chrome MCP Server</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="homebrew 常用命令  learn homebrew mac"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/21/hexo_post/Homebrew%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/?from=search"
+                            aria-label=": Homebrew 常用命令"
+                        >
+                            <h3 class="media-heading">Homebrew 常用命令</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="利用 hexo 搭建博客网站  learn hexo static-site github-pages"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/11/04/hexo_post/%E5%88%A9%E7%94%A8hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99/?from=search"
+                            aria-label=": 利用 hexo 搭建博客网站"
+                        >
+                            <h3 class="media-heading">利用 hexo 搭建博客网站</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年11月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="连接不上第三方显示器  learn mac hardware"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/12/18/hexo_post/%E8%BF%9E%E6%8E%A5%E4%B8%8D%E4%B8%8A%E7%AC%AC%E4%B8%89%E6%96%B9%E6%98%BE%E7%A4%BA%E5%99%A8/?from=search"
+                            aria-label=": 连接不上第三方显示器"
+                        >
+                            <h3 class="media-heading">连接不上第三方显示器</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="丝滑切换 jdk 不同版本（jenv）  learn mac java jenv"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/01/08/hexo_post/%E4%B8%9D%E6%BB%91%E5%88%87%E6%8D%A2jdk%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC-jenv/?from=search"
+                            aria-label=": 丝滑切换 jdk 不同版本（jenv）"
+                        >
+                            <h3 class="media-heading">丝滑切换 jdk 不同版本（jenv）</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年1月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 39 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-fy2mgop5xl1tplwujicojo4xhlb80nrzsizgqk4jfrs5njk0qriczldyw7af.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        
+<script src="/assets/js/gitalk.js"></script>
+
+        <script type="text/javascript">
+          (function() {
+            var host = window.location.hostname;
+            if (host === 'localhost' || host === '127.0.0.1') {
+              var el = document.getElementById('gitalk');
+              if (el) {
+                el.innerHTML = '<p style="padding:12px 14px;border:1px solid #dbe5f5;border-radius:10px;background:#fff;color:#5b6475;">本地预览环境不启用 GitHub 登录评论，请在线上站点使用评论功能。</p>';
+              }
+              return;
+            }
+            new Gitalk({
+              clientID: 'Ov23lixY4RNkL6GaPepq',
+              clientSecret: '5bb8a010339dc3e6b5655b8ac336d3c0d0be226e',
+              repo: 'blog-comments',
+              owner: 'shaver92',
+              admin: ['shaver92'],
+              id: '2025/05/31/hexo_post/情绪对话项目实践/',
+              ...{"language":"zh-CN","perPage":10,"distractionFreeMode":false,"createIssueManually":true,"labels":["Gitalk"],"pagerDirection":"last","proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"}
+            }).render('gitalk')
+          })()
+        </script>
+    
+
+
+
+    
+<script src="/assets/js/moment-with-locales.js"></script>
+
+    
+<script src="/assets/js/algoliasearch.js"></script>
+
+    <script>
+      var algoliaClient = algoliasearch('P7U39XTUUF', 'fcf10bcb3e25fb39b4cf37309facbba5');
+      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+
+<script>
+  (function() {
+    var searchPath = '/search/';
+
+    window.__goBackSmart = function(homeUrl, searchUrl) {
+      var params = new URLSearchParams(window.location.search || '');
+      var from = params.get('from');
+      var lastSearchPage = sessionStorage.getItem('last_search_page') || searchUrl;
+      if (from === 'search') {
+        window.location.href = lastSearchPage;
+        return;
+      }
+      if (window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+      window.location.href = homeUrl;
+    };
+
+    if (window.location.pathname === searchPath || window.location.pathname === searchPath.replace(/\/$/, '')) {
+      sessionStorage.setItem('last_search_page', window.location.href);
+    }
+
+    Array.prototype.slice.call(document.querySelectorAll('.search-result-link')).forEach(function(link) {
+      link.addEventListener('click', function() {
+        sessionStorage.setItem('last_search_page', window.location.href);
+      });
+    });
+
+    var toolsToggle = document.querySelector('[data-tools-toggle]');
+    var toolsGroup = document.querySelector('[data-tools-group]');
+    if (toolsToggle && toolsGroup) {
+      toolsToggle.addEventListener('click', function() {
+        var expanded = toolsToggle.getAttribute('aria-expanded') === 'true';
+        toolsToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        toolsGroup.hidden = expanded;
+      });
+    }
+  })();
+</script>
+
+<script>
+  (function() {
+    var input = document.getElementById('algolia-search-input');
+    var modal = document.getElementById('algolia-search-modal');
+    if (!input || !modal) return;
+
+    if (window.location.pathname === '/search/' || window.location.pathname === '/search') {
+      modal.style.display = 'block';
+    }
+
+    var items = Array.prototype.slice.call(modal.querySelectorAll('.media'));
+    var noResult = modal.querySelector('.no-result');
+    var counter = modal.querySelector('.results-count');
+    var baseCount = items.length;
+
+    function updateCount(visibleCount) {
+      if (!counter) return;
+      counter.textContent = '共找到 ' + visibleCount + ' 篇';
+    }
+
+    function runLocalSearch() {
+      var keyword = (input.value || '').trim().toLowerCase();
+      var visibleCount = 0;
+
+      items.forEach(function(item) {
+        var text = item.getAttribute('data-search-text') || '';
+        var matched = !keyword || text.indexOf(keyword) !== -1;
+        item.style.display = matched ? '' : 'none';
+        if (matched) visibleCount += 1;
+      });
+
+      if (noResult) noResult.style.display = visibleCount === 0 ? '' : 'none';
+      updateCount(visibleCount);
+    }
+
+    input.addEventListener('input', runLocalSearch);
+    updateCount(baseCount);
+  })();
+</script>
+
+    </body>
+</html>

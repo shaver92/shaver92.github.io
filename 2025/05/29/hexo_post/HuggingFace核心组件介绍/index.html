@@ -1,0 +1,1548 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn,en,default">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="shaver&#39;s blog">
+    <title>HuggingFace 核心组件介绍 - shaver&#39;s blog</title>
+    <meta name="author" content="shaver">
+    
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 大模型是什么 简单理解，参数量超过10亿的AI模型，而对AI模型也称为人工神经网络，是用来做矩阵运算的。 如下达到10亿参数后，模型的性能会出现很大的提升\nAI大模型一般分为两类：\n  a.自然语义大模型（文本类）  \n  b.多模态大模型（图像，音频，视频等非文本类）\n\n2 了解huggingface Hugging Face 是一个专注于 人工智能（AI） 和 自然语言处理（NLP） 的开源社区和平台，提供各种工具、库和预训练模型，帮助开发者快速构建和部署 AI 应用。AI届的github。\n官网地址：\t\thttps://huggingface.co/models\n\n Models：模型下载 Datasets：数据集下载\n\n3 从huggingface上下载模型使用sdk进行下载\n123456789101112#将模型下载到本地调用from transformers import AutoModelForCausalLM,AutoTokenizer#将模型和分词工具下载到本地，并指定保存路径model_name = &quot;uer/gpt2-chinese-cluecorpussmall&quot;cache_dir = &quot;/Users/shaver/Downloads/model/uer/gpt2-chinese-cluecorpussmall&quot;#下载模型AutoModelForCausalLM.from_pretrained(model_name,cache_dir=cache_dir)#下载分词工具AutoTokenizer.from_pretrained(model_name,cache_dir=cache_dir)print(f&quot;模型分词器已下载到：&#123;cache_dir&#125;&quot;)\n\nmodel_name：huggingface平台上完整路径,点击复制即可\n cache_dir：本地存储的大模型路径，可以是相对路径，也可以是绝对路径\n\n4. 大模型本地调用123456789101112131415161718192021222324252627from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline# 设置具体包含 config.json 的目录model_dir = r&quot;/Users/shaver/Downloads/model/uer/gpt2-chinese-cluecorpussmall/models--uer--gpt2-chinese-cluecorpussmall/snapshots/c2c0249d8a2731f269414cc3b22dff021f8e07a3&quot;# 加载模型和分词器model = AutoModelForCausalLM.from_pretrained(model_dir)tokenizer = AutoTokenizer.from_pretrained(model_dir)# 使用加载的模型和分词器创建生成文本的 pipelinegenerator = pipeline(&quot;text-generation&quot;, model=model, tokenizer=tokenizer,device=&quot;cpu&quot;)# 生成文本# output = generator(&quot;你好，我是一款语言模型，&quot;, max_length=50, num_return_sequences=1)# output = generator(&quot;你好，我是一款语言模型，&quot;, max_length=50, num_return_sequences=1, truncation=True, clean_up_tokenization_spaces=False)output = generator(&quot;你好，我是一款语言模型，&quot;,#生成文本的输入种子文本（prompt）。模型会根据这个初始文本，生成后续的文本max_length=50,#指定生成文本的最大长度。这里的 50 表示生成的文本最多包含 50 个标记（tokens）num_return_sequences=1,#参数指定返回多少个独立生成的文本序列。值为 1 表示只生成并返回一段文本。truncation=True,#该参数决定是否截断输入文本以适应模型的最大输入长度。如果 True，超出模型最大输入长度的部分将被截断；如果 False，模型可能无法处理过长的输入，可能会报错。temperature=0.7,#该参数控制生成文本的随机性。值越低，生成的文本越保守（倾向于选择概率较高的词）；值越高，生成的文本越多样（倾向于选择更多不同的词）。0.7 是一个较为常见的设置，既保留了部分随机性，又不至于太混乱。top_k=50,#该参数限制模型在每一步生成时仅从概率最高的 k 个词中选择下一个词。这里 top_k=50 表示模型在生成每个词时只考虑概率最高的前 50 个候选词，从而减少生成不太可能的词的概率。top_p=0.9,#该参数（又称为核采样）进一步限制模型生成时的词汇选择范围。它会选择一组累积概率达到 p 的词汇，模型只会从这个概率集合中采样。top_p=0.9 意味着模型会在可能性最强的 90% 的词中选择下一个词，进一步增加生成的质量。clean_up_tokenization_spaces=True#该参数控制生成的文本中是否清理分词时引入的空格。如果设置为 True，生成的文本会清除多余的空格；如果为 False，则保留原样。默认值即将改变为 False，因为它能更好地保留原始文本的格式。)print(output)\n\npipeline：其中的参数需要根据源码中提供的值进行填写\n\n5. 初识大模型内部（Bert模型）12345678910111213141516from transformers import BertTokenizer, BertForSequenceClassificationfrom transformers import pipeline# 加载模型和分词器model_name = r&quot;/Users/shaver/Downloads/model/bert-base-chinese/models--bert-base-chinese/snapshots/c30a6ed22ab4564dc1e3b2ecbf6e766b0611a33f&quot;model = BertForSequenceClassification.from_pretrained(model_name)tokenizer = BertTokenizer.from_pretrained(model_name)# 创建分类 pipelineclassifier = pipeline(&quot;text-classification&quot;, model=model, tokenizer=tokenizer,device=&quot;cpu&quot;)# 进行分类result = classifier(&quot;你好，我是一款语言模型&quot;)print(result)print(model)\n\n返回如下：\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354[&#123;&#x27;label&#x27;: &#x27;LABEL_1&#x27;, &#x27;score&#x27;: 0.775428295135498&#125;]BertForSequenceClassification((bert): BertModel((embeddings): BertEmbeddings((word_embeddings): Embedding(21128, 768, padding_idx=0)(position_embeddings): Embedding(512, 768)(token_type_embeddings): Embedding(2, 768)(LayerNorm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)(dropout): Dropout(p=0.1, inplace=False))(encoder): BertEncoder((layer): ModuleList((0-11): 12 x BertLayer((attention): BertAttention((self): BertSdpaSelfAttention((query): Linear(in_features=768, out_features=768, bias=True)(key): Linear(in_features=768, out_features=768, bias=True)(value): Linear(in_features=768, out_features=768, bias=True)(dropout): Dropout(p=0.1, inplace=False))(output): BertSelfOutput((dense): Linear(in_features=768, out_features=768, bias=True)(LayerNorm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)(dropout): Dropout(p=0.1, inplace=False)))(intermediate): BertIntermediate((dense): Linear(in_features=768, out_features=3072, bias=True)(intermediate_act_fn): GELUActivation())(output): BertOutput((dense): Linear(in_features=3072, out_features=768, bias=True)(LayerNorm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)(dropout): Dropout(p=0.1, inplace=False)))))(pooler): BertPooler((dense): Linear(in_features=768, out_features=768, bias=True)(activation): Tanh()))(dropout): Dropout(p=0.1, inplace=False)(classifier): Linear(in_features=768, out_features=2, bias=True))\n\nbert模型内部分层介绍embedding：文本转向量encoder：提取向量中的特征classifier：根据特征进行分类\n","dateCreated":"2025-05-29T11:33:00+08:00","dateModified":"2026-05-06T13:45:08+08:00","datePublished":"2025-05-29T11:33:00+08:00","description":"","headline":"HuggingFace 核心组件介绍","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/","keywords":"learn, LLM_Application, HuggingFace"}</script>
+    <meta name="description" content="1 大模型是什么 简单理解，参数量超过10亿的AI模型，而对AI模型也称为人工神经网络，是用来做矩阵运算的。 如下达到10亿参数后，模型的性能会出现很大的提升 AI大模型一般分为两类：   a.自然语义大模型（文本类）     b.多模态大模型（图像，音频，视频等非文本类）  2 了解huggingface Hugging Face 是一个专注于 人工智能（AI） 和 自然语言处理（NLP） 的开">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="HuggingFace 核心组件介绍">
+<meta property="og:url" content="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/index.html">
+<meta property="og:site_name" content="shaver&#39;s blog">
+<meta property="og:description" content="1 大模型是什么 简单理解，参数量超过10亿的AI模型，而对AI模型也称为人工神经网络，是用来做矩阵运算的。 如下达到10亿参数后，模型的性能会出现很大的提升 AI大模型一般分为两类：   a.自然语义大模型（文本类）     b.多模态大模型（图像，音频，视频等非文本类）  2 了解huggingface Hugging Face 是一个专注于 人工智能（AI） 和 自然语言处理（NLP） 的开">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D-IMG-20260506130905184.png">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D-IMG-20260506130905468.png">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D-IMG-20260506130905828.png">
+<meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D-IMG-20260506130905999.png">
+<meta property="article:published_time" content="2025-05-29T03:33:00.000Z">
+<meta property="article:modified_time" content="2026-05-06T05:45:08.759Z">
+<meta property="article:author" content="shaver">
+<meta property="article:tag" content="HuggingFace">
+<meta property="article:tag" content="LLM_Application">
+<meta property="article:tag" content="learn">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D-IMG-20260506130905184.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://shaver92.github.io/assets/images/avatar.png"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/mitbunny-home.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+            
+<link rel="stylesheet" href="/assets/css/gitalk.css">
+
+        
+    
+</head>
+
+    <body class=" ">
+        <div id="blog">
+            <div id="main">
+                
+                    <div class="page-topbar main-content-wrap">
+                        <div class="page-topbar__actions">
+                            <a
+                                class="mitbunny-home__search"
+                                href="/"
+                                aria-label="回到首页"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">⌂</span>
+                                <span>首页</span>
+                            </a>
+                            <button
+                                class="mitbunny-home__search"
+                                type="button"
+                                aria-label="返回上一层"
+                                onclick="window.__goBackSmart && window.__goBackSmart('/', '/search/');"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">←</span>
+                                <span>上一层</span>
+                            </button>
+                            <button
+                                class="mitbunny-home__search"
+                                type="button"
+                                aria-label="前往下一层"
+                                onclick="window.history.forward();"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">→</span>
+                                <span>下一层</span>
+                            </button>
+                        </div>
+                        
+                    </div>
+                
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            HuggingFace 核心组件介绍
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2025-05-29T11:33:00+08:00">
+	
+		    2025 年 5 月 29 日
+    	
+    </time>
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h1 id="1-大模型是什么"><a href="#1-大模型是什么" class="headerlink" title="1 大模型是什么"></a>1 大模型是什么</h1><p> 简单理解，参数量超过10亿的AI模型，而对AI模型也称为人工神经网络，是用来做矩阵运算的。<br> 如下达到10亿参数后，模型的性能会出现很大的提升</p>
+<p><img src="/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D-IMG-20260506130905184.png"><br><strong>AI大模型一般分为两类：</strong></p>
+<p>  a.自然语义大模型（文本类）  </p>
+<p>  b.多模态大模型（图像，音频，视频等非文本类）</p>
+<hr>
+<h1 id="2-了解huggingface"><a href="#2-了解huggingface" class="headerlink" title="2 了解huggingface"></a>2 了解huggingface</h1><p> Hugging Face 是一个专注于 人工智能（AI） 和 自然语言处理（NLP） 的开源社区和平台，提供各种工具、库和预训练模型，帮助开发者快速构建和部署 AI 应用。AI届的github。</p>
+<p>官网地址：	<br>	<a target="_blank" rel="noopener" href="https://huggingface.co/models">https://huggingface.co/models</a></p>
+<p><img src="/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D-IMG-20260506130905468.png"></p>
+<p> Models：模型下载<br> Datasets：数据集下载</p>
+<hr>
+<h1 id="3-从huggingface上下载模型"><a href="#3-从huggingface上下载模型" class="headerlink" title="3 从huggingface上下载模型"></a>3 从huggingface上下载模型</h1><p>使用sdk进行下载</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#将模型下载到本地调用</span></span><br><span class="line"><span class="keyword">from</span> transformers <span class="keyword">import</span> AutoModelForCausalLM,AutoTokenizer</span><br><span class="line"><span class="comment">#将模型和分词工具下载到本地，并指定保存路径</span></span><br><span class="line">model_name = <span class="string">&quot;uer/gpt2-chinese-cluecorpussmall&quot;</span></span><br><span class="line">cache_dir = <span class="string">&quot;/Users/shaver/Downloads/model/uer/gpt2-chinese-cluecorpussmall&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#下载模型</span></span><br><span class="line">AutoModelForCausalLM.from_pretrained(model_name,cache_dir=cache_dir)</span><br><span class="line"></span><br><span class="line"><span class="comment">#下载分词工具</span></span><br><span class="line">AutoTokenizer.from_pretrained(model_name,cache_dir=cache_dir)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;模型分词器已下载到：<span class="subst">&#123;cache_dir&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>model_name：huggingface平台上完整路径,点击复制即可<br><img src="/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D-IMG-20260506130905828.png"></p>
+<p> cache_dir：本地存储的大模型路径，可以是相对路径，也可以是绝对路径</p>
+<hr>
+<h1 id="4-大模型本地调用"><a href="#4-大模型本地调用" class="headerlink" title="4. 大模型本地调用"></a>4. 大模型本地调用</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> transformers <span class="keyword">import</span> AutoModelForCausalLM, AutoTokenizer, pipeline</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置具体包含 config.json 的目录</span></span><br><span class="line">model_dir = <span class="string">r&quot;/Users/shaver/Downloads/model/uer/gpt2-chinese-cluecorpussmall/models--uer--gpt2-chinese-cluecorpussmall/snapshots/c2c0249d8a2731f269414cc3b22dff021f8e07a3&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 加载模型和分词器</span></span><br><span class="line">model = AutoModelForCausalLM.from_pretrained(model_dir)</span><br><span class="line">tokenizer = AutoTokenizer.from_pretrained(model_dir)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用加载的模型和分词器创建生成文本的 pipeline</span></span><br><span class="line">generator = pipeline(<span class="string">&quot;text-generation&quot;</span>, model=model, tokenizer=tokenizer,device=<span class="string">&quot;cpu&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成文本</span></span><br><span class="line"><span class="comment"># output = generator(&quot;你好，我是一款语言模型，&quot;, max_length=50, num_return_sequences=1)</span></span><br><span class="line"><span class="comment"># output = generator(&quot;你好，我是一款语言模型，&quot;, max_length=50, num_return_sequences=1, truncation=True, clean_up_tokenization_spaces=False)</span></span><br><span class="line"></span><br><span class="line">output = generator(</span><br><span class="line"><span class="string">&quot;你好，我是一款语言模型，&quot;</span>,<span class="comment">#生成文本的输入种子文本（prompt）。模型会根据这个初始文本，生成后续的文本</span></span><br><span class="line">max_length=<span class="number">50</span>,<span class="comment">#指定生成文本的最大长度。这里的 50 表示生成的文本最多包含 50 个标记（tokens）</span></span><br><span class="line">num_return_sequences=<span class="number">1</span>,<span class="comment">#参数指定返回多少个独立生成的文本序列。值为 1 表示只生成并返回一段文本。</span></span><br><span class="line">truncation=<span class="literal">True</span>,<span class="comment">#该参数决定是否截断输入文本以适应模型的最大输入长度。如果 True，超出模型最大输入长度的部分将被截断；如果 False，模型可能无法处理过长的输入，可能会报错。</span></span><br><span class="line">temperature=<span class="number">0.7</span>,<span class="comment">#该参数控制生成文本的随机性。值越低，生成的文本越保守（倾向于选择概率较高的词）；值越高，生成的文本越多样（倾向于选择更多不同的词）。0.7 是一个较为常见的设置，既保留了部分随机性，又不至于太混乱。</span></span><br><span class="line">top_k=<span class="number">50</span>,<span class="comment">#该参数限制模型在每一步生成时仅从概率最高的 k 个词中选择下一个词。这里 top_k=50 表示模型在生成每个词时只考虑概率最高的前 50 个候选词，从而减少生成不太可能的词的概率。</span></span><br><span class="line">top_p=<span class="number">0.9</span>,<span class="comment">#该参数（又称为核采样）进一步限制模型生成时的词汇选择范围。它会选择一组累积概率达到 p 的词汇，模型只会从这个概率集合中采样。top_p=0.9 意味着模型会在可能性最强的 90% 的词中选择下一个词，进一步增加生成的质量。</span></span><br><span class="line">clean_up_tokenization_spaces=<span class="literal">True</span><span class="comment">#该参数控制生成的文本中是否清理分词时引入的空格。如果设置为 True，生成的文本会清除多余的空格；如果为 False，则保留原样。默认值即将改变为 False，因为它能更好地保留原始文本的格式。</span></span><br><span class="line">)</span><br><span class="line"><span class="built_in">print</span>(output)</span><br></pre></td></tr></table></figure>
+
+<p>pipeline：其中的参数需要根据源码中提供的值进行填写<br><img src="/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D-IMG-20260506130905999.png"></p>
+<hr>
+<h1 id="5-初识大模型内部（Bert模型）"><a href="#5-初识大模型内部（Bert模型）" class="headerlink" title="5. 初识大模型内部（Bert模型）"></a>5. 初识大模型内部（Bert模型）</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> transformers <span class="keyword">import</span> BertTokenizer, BertForSequenceClassification</span><br><span class="line"><span class="keyword">from</span> transformers <span class="keyword">import</span> pipeline</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加载模型和分词器</span></span><br><span class="line">model_name = <span class="string">r&quot;/Users/shaver/Downloads/model/bert-base-chinese/models--bert-base-chinese/snapshots/c30a6ed22ab4564dc1e3b2ecbf6e766b0611a33f&quot;</span></span><br><span class="line">model = BertForSequenceClassification.from_pretrained(model_name)</span><br><span class="line">tokenizer = BertTokenizer.from_pretrained(model_name)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建分类 pipeline</span></span><br><span class="line">classifier = pipeline(<span class="string">&quot;text-classification&quot;</span>, model=model, tokenizer=tokenizer,device=<span class="string">&quot;cpu&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 进行分类</span></span><br><span class="line">result = classifier(<span class="string">&quot;你好，我是一款语言模型&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(result)</span><br><span class="line"><span class="built_in">print</span>(model)</span><br></pre></td></tr></table></figure>
+
+<p><strong>返回如下：</strong></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">[</span><span class="punctuation">&#123;</span>&#x27;label&#x27;<span class="punctuation">:</span> &#x27;LABEL_1&#x27;<span class="punctuation">,</span> &#x27;score&#x27;<span class="punctuation">:</span> <span class="number">0.775428295135498</span><span class="punctuation">&#125;</span><span class="punctuation">]</span></span><br><span class="line">BertForSequenceClassification(</span><br><span class="line">(bert)<span class="punctuation">:</span> BertModel(</span><br><span class="line">(embeddings)<span class="punctuation">:</span> BertEmbeddings(</span><br><span class="line">(word_embeddings)<span class="punctuation">:</span> Embedding(<span class="number">21128</span><span class="punctuation">,</span> <span class="number">768</span><span class="punctuation">,</span> padding_idx=<span class="number">0</span>)</span><br><span class="line">(position_embeddings)<span class="punctuation">:</span> Embedding(<span class="number">512</span><span class="punctuation">,</span> <span class="number">768</span>)</span><br><span class="line">(token_type_embeddings)<span class="punctuation">:</span> Embedding(<span class="number">2</span><span class="punctuation">,</span> <span class="number">768</span>)</span><br><span class="line">(LayerNorm)<span class="punctuation">:</span> LayerNorm((<span class="number">768</span><span class="punctuation">,</span>)<span class="punctuation">,</span> eps=<span class="number">1e-12</span><span class="punctuation">,</span> elementwise_affine=True)</span><br><span class="line">(dropout)<span class="punctuation">:</span> Dropout(p=<span class="number">0.1</span><span class="punctuation">,</span> inplace=False)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">(encoder)<span class="punctuation">:</span> BertEncoder(</span><br><span class="line">(layer)<span class="punctuation">:</span> ModuleList(</span><br><span class="line">(<span class="number">0</span><span class="number">-11</span>)<span class="punctuation">:</span> <span class="number">12</span> x BertLayer(</span><br><span class="line">(attention)<span class="punctuation">:</span> BertAttention(</span><br><span class="line">(self)<span class="punctuation">:</span> BertSdpaSelfAttention(</span><br><span class="line">(query)<span class="punctuation">:</span> Linear(in_features=<span class="number">768</span><span class="punctuation">,</span> out_features=<span class="number">768</span><span class="punctuation">,</span> bias=True)</span><br><span class="line">(key)<span class="punctuation">:</span> Linear(in_features=<span class="number">768</span><span class="punctuation">,</span> out_features=<span class="number">768</span><span class="punctuation">,</span> bias=True)</span><br><span class="line">(value)<span class="punctuation">:</span> Linear(in_features=<span class="number">768</span><span class="punctuation">,</span> out_features=<span class="number">768</span><span class="punctuation">,</span> bias=True)</span><br><span class="line">(dropout)<span class="punctuation">:</span> Dropout(p=<span class="number">0.1</span><span class="punctuation">,</span> inplace=False)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">(output)<span class="punctuation">:</span> BertSelfOutput(</span><br><span class="line">(dense)<span class="punctuation">:</span> Linear(in_features=<span class="number">768</span><span class="punctuation">,</span> out_features=<span class="number">768</span><span class="punctuation">,</span> bias=True)</span><br><span class="line">(LayerNorm)<span class="punctuation">:</span> LayerNorm((<span class="number">768</span><span class="punctuation">,</span>)<span class="punctuation">,</span> eps=<span class="number">1e-12</span><span class="punctuation">,</span> elementwise_affine=True)</span><br><span class="line">(dropout)<span class="punctuation">:</span> Dropout(p=<span class="number">0.1</span><span class="punctuation">,</span> inplace=False)</span><br><span class="line">)</span><br><span class="line">)</span><br><span class="line">(intermediate)<span class="punctuation">:</span> BertIntermediate(</span><br><span class="line">(dense)<span class="punctuation">:</span> Linear(in_features=<span class="number">768</span><span class="punctuation">,</span> out_features=<span class="number">3072</span><span class="punctuation">,</span> bias=True)</span><br><span class="line">(intermediate_act_fn)<span class="punctuation">:</span> GELUActivation()</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">(output)<span class="punctuation">:</span> BertOutput(</span><br><span class="line"></span><br><span class="line">(dense)<span class="punctuation">:</span> Linear(in_features=<span class="number">3072</span><span class="punctuation">,</span> out_features=<span class="number">768</span><span class="punctuation">,</span> bias=True)</span><br><span class="line"></span><br><span class="line">(LayerNorm)<span class="punctuation">:</span> LayerNorm((<span class="number">768</span><span class="punctuation">,</span>)<span class="punctuation">,</span> eps=<span class="number">1e-12</span><span class="punctuation">,</span> elementwise_affine=True)</span><br><span class="line"></span><br><span class="line">(dropout)<span class="punctuation">:</span> Dropout(p=<span class="number">0.1</span><span class="punctuation">,</span> inplace=False)</span><br><span class="line">)</span><br><span class="line">)</span><br><span class="line">)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">(pooler)<span class="punctuation">:</span> BertPooler(</span><br><span class="line">(dense)<span class="punctuation">:</span> Linear(in_features=<span class="number">768</span><span class="punctuation">,</span> out_features=<span class="number">768</span><span class="punctuation">,</span> bias=True)</span><br><span class="line">(activation)<span class="punctuation">:</span> Tanh()</span><br><span class="line">)</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">(dropout)<span class="punctuation">:</span> Dropout(p=<span class="number">0.1</span><span class="punctuation">,</span> inplace=False)</span><br><span class="line">(classifier)<span class="punctuation">:</span> Linear(in_features=<span class="number">768</span><span class="punctuation">,</span> out_features=<span class="number">2</span><span class="punctuation">,</span> bias=True)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>bert模型内部分层介绍<br>embedding：文本转向量<br>encoder：提取向量中的特征<br>classifier：根据特征进行分类</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/HuggingFace/" rel="tag">HuggingFace</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/LLM-Application/" rel="tag">LLM_Application</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/learn/" rel="tag">learn</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/"
+                    data-tooltip="基于 Bert 模型进行情感分析微调训练"
+                    aria-label="上一篇: 基于 Bert 模型进行情感分析微调训练"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2025/05/29/hexo_post/Multi-Column%20Markdown/"
+                    data-tooltip="Multi-Column Markdown"
+                    aria-label="下一篇: Multi-Column Markdown"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#gitalk"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="gitalk"></div>
+
+            
+        
+    </div>
+</article>
+
+
+                
+
+            </div>
+        </div>
+        
+            <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-times"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div
+                    class="media"
+                    data-search-text="第一篇日记  learn note"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/01/hexo_post/%E7%AC%AC%E4%B8%80%E7%AF%87%E6%97%A5%E8%AE%B0/?from=search"
+                            aria-label=": 第一篇日记"
+                        >
+                            <h3 class="media-heading">第一篇日记</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月1日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="dataview  learn obsidian插件 dataview"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/28/hexo_post/Dataview/?from=search"
+                            aria-label=": Dataview"
+                        >
+                            <h3 class="media-heading">Dataview</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月28日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="tasks  learn obsidian插件 productivity"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/28/hexo_post/Tasks/?from=search"
+                            aria-label=": Tasks"
+                        >
+                            <h3 class="media-heading">Tasks</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月28日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="multi-column markdown  learn obsidian插件 markdown"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Multi-Column%20Markdown/?from=search"
+                            aria-label=": Multi-Column Markdown"
+                        >
+                            <h3 class="media-heading">Multi-Column Markdown</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
+                        >
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                        >
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="基于 gpt2 模型的微调训练实践  learn llm_application fine-tuning gpt-2"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EGPT2%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 基于 GPT2 模型的微调训练实践"
+                        >
+                            <h3 class="media-heading">基于 GPT2 模型的微调训练实践</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="gguf 模型  learn llm_application gguf quantization"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/?from=search"
+                            aria-label=": GGUF 模型"
+                        >
+                            <h3 class="media-heading">GGUF 模型</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
+                        >
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="vllm 推理框架  learn llm_application inference vllm"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": vLLM 推理框架"
+                        >
+                            <h3 class="media-heading">vLLM 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="llama-factory 训练框架  learn llm_application llama-factory fine-tuning"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LLaMA-Factory 训练框架"
+                        >
+                            <h3 class="media-heading">LLaMA-Factory 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="opencompass 评估测试框架  learn llm_application opencompass evaluation"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/OpenCompass%E8%AF%84%E4%BC%B0%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": OpenCompass 评估测试框架"
+                        >
+                            <h3 class="media-heading">OpenCompass 评估测试框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 大模型微调分布式训练"
+                        >
+                            <h3 class="media-heading">大模型微调分布式训练</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="大模型部署  learn llm_application inference"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
+                        >
+                            <h3 class="media-heading">大模型部署</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月31日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
+                        >
+                            <h3 class="media-heading">情绪对话项目实践</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月31日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="dify 学习  learn llm_application dify llmops"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/01/hexo_post/Dify%E5%AD%A6%E4%B9%A0/?from=search"
+                            aria-label=": Dify 学习"
+                        >
+                            <h3 class="media-heading">Dify 学习</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月1日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="mcp 学习  learn llm_application mcp"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/02/hexo_post/MCP%E5%AD%A6%E4%B9%A0/?from=search"
+                            aria-label=": MCP 学习"
+                        >
+                            <h3 class="media-heading">MCP 学习</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月2日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="集成多 mcp 应用及解决多表查询的解决方案  learn llm_application mcp sql"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/03/hexo_post/%E9%9B%86%E6%88%90%E5%A4%9AMCP%E5%BA%94%E7%94%A8%E5%8F%8A%E8%A7%A3%E5%86%B3%E5%A4%9A%E8%A1%A8%E6%9F%A5%E8%AF%A2%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/?from=search"
+                            aria-label=": 集成多 MCP 应用及解决多表查询的解决方案"
+                        >
+                            <h3 class="media-heading">集成多 MCP 应用及解决多表查询的解决方案</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月3日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="texttosql 解决方案试验  learn llm_application texttosql vanna"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/04/hexo_post/TextToSQL%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E8%AF%95%E9%AA%8C/?from=search"
+                            aria-label=": TextToSQL 解决方案试验"
+                        >
+                            <h3 class="media-heading">TextToSQL 解决方案试验</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="indextts-1.5 使用记录  learn llm_application tts"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/05/hexo_post/IndexTTS-1.5%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/?from=search"
+                            aria-label=": IndexTTS-1.5 使用记录"
+                        >
+                            <h3 class="media-heading">IndexTTS-1.5 使用记录</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月5日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="streamlit 与 crewai 实现自动生成测试用例  learn llm_application streamlit crewai testing"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/06/hexo_post/streamlit&amp;crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/?from=search"
+                            aria-label=": streamlit 与 crewai 实现自动生成测试用例"
+                        >
+                            <h3 class="media-heading">streamlit 与 crewai 实现自动生成测试用例</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="强制降低或升依赖包版本  learn pip python"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/06/hexo_post/%E5%BC%BA%E5%88%B6%E9%99%8D%E4%BD%8E%E6%88%96%E5%8D%87%E4%BE%9D%E8%B5%96%E5%8C%85%E7%89%88%E6%9C%AC/?from=search"
+                            aria-label=": 强制降低或升依赖包版本"
+                        >
+                            <h3 class="media-heading">强制降低或升依赖包版本</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="嵌入模型与向量数据库  learn llm_application embedding vector-database"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/?from=search"
+                            aria-label=": 嵌入模型与向量数据库"
+                        >
+                            <h3 class="media-heading">嵌入模型与向量数据库</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="rag 技术和应用  learn llm_application rag"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/14/hexo_post/RAG%E6%8A%80%E6%9C%AF%E5%92%8C%E5%BA%94%E7%94%A8/?from=search"
+                            aria-label=": RAG 技术和应用"
+                        >
+                            <h3 class="media-heading">RAG 技术和应用</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月14日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="rag 高级技术与实践  learn llm_application rag advanced"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/18/hexo_post/RAG%E9%AB%98%E7%BA%A7%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": RAG 高级技术与实践"
+                        >
+                            <h3 class="media-heading">RAG 高级技术与实践</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="pip 源切换  learn pip python"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/18/hexo_post/pip%E6%BA%90%E5%88%87%E6%8D%A2/?from=search"
+                            aria-label=": pip 源切换"
+                        >
+                            <h3 class="media-heading">pip 源切换</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="remote-ssh 插件  learn vscode remote-dev"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/07/09/hexo_post/Remote-SSH%E6%8F%92%E4%BB%B6/?from=search"
+                            aria-label=": Remote-SSH 插件"
+                        >
+                            <h3 class="media-heading">Remote-SSH 插件</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年7月9日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="llamaindex 知识库管理与信息检索  learn llm_application rag llamaindex"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/07/hexo_post/LlamaIndex%E7%9F%A5%E8%AF%86%E5%BA%93%E7%AE%A1%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/?from=search"
+                            aria-label=": LlamaIndex 知识库管理与信息检索"
+                        >
+                            <h3 class="media-heading">LlamaIndex 知识库管理与信息检索</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/14/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%E5%92%8CLangGraph%E5%AE%9E%E7%8E%B0%E5%B7%A5%E4%BD%9C%E6%B5%81/?from=search"
+                            aria-label=": LangChain 实现 RAG 和 LangGraph 实现工作流"
+                        >
+                            <h3 class="media-heading">LangChain 实现 RAG 和 LangGraph 实现工作流</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月14日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="langchain 实现 function call  learn llm_application langchain function-calling"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/15/hexo_post/LangChain%E5%AE%9E%E7%8E%B0Function%20Call/?from=search"
+                            aria-label=": LangChain 实现 Function Call"
+                        >
+                            <h3 class="media-heading">LangChain 实现 Function Call</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="langchain 实现 rag + agent  learn langchain rag agent"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/?from=search"
+                            aria-label=": LangChain 实现 RAG + Agent"
+                        >
+                            <h3 class="media-heading">LangChain 实现 RAG + Agent</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="有声小说第一次尝试实现（pyttsx3）  learn llm_application tts python"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/?from=search"
+                            aria-label=": 有声小说第一次尝试实现（pyttsx3）"
+                        >
+                            <h3 class="media-heading">有声小说第一次尝试实现（pyttsx3）</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月20日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="chrome mcp server  learn llm_application mcp chrome"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/21/hexo_post/Chrome%20MCP%20Server/?from=search"
+                            aria-label=": Chrome MCP Server"
+                        >
+                            <h3 class="media-heading">Chrome MCP Server</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="homebrew 常用命令  learn homebrew mac"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/21/hexo_post/Homebrew%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/?from=search"
+                            aria-label=": Homebrew 常用命令"
+                        >
+                            <h3 class="media-heading">Homebrew 常用命令</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="利用 hexo 搭建博客网站  learn hexo static-site github-pages"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/11/04/hexo_post/%E5%88%A9%E7%94%A8hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99/?from=search"
+                            aria-label=": 利用 hexo 搭建博客网站"
+                        >
+                            <h3 class="media-heading">利用 hexo 搭建博客网站</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年11月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="连接不上第三方显示器  learn mac hardware"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/12/18/hexo_post/%E8%BF%9E%E6%8E%A5%E4%B8%8D%E4%B8%8A%E7%AC%AC%E4%B8%89%E6%96%B9%E6%98%BE%E7%A4%BA%E5%99%A8/?from=search"
+                            aria-label=": 连接不上第三方显示器"
+                        >
+                            <h3 class="media-heading">连接不上第三方显示器</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="丝滑切换 jdk 不同版本（jenv）  learn mac java jenv"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/01/08/hexo_post/%E4%B8%9D%E6%BB%91%E5%88%87%E6%8D%A2jdk%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC-jenv/?from=search"
+                            aria-label=": 丝滑切换 jdk 不同版本（jenv）"
+                        >
+                            <h3 class="media-heading">丝滑切换 jdk 不同版本（jenv）</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年1月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 39 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-fy2mgop5xl1tplwujicojo4xhlb80nrzsizgqk4jfrs5njk0qriczldyw7af.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        
+<script src="/assets/js/gitalk.js"></script>
+
+        <script type="text/javascript">
+          (function() {
+            var host = window.location.hostname;
+            if (host === 'localhost' || host === '127.0.0.1') {
+              var el = document.getElementById('gitalk');
+              if (el) {
+                el.innerHTML = '<p style="padding:12px 14px;border:1px solid #dbe5f5;border-radius:10px;background:#fff;color:#5b6475;">本地预览环境不启用 GitHub 登录评论，请在线上站点使用评论功能。</p>';
+              }
+              return;
+            }
+            new Gitalk({
+              clientID: 'Ov23lixY4RNkL6GaPepq',
+              clientSecret: '5bb8a010339dc3e6b5655b8ac336d3c0d0be226e',
+              repo: 'blog-comments',
+              owner: 'shaver92',
+              admin: ['shaver92'],
+              id: '2025/05/29/hexo_post/HuggingFace核心组件介绍/',
+              ...{"language":"zh-CN","perPage":10,"distractionFreeMode":false,"createIssueManually":true,"labels":["Gitalk"],"pagerDirection":"last","proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"}
+            }).render('gitalk')
+          })()
+        </script>
+    
+
+
+
+    
+<script src="/assets/js/moment-with-locales.js"></script>
+
+    
+<script src="/assets/js/algoliasearch.js"></script>
+
+    <script>
+      var algoliaClient = algoliasearch('P7U39XTUUF', 'fcf10bcb3e25fb39b4cf37309facbba5');
+      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+
+<script>
+  (function() {
+    var searchPath = '/search/';
+
+    window.__goBackSmart = function(homeUrl, searchUrl) {
+      var params = new URLSearchParams(window.location.search || '');
+      var from = params.get('from');
+      var lastSearchPage = sessionStorage.getItem('last_search_page') || searchUrl;
+      if (from === 'search') {
+        window.location.href = lastSearchPage;
+        return;
+      }
+      if (window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+      window.location.href = homeUrl;
+    };
+
+    if (window.location.pathname === searchPath || window.location.pathname === searchPath.replace(/\/$/, '')) {
+      sessionStorage.setItem('last_search_page', window.location.href);
+    }
+
+    Array.prototype.slice.call(document.querySelectorAll('.search-result-link')).forEach(function(link) {
+      link.addEventListener('click', function() {
+        sessionStorage.setItem('last_search_page', window.location.href);
+      });
+    });
+
+    var toolsToggle = document.querySelector('[data-tools-toggle]');
+    var toolsGroup = document.querySelector('[data-tools-group]');
+    if (toolsToggle && toolsGroup) {
+      toolsToggle.addEventListener('click', function() {
+        var expanded = toolsToggle.getAttribute('aria-expanded') === 'true';
+        toolsToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        toolsGroup.hidden = expanded;
+      });
+    }
+  })();
+</script>
+
+<script>
+  (function() {
+    var input = document.getElementById('algolia-search-input');
+    var modal = document.getElementById('algolia-search-modal');
+    if (!input || !modal) return;
+
+    if (window.location.pathname === '/search/' || window.location.pathname === '/search') {
+      modal.style.display = 'block';
+    }
+
+    var items = Array.prototype.slice.call(modal.querySelectorAll('.media'));
+    var noResult = modal.querySelector('.no-result');
+    var counter = modal.querySelector('.results-count');
+    var baseCount = items.length;
+
+    function updateCount(visibleCount) {
+      if (!counter) return;
+      counter.textContent = '共找到 ' + visibleCount + ' 篇';
+    }
+
+    function runLocalSearch() {
+      var keyword = (input.value || '').trim().toLowerCase();
+      var visibleCount = 0;
+
+      items.forEach(function(item) {
+        var text = item.getAttribute('data-search-text') || '';
+        var matched = !keyword || text.indexOf(keyword) !== -1;
+        item.style.display = matched ? '' : 'none';
+        if (matched) visibleCount += 1;
+      });
+
+      if (noResult) noResult.style.display = visibleCount === 0 ? '' : 'none';
+      updateCount(visibleCount);
+    }
+
+    input.addEventListener('input', runLocalSearch);
+    updateCount(baseCount);
+  })();
+</script>
+
+    </body>
+</html>
