@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 实现目标下面章节需要实现两种通过AI自动生成测试用例的功能：\n\n依据用户需求描述，实现按照指定的模板生成自动化测试用例\n依据swagger文档，按照接口实现按照指定的模板生成自动化测试用例\n\n\n\n2 框架介绍该功能实现用到了两个开源框架streamlit和crewai\n\n2.1 streamlit2.1.1 官网地址https://streamlit.io/\n\n2.1.2 安装12pip install streastreamlit\n2.1.3 基本使用基础文本和标题— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n123456789import streamlit as stst.title(&#x27;我的第一个Streamlit应用&#x27;)st.header(&#x27;这是一个头部&#x27;)st.subheader(&#x27;这是一个子头部&#x27;)st.text(&#x27;这是普通文本&#x27;)st.markdown(&#x27;**这是Markdown** 支持 *格式化* 文本&#x27;)st.write(&#x27;这是通用write函数，可以输出多种内容&#x27;)\n— end-column —\n\n— end-multi-column\n 数据显示— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n123456789101112131415161718192021import streamlit as st  import pandas as pd  import numpy as np    # 创建数据框  df = pd.DataFrame(      np.random.randn(10, 3),      columns=[&#x27;A列&#x27;, &#x27;B列&#x27;, &#x27;C列&#x27;]  )    st.title(&#x27;交互式表格&#x27;)  st.dataframe(df)  # 交互式表格  st.title(&#x27;静态表格&#x27;)  st.table(df)      # 静态表格  st.title(&#x27;折线图&#x27;)  st.line_chart(df) # 折线图  st.title(&#x27;柱状图&#x27;)  st.bar_chart(df)  # 柱状图  st.title(&#x27;面积图&#x27;)  st.area_chart(df) # 面积图\n— end-column —\n\n— end-multi-column\n用户输入组件— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n1234567891011121314151617181920212223242526272829303132import streamlit as st    # 按钮  if st.button(&#x27;点击我&#x27;):      st.write(&#x27;按钮被点击了!&#x27;)    # 复选框  agree = st.checkbox(&#x27;我同意&#x27;)  if agree:      st.write(&#x27;太好了!&#x27;)    # 单选按钮  genre = st.radio(      &quot;你最喜欢的电影类型&quot;,      (&#x27;喜剧&#x27;, &#x27;动作&#x27;, &#x27;剧情&#x27;))  st.write(f&#x27;你选择了: &#123;genre&#125;&#x27;)    # 下拉选择  option = st.selectbox(      &#x27;你最喜欢的颜色是?&#x27;,      (&#x27;蓝色&#x27;, &#x27;红色&#x27;, &#x27;绿色&#x27;))  st.write(f&#x27;你选择了: &#123;option&#125;&#x27;)    # 滑动条  age = st.slider(&#x27;你的年龄&#x27;, 0, 130, 25)  st.write(f&quot;我 &#123;age&#125; 岁&quot;)    # 文本输入  name = st.text_input(&#x27;你的名字&#x27;)  if name:      st.write(f&#x27;你好, &#123;name&#125;!&#x27;)\n— end-column —\n— end-multi-column\n文件上传和处理— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n12345678import streamlit as stimport pandas as pduploaded_file = st.file_uploader(&quot;选择一个CSV文件&quot;, type=&quot;csv&quot;)if uploaded_file is not None:    df = pd.read_csv(uploaded_file)    st.write(df)\n— end-column —\n— end-multi-column\n布局和容器— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n1234567891011121314151617181920import streamlit as st# 侧边栏st.sidebar.title(&#x27;侧边栏标题&#x27;)st.sidebar.selectbox(&#x27;侧边栏选择&#x27;, [&#x27;选项1&#x27;, &#x27;选项2&#x27;])# 列布局col1, col2 = st.columns(2)with col1:    st.header(&quot;第一列&quot;)    st.line_chart([1, 2, 3, 4])    with col2:    st.header(&quot;第二列&quot;)    st.bar_chart([4, 3, 2, 1])# 展开/折叠内容with st.expander(&quot;点击展开详情&quot;):    st.write(&quot;这里是隐藏的详细信息&quot;)\n— end-column —\n— end-multi-column\n进度条和状态— start-multi-column: ExampleRegion1  \n1number of columns: 4 \n123456789101112131415import streamlit as stimport time# 进度条progress_bar = st.progress(0)for i in range(100):    time.sleep(0.1)    progress_bar.progress(i + 1)st.balloons()  # 庆祝动画# 状态消息with st.spinner(&#x27;正在处理...&#x27;):    time.sleep(2)st.success(&#x27;完成!&#x27;)\n— end-column —\n\n— end-column —\n\n— end-column —\n— end-multi-column\n绘图和可视化— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n12345678910111213141516import streamlit as stimport matplotlib.pyplot as pltimport numpy as np# Matplotlib 图形fig, ax = plt.subplots()x = np.linspace(0, 10, 100)ax.plot(x, np.sin(x))st.pyplot(fig)# Plotly 图形import plotly.express as pxdf = px.data.iris()fig = px.scatter(df, x=&quot;sepal_width&quot;, y=&quot;sepal_length&quot;, color=&quot;species&quot;)st.plotly_chart(fig)\n— end-column —\n— end-multi-column\n2.2 crewAI2.2.1 官网地址https://www.crewai.com/\n2.2.2 安装1pip install crewai\n2.2.3 基本使用整个调用过程代码已上传我们的文件服务器，这里介绍重要步骤\n1 定义大模型\n1234567llm = LLM(      model=&quot;deepseek-chat&quot;,      temperature=0.7,      base_url=&quot;https://api.deepseek.com/v1&quot;,      api_key=&quot;your-api-keys&quot;  )\n\n2 定义agent\n1234567891011# 软件开发工程师  software_development_engineer = Agent(      role=&quot;高级软件开发工程师&quot;,      goal=&quot;按需创建软件&quot;,      backstory=dedent(&quot;&quot;&quot;          你是一家领先的技术智库的高级软件工程师。          你在Python编程方面有专长，并尽你所能长产出完美的代码&quot;&quot;&quot;),      allow_delegation=False, # 不允许委托      verbose=True,      llm=llm  )\n\n3 定义task\n123456789# 任务1：编写游戏的基本框架  code_task=Task(      description=dedent(f&quot;&quot;&quot;您将使用python编程语言来创建一个游戏，以下是指令：       指令     --------------     &#123;game&#125;       &quot;&quot;&quot;),      expected_output=&quot;您的最终答案必须是完整的python代码，仅包含python代码，别无其他&quot;,      agent=software_development_engineer,  )\n\n4 智能编排\n1234567891011121314crew= Crew(      agents=[software_development_engineer,              software_testing_engineer,              chief_software_quality_control_engineer,              run_person              ],      tasks=[code_task,             test_task,             quality_control_task,             run_task             ],      verbose=True  )\n\n5 启动\n1game=crew.kickoff()\n\n3 工程代码启动3.1 安装依赖\n12pip install -r requirements.txt\t\n3.2 启动\n12streamlit run home.py\n\n登录地址 http://localhost:8501/\n","dateCreated":"2025-06-06T08:43:00+08:00","dateModified":"2026-05-06T13:44:41+08:00","datePublished":"2025-06-06T08:43:00+08:00","description":"","headline":"streamlit 与 crewai 实现自动生成测试用例","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/06/06/hexo_post/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/06/06/hexo_post/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/","keywords":"learn, LLM_Application, streamlit, CrewAI, testing"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 实现目标下面章节需要实现两种通过AI自动生成测试用例的功能：\n\n依据用户需求描述，实现按照指定的模板生成自动化测试用例\n依据swagger文档，按照接口实现按照指定的模板生成自动化测试用例\n\n\n\n2 框架介绍该功能实现用到了两个开源框架streamlit和crewai\n\n2.1 streamlit2.1.1 官网地址https://streamlit.io/\n\n2.1.2 安装12pip install streastreamlit\n2.1.3 基本使用基础文本和标题— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n123456789import streamlit as stst.title(&#x27;我的第一个Streamlit应用&#x27;)st.header(&#x27;这是一个头部&#x27;)st.subheader(&#x27;这是一个子头部&#x27;)st.text(&#x27;这是普通文本&#x27;)st.markdown(&#x27;**这是Markdown** 支持 *格式化* 文本&#x27;)st.write(&#x27;这是通用write函数，可以输出多种内容&#x27;)\n— end-column —\n\n— end-multi-column\n 数据显示— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n123456789101112131415161718192021import streamlit as st  import pandas as pd  import numpy as np    # 创建数据框  df = pd.DataFrame(      np.random.randn(10, 3),      columns=[&#x27;A列&#x27;, &#x27;B列&#x27;, &#x27;C列&#x27;]  )    st.title(&#x27;交互式表格&#x27;)  st.dataframe(df)  # 交互式表格  st.title(&#x27;静态表格&#x27;)  st.table(df)      # 静态表格  st.title(&#x27;折线图&#x27;)  st.line_chart(df) # 折线图  st.title(&#x27;柱状图&#x27;)  st.bar_chart(df)  # 柱状图  st.title(&#x27;面积图&#x27;)  st.area_chart(df) # 面积图\n— end-column —\n\n— end-multi-column\n用户输入组件— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n1234567891011121314151617181920212223242526272829303132import streamlit as st    # 按钮  if st.button(&#x27;点击我&#x27;):      st.write(&#x27;按钮被点击了!&#x27;)    # 复选框  agree = st.checkbox(&#x27;我同意&#x27;)  if agree:      st.write(&#x27;太好了!&#x27;)    # 单选按钮  genre = st.radio(      &quot;你最喜欢的电影类型&quot;,      (&#x27;喜剧&#x27;, &#x27;动作&#x27;, &#x27;剧情&#x27;))  st.write(f&#x27;你选择了: &#123;genre&#125;&#x27;)    # 下拉选择  option = st.selectbox(      &#x27;你最喜欢的颜色是?&#x27;,      (&#x27;蓝色&#x27;, &#x27;红色&#x27;, &#x27;绿色&#x27;))  st.write(f&#x27;你选择了: &#123;option&#125;&#x27;)    # 滑动条  age = st.slider(&#x27;你的年龄&#x27;, 0, 130, 25)  st.write(f&quot;我 &#123;age&#125; 岁&quot;)    # 文本输入  name = st.text_input(&#x27;你的名字&#x27;)  if name:      st.write(f&#x27;你好, &#123;name&#125;!&#x27;)\n— end-column —\n— end-multi-column\n文件上传和处理— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n12345678import streamlit as stimport pandas as pduploaded_file = st.file_uploader(&quot;选择一个CSV文件&quot;, type=&quot;csv&quot;)if uploaded_file is not None:    df = pd.read_csv(uploaded_file)    st.write(df)\n— end-column —\n— end-multi-column\n布局和容器— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n1234567891011121314151617181920import streamlit as st# 侧边栏st.sidebar.title(&#x27;侧边栏标题&#x27;)st.sidebar.selectbox(&#x27;侧边栏选择&#x27;, [&#x27;选项1&#x27;, &#x27;选项2&#x27;])# 列布局col1, col2 = st.columns(2)with col1:    st.header(&quot;第一列&quot;)    st.line_chart([1, 2, 3, 4])    with col2:    st.header(&quot;第二列&quot;)    st.bar_chart([4, 3, 2, 1])# 展开/折叠内容with st.expander(&quot;点击展开详情&quot;):    st.write(&quot;这里是隐藏的详细信息&quot;)\n— end-column —\n— end-multi-column\n进度条和状态— start-multi-column: ExampleRegion1  \n1number of columns: 4 \n123456789101112131415import streamlit as stimport time# 进度条progress_bar = st.progress(0)for i in range(100):    time.sleep(0.1)    progress_bar.progress(i + 1)st.balloons()  # 庆祝动画# 状态消息with st.spinner(&#x27;正在处理...&#x27;):    time.sleep(2)st.success(&#x27;完成!&#x27;)\n— end-column —\n\n— end-column —\n\n— end-column —\n— end-multi-column\n绘图和可视化— start-multi-column: ExampleRegion1  \n1number of columns: 2  \n12345678910111213141516import streamlit as stimport matplotlib.pyplot as pltimport numpy as np# Matplotlib 图形fig, ax = plt.subplots()x = np.linspace(0, 10, 100)ax.plot(x, np.sin(x))st.pyplot(fig)# Plotly 图形import plotly.express as pxdf = px.data.iris()fig = px.scatter(df, x=&quot;sepal_width&quot;, y=&quot;sepal_length&quot;, color=&quot;species&quot;)st.plotly_chart(fig)\n— end-column —\n— end-multi-column\n2.2 crewAI2.2.1 官网地址https://www.crewai.com/\n2.2.2 安装1pip install crewai\n2.2.3 基本使用整个调用过程代码已上传我们的文件服务器，这里介绍重要步骤\n1 定义大模型\n1234567llm = LLM(      model=&quot;deepseek-chat&quot;,      temperature=0.7,      base_url=&quot;https://api.deepseek.com/v1&quot;,      api_key=&quot;your-api-keys&quot;  )\n\n2 定义agent\n1234567891011# 软件开发工程师  software_development_engineer = Agent(      role=&quot;高级软件开发工程师&quot;,      goal=&quot;按需创建软件&quot;,      backstory=dedent(&quot;&quot;&quot;          你是一家领先的技术智库的高级软件工程师。          你在Python编程方面有专长，并尽你所能长产出完美的代码&quot;&quot;&quot;),      allow_delegation=False, # 不允许委托      verbose=True,      llm=llm  )\n\n3 定义task\n123456789# 任务1：编写游戏的基本框架  code_task=Task(      description=dedent(f&quot;&quot;&quot;您将使用python编程语言来创建一个游戏，以下是指令：       指令     --------------     &#123;game&#125;       &quot;&quot;&quot;),      expected_output=&quot;您的最终答案必须是完整的python代码，仅包含python代码，别无其他&quot;,      agent=software_development_engineer,  )\n\n4 智能编排\n1234567891011121314crew= Crew(      agents=[software_development_engineer,              software_testing_engineer,              chief_software_quality_control_engineer,              run_person              ],      tasks=[code_task,             test_task,             quality_control_task,             run_task             ],      verbose=True  )\n\n5 启动\n1game=crew.kickoff()\n\n3 工程代码启动3.1 安装依赖\n12pip install -r requirements.txt\t\n3.2 启动\n12streamlit run home.py\n\n登录地址 http://localhost:8501/\n","dateCreated":"2025-06-06T08:09:27+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-06-06T08:09:27+08:00","description":"","headline":"streamlit 与 crewai 实现自动生成测试用例","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/06/06/hexo_post/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/06/06/hexo_post/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/","keywords":"learn, LLM_Application, streamlit, CrewAI, testing"}</script>
     <meta name="description" content="1 实现目标下面章节需要实现两种通过AI自动生成测试用例的功能：  依据用户需求描述，实现按照指定的模板生成自动化测试用例 依据swagger文档，按照接口实现按照指定的模板生成自动化测试用例    2 框架介绍该功能实现用到了两个开源框架streamlit和crewai  2.1 streamlit2.1.1 官网地址https:&#x2F;&#x2F;streamlit.io&#x2F;  2.1.2 安装12pip in">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="streamlit 与 crewai 实现自动生成测试用例">
@@ -36,8 +36,8 @@
 <meta property="og:image" content="https://shaver92.github.io/2025/06/06/hexo_post/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B-IMG-20260506131055396.png">
 <meta property="og:image" content="https://shaver92.github.io/2025/06/06/hexo_post/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B-IMG-20260506131055526.png">
 <meta property="og:image" content="https://shaver92.github.io/2025/06/06/hexo_post/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/streamlit&crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B-IMG-20260506131055661.png">
-<meta property="article:published_time" content="2025-06-06T00:43:00.000Z">
-<meta property="article:modified_time" content="2026-05-06T05:44:41.558Z">
+<meta property="article:published_time" content="2025-06-06T00:09:27.000Z">
+<meta property="article:modified_time" content="2026-05-06T06:17:57.690Z">
 <meta property="article:author" content="shaver">
 <meta property="article:tag" content="CrewAI">
 <meta property="article:tag" content="LLM_Application">
@@ -122,7 +122,7 @@
     
     
         <div class="post-meta">
-    <time datetime="2025-06-06T08:43:00+08:00">
+    <time datetime="2025-06-06T08:09:27+08:00">
 	
 		    2025 年 6 月 6 日
     	
@@ -485,7 +485,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
                 >
                     
                     
@@ -493,10 +493,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
-                            aria-label=": HuggingFace 核心组件介绍"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
                         >
-                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -513,7 +513,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
                 >
                     
                     
@@ -521,10 +521,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
                         >
-                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -569,6 +569,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="gguf 模型  learn llm_application gguf quantization"
                 >
                     
@@ -581,62 +609,6 @@
                             aria-label=": GGUF 模型"
                         >
                             <h3 class="media-heading">GGUF 模型</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LMDeploy 推理框架"
-                        >
-                            <h3 class="media-heading">LMDeploy 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Ollama 推理框架"
-                        >
-                            <h3 class="media-heading">Ollama 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -709,7 +681,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
                 >
                     
                     
@@ -717,10 +689,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Xtuner 训练框架"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
                         >
-                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -765,6 +737,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
                 >
                     
@@ -793,7 +793,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="大模型部署  learn llm_application inference"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
                 >
                     
                     
@@ -801,10 +801,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
-                            aria-label=": 大模型部署"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
                         >
-                            <h3 class="media-heading">大模型部署</h3>
+                            <h3 class="media-heading">情绪对话项目实践</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -821,7 +821,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                    data-search-text="大模型部署  learn llm_application inference"
                 >
                     
                     
@@ -829,10 +829,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 情绪对话项目实践"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
                         >
-                            <h3 class="media-heading">情绪对话项目实践</h3>
+                            <h3 class="media-heading">大模型部署</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -1213,7 +1213,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain langgraph rag"
                 >
                     
                     
@@ -1603,6 +1603,75 @@
 
     input.addEventListener('input', runLocalSearch);
     updateCount(baseCount);
+  })();
+</script>
+
+<script>
+  (function() {
+    function getHighlightPlainText(figure) {
+      var pre = figure.querySelector('td.code pre, .code pre');
+      if (!pre) return '';
+      var t = pre.innerText != null ? pre.innerText : pre.textContent;
+      return String(t || '').replace(/\u00a0/g, ' ');
+    }
+
+    function attachPostCodeCopyButtons() {
+      var scope = document.querySelector('.post-content');
+      if (!scope) return;
+      var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
+      for (var i = 0; i < blocks.length; i++) {
+        (function(fig) {
+          if (fig.getAttribute('data-copy-btn')) return;
+          if (!fig.querySelector('.code pre, td.code pre')) return;
+          fig.setAttribute('data-copy-btn', '1');
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'post-code-copy-btn';
+          btn.setAttribute('aria-label', '复制代码');
+          btn.textContent = '复制';
+          btn.addEventListener('click', function() {
+            var text = getHighlightPlainText(fig);
+            function showState(label) {
+              btn.textContent = label;
+              setTimeout(function() {
+                btn.textContent = '复制';
+                btn.disabled = false;
+              }, 2000);
+            }
+            btn.disabled = true;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function() {
+                showState('已复制');
+              }).catch(function() {
+                showState('复制失败');
+              });
+            } else {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.left = '-10000px';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showState('已复制');
+              } catch (e) {
+                showState('复制失败');
+              }
+              document.body.removeChild(ta);
+            }
+          });
+          fig.appendChild(btn);
+        })(blocks[i]);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachPostCodeCopyButtons);
+    } else {
+      attachPostCodeCopyButtons();
+    }
   })();
 </script>
 

@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"使用pyttsx3进行txt内容读取，并进行朗读\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354# -*- coding: utf-8 -*-    # -------------------------------------------------------------------------------  # Name:         demo4  # Description:  # Author:       shaver  # Date:         2025/8/19  # -------------------------------------------------------------------------------    import pyttsx3    import pyttsx3      def list_and_select_voice():      engine = pyttsx3.init()        # 获取所有音色并打印      voices = engine.getProperty(&#x27;voices&#x27;)      print(&quot;可用音色列表：&quot;)      for idx, voice in enumerate(voices):          print(f&quot;&#123;idx&#125;: &#123;voice.name&#125; (语言: &#123;voice.languages&#125;, 性别: &#123;voice.gender&#125;), id: &#123;voice.id&#125;&quot;)        # 选择第一个中文女性音色（示例）      for voice in voices:          if &#x27;zh&#x27; in str(voice.languages) and &#x27;female&#x27; in str(voice.gender).lower():              engine.setProperty(&#x27;voice&#x27;, voice.id)              break        # 设置语速和音量      engine.setProperty(&#x27;rate&#x27;, 150)      engine.setProperty(&#x27;volume&#x27;, 1.0)        # 测试语音      engine.say(&quot;你好，这是选定的音色测试&quot;)      engine.runAndWait()      def speak_text(text):      engine = pyttsx3.init()      engine.setProperty(&#x27;rate&#x27;, 160)  # 语速（默认200）      engine.setProperty(&#x27;volume&#x27;, 0.9)  # 音量（0.0-1.0）      engine.setProperty(&#x27;voice&#x27;, &#x27;com.apple.eloquence.zh-CN.Tingting&#x27;)  # 选择女声音色（Windows）      engine.say(text)      engine.runAndWait()      if __name__ == &#x27;__main__&#x27;:      # list_and_select_voice()        with open(&#x27;data.txt&#x27;, &#x27;r&#x27;, encoding=&#x27;utf-8&#x27;) as f:          text = f.read()          if text:              speak_text(text)\n\n上面有列出所有音色的方法，后续想实现类似微信读书中的有声朗读功能\n","dateCreated":"2025-08-20T17:37:00+08:00","dateModified":"2026-05-06T13:45:23+08:00","datePublished":"2025-08-20T17:37:00+08:00","description":"","headline":"有声小说第一次尝试实现（pyttsx3）","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/","keywords":"learn, LLM_Application, TTS, Python"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"使用pyttsx3进行txt内容读取，并进行朗读\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354# -*- coding: utf-8 -*-    # -------------------------------------------------------------------------------  # Name:         demo4  # Description:  # Author:       shaver  # Date:         2025/8/20  # -------------------------------------------------------------------------------    import pyttsx3    import pyttsx3      def list_and_select_voice():      engine = pyttsx3.init()        # 获取所有音色并打印      voices = engine.getProperty(&#x27;voices&#x27;)      print(&quot;可用音色列表：&quot;)      for idx, voice in enumerate(voices):          print(f&quot;&#123;idx&#125;: &#123;voice.name&#125; (语言: &#123;voice.languages&#125;, 性别: &#123;voice.gender&#125;), id: &#123;voice.id&#125;&quot;)        # 选择第一个中文女性音色（示例）      for voice in voices:          if &#x27;zh&#x27; in str(voice.languages) and &#x27;female&#x27; in str(voice.gender).lower():              engine.setProperty(&#x27;voice&#x27;, voice.id)              break        # 设置语速和音量      engine.setProperty(&#x27;rate&#x27;, 150)      engine.setProperty(&#x27;volume&#x27;, 1.0)        # 测试语音      engine.say(&quot;你好，这是选定的音色测试&quot;)      engine.runAndWait()      def speak_text(text):      engine = pyttsx3.init()      engine.setProperty(&#x27;rate&#x27;, 160)  # 语速（默认200）      engine.setProperty(&#x27;volume&#x27;, 0.9)  # 音量（0.0-1.0）      engine.setProperty(&#x27;voice&#x27;, &#x27;com.apple.eloquence.zh-CN.Tingting&#x27;)  # 选择女声音色（Windows）      engine.say(text)      engine.runAndWait()      if __name__ == &#x27;__main__&#x27;:      # list_and_select_voice()        with open(&#x27;data.txt&#x27;, &#x27;r&#x27;, encoding=&#x27;utf-8&#x27;) as f:          text = f.read()          if text:              speak_text(text)\n\n上面有列出所有音色的方法，后续想实现类似微信读书中的有声朗读功能\n","dateCreated":"2025-08-20T17:12:11+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-08-20T17:12:11+08:00","description":"","headline":"有声小说第一次尝试实现（pyttsx3）","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/","keywords":"learn, LLM_Application, TTS, Python"}</script>
     <meta name="description" content="使用pyttsx3进行txt内容读取，并进行朗读 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354# -*- coding: utf-8 -*-    # -----------------------------------------------">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="有声小说第一次尝试实现（pyttsx3）">
@@ -23,8 +23,8 @@
 <meta property="og:site_name" content="shaver&#39;s blog">
 <meta property="og:description" content="使用pyttsx3进行txt内容读取，并进行朗读 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354# -*- coding: utf-8 -*-    # -----------------------------------------------">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-08-20T09:37:00.000Z">
-<meta property="article:modified_time" content="2026-05-06T05:45:23.330Z">
+<meta property="article:published_time" content="2025-08-20T09:12:11.000Z">
+<meta property="article:modified_time" content="2026-05-06T06:17:57.699Z">
 <meta property="article:author" content="shaver">
 <meta property="article:tag" content="LLM_Application">
 <meta property="article:tag" content="Python">
@@ -107,7 +107,7 @@
     
     
         <div class="post-meta">
-    <time datetime="2025-08-20T17:37:00+08:00">
+    <time datetime="2025-08-20T17:12:11+08:00">
 	
 		    2025 年 8 月 20 日
     	
@@ -122,7 +122,7 @@
     <div class="post-content markdown">
         <div class="main-content-wrap">
             <p>使用pyttsx3进行txt内容读取，并进行朗读</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-  </span></span><br><span class="line">  </span><br><span class="line"><span class="comment"># -------------------------------------------------------------------------------  </span></span><br><span class="line"><span class="comment"># Name:         demo4  </span></span><br><span class="line"><span class="comment"># Description:  </span></span><br><span class="line"><span class="comment"># Author:       shaver  </span></span><br><span class="line"><span class="comment"># Date:         2025/8/19  </span></span><br><span class="line"><span class="comment"># -------------------------------------------------------------------------------  </span></span><br><span class="line">  </span><br><span class="line"><span class="keyword">import</span> pyttsx3  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">import</span> pyttsx3  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">list_and_select_voice</span>():  </span><br><span class="line">    engine = pyttsx3.init()  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 获取所有音色并打印  </span></span><br><span class="line">    voices = engine.getProperty(<span class="string">&#x27;voices&#x27;</span>)  </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;可用音色列表：&quot;</span>)  </span><br><span class="line">    <span class="keyword">for</span> idx, voice <span class="keyword">in</span> <span class="built_in">enumerate</span>(voices):  </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;idx&#125;</span>: <span class="subst">&#123;voice.name&#125;</span> (语言: <span class="subst">&#123;voice.languages&#125;</span>, 性别: <span class="subst">&#123;voice.gender&#125;</span>), id: <span class="subst">&#123;voice.<span class="built_in">id</span>&#125;</span>&quot;</span>)  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 选择第一个中文女性音色（示例）  </span></span><br><span class="line">    <span class="keyword">for</span> voice <span class="keyword">in</span> voices:  </span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;zh&#x27;</span> <span class="keyword">in</span> <span class="built_in">str</span>(voice.languages) <span class="keyword">and</span> <span class="string">&#x27;female&#x27;</span> <span class="keyword">in</span> <span class="built_in">str</span>(voice.gender).lower():  </span><br><span class="line">            engine.setProperty(<span class="string">&#x27;voice&#x27;</span>, voice.<span class="built_in">id</span>)  </span><br><span class="line">            <span class="keyword">break</span>  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 设置语速和音量  </span></span><br><span class="line">    engine.setProperty(<span class="string">&#x27;rate&#x27;</span>, <span class="number">150</span>)  </span><br><span class="line">    engine.setProperty(<span class="string">&#x27;volume&#x27;</span>, <span class="number">1.0</span>)  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 测试语音  </span></span><br><span class="line">    engine.say(<span class="string">&quot;你好，这是选定的音色测试&quot;</span>)  </span><br><span class="line">    engine.runAndWait()  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">speak_text</span>(<span class="params">text</span>):  </span><br><span class="line">    engine = pyttsx3.init()  </span><br><span class="line">    engine.setProperty(<span class="string">&#x27;rate&#x27;</span>, <span class="number">160</span>)  <span class="comment"># 语速（默认200）  </span></span><br><span class="line">    engine.setProperty(<span class="string">&#x27;volume&#x27;</span>, <span class="number">0.9</span>)  <span class="comment"># 音量（0.0-1.0）  </span></span><br><span class="line">    engine.setProperty(<span class="string">&#x27;voice&#x27;</span>, <span class="string">&#x27;com.apple.eloquence.zh-CN.Tingting&#x27;</span>)  <span class="comment"># 选择女声音色（Windows）  </span></span><br><span class="line">    engine.say(text)  </span><br><span class="line">    engine.runAndWait()  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:  </span><br><span class="line">    <span class="comment"># list_and_select_voice()  </span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;data.txt&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> f:  </span><br><span class="line">        text = f.read()  </span><br><span class="line">        <span class="keyword">if</span> text:  </span><br><span class="line">            speak_text(text)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-  </span></span><br><span class="line">  </span><br><span class="line"><span class="comment"># -------------------------------------------------------------------------------  </span></span><br><span class="line"><span class="comment"># Name:         demo4  </span></span><br><span class="line"><span class="comment"># Description:  </span></span><br><span class="line"><span class="comment"># Author:       shaver  </span></span><br><span class="line"><span class="comment"># Date:         2025/8/20  </span></span><br><span class="line"><span class="comment"># -------------------------------------------------------------------------------  </span></span><br><span class="line">  </span><br><span class="line"><span class="keyword">import</span> pyttsx3  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">import</span> pyttsx3  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">list_and_select_voice</span>():  </span><br><span class="line">    engine = pyttsx3.init()  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 获取所有音色并打印  </span></span><br><span class="line">    voices = engine.getProperty(<span class="string">&#x27;voices&#x27;</span>)  </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;可用音色列表：&quot;</span>)  </span><br><span class="line">    <span class="keyword">for</span> idx, voice <span class="keyword">in</span> <span class="built_in">enumerate</span>(voices):  </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;<span class="subst">&#123;idx&#125;</span>: <span class="subst">&#123;voice.name&#125;</span> (语言: <span class="subst">&#123;voice.languages&#125;</span>, 性别: <span class="subst">&#123;voice.gender&#125;</span>), id: <span class="subst">&#123;voice.<span class="built_in">id</span>&#125;</span>&quot;</span>)  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 选择第一个中文女性音色（示例）  </span></span><br><span class="line">    <span class="keyword">for</span> voice <span class="keyword">in</span> voices:  </span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;zh&#x27;</span> <span class="keyword">in</span> <span class="built_in">str</span>(voice.languages) <span class="keyword">and</span> <span class="string">&#x27;female&#x27;</span> <span class="keyword">in</span> <span class="built_in">str</span>(voice.gender).lower():  </span><br><span class="line">            engine.setProperty(<span class="string">&#x27;voice&#x27;</span>, voice.<span class="built_in">id</span>)  </span><br><span class="line">            <span class="keyword">break</span>  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 设置语速和音量  </span></span><br><span class="line">    engine.setProperty(<span class="string">&#x27;rate&#x27;</span>, <span class="number">150</span>)  </span><br><span class="line">    engine.setProperty(<span class="string">&#x27;volume&#x27;</span>, <span class="number">1.0</span>)  </span><br><span class="line">  </span><br><span class="line">    <span class="comment"># 测试语音  </span></span><br><span class="line">    engine.say(<span class="string">&quot;你好，这是选定的音色测试&quot;</span>)  </span><br><span class="line">    engine.runAndWait()  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">speak_text</span>(<span class="params">text</span>):  </span><br><span class="line">    engine = pyttsx3.init()  </span><br><span class="line">    engine.setProperty(<span class="string">&#x27;rate&#x27;</span>, <span class="number">160</span>)  <span class="comment"># 语速（默认200）  </span></span><br><span class="line">    engine.setProperty(<span class="string">&#x27;volume&#x27;</span>, <span class="number">0.9</span>)  <span class="comment"># 音量（0.0-1.0）  </span></span><br><span class="line">    engine.setProperty(<span class="string">&#x27;voice&#x27;</span>, <span class="string">&#x27;com.apple.eloquence.zh-CN.Tingting&#x27;</span>)  <span class="comment"># 选择女声音色（Windows）  </span></span><br><span class="line">    engine.say(text)  </span><br><span class="line">    engine.runAndWait()  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:  </span><br><span class="line">    <span class="comment"># list_and_select_voice()  </span></span><br><span class="line">  </span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&#x27;data.txt&#x27;</span>, <span class="string">&#x27;r&#x27;</span>, encoding=<span class="string">&#x27;utf-8&#x27;</span>) <span class="keyword">as</span> f:  </span><br><span class="line">        text = f.read()  </span><br><span class="line">        <span class="keyword">if</span> text:  </span><br><span class="line">            speak_text(text)</span><br></pre></td></tr></table></figure>
 
 <p>上面有列出所有音色的方法，后续想实现类似微信读书中的有声朗读功能</p>
 
@@ -397,7 +397,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
                 >
                     
                     
@@ -405,10 +405,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
-                            aria-label=": HuggingFace 核心组件介绍"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
                         >
-                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -425,7 +425,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
                 >
                     
                     
@@ -433,10 +433,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
                         >
-                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -481,6 +481,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="gguf 模型  learn llm_application gguf quantization"
                 >
                     
@@ -493,62 +521,6 @@
                             aria-label=": GGUF 模型"
                         >
                             <h3 class="media-heading">GGUF 模型</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LMDeploy 推理框架"
-                        >
-                            <h3 class="media-heading">LMDeploy 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Ollama 推理框架"
-                        >
-                            <h3 class="media-heading">Ollama 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -621,7 +593,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
                 >
                     
                     
@@ -629,10 +601,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Xtuner 训练框架"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
                         >
-                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -677,6 +649,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
                 >
                     
@@ -705,7 +705,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="大模型部署  learn llm_application inference"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
                 >
                     
                     
@@ -713,10 +713,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
-                            aria-label=": 大模型部署"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
                         >
-                            <h3 class="media-heading">大模型部署</h3>
+                            <h3 class="media-heading">情绪对话项目实践</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -733,7 +733,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                    data-search-text="大模型部署  learn llm_application inference"
                 >
                     
                     
@@ -741,10 +741,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 情绪对话项目实践"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
                         >
-                            <h3 class="media-heading">情绪对话项目实践</h3>
+                            <h3 class="media-heading">大模型部署</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -1125,7 +1125,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain langgraph rag"
                 >
                     
                     
@@ -1515,6 +1515,75 @@
 
     input.addEventListener('input', runLocalSearch);
     updateCount(baseCount);
+  })();
+</script>
+
+<script>
+  (function() {
+    function getHighlightPlainText(figure) {
+      var pre = figure.querySelector('td.code pre, .code pre');
+      if (!pre) return '';
+      var t = pre.innerText != null ? pre.innerText : pre.textContent;
+      return String(t || '').replace(/\u00a0/g, ' ');
+    }
+
+    function attachPostCodeCopyButtons() {
+      var scope = document.querySelector('.post-content');
+      if (!scope) return;
+      var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
+      for (var i = 0; i < blocks.length; i++) {
+        (function(fig) {
+          if (fig.getAttribute('data-copy-btn')) return;
+          if (!fig.querySelector('.code pre, td.code pre')) return;
+          fig.setAttribute('data-copy-btn', '1');
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'post-code-copy-btn';
+          btn.setAttribute('aria-label', '复制代码');
+          btn.textContent = '复制';
+          btn.addEventListener('click', function() {
+            var text = getHighlightPlainText(fig);
+            function showState(label) {
+              btn.textContent = label;
+              setTimeout(function() {
+                btn.textContent = '复制';
+                btn.disabled = false;
+              }, 2000);
+            }
+            btn.disabled = true;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function() {
+                showState('已复制');
+              }).catch(function() {
+                showState('复制失败');
+              });
+            } else {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.left = '-10000px';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showState('已复制');
+              } catch (e) {
+                showState('复制失败');
+              }
+              document.body.removeChild(ta);
+            }
+          });
+          fig.appendChild(btn);
+        })(blocks[i]);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachPostCodeCopyButtons);
+    } else {
+      attachPostCodeCopyButtons();
+    }
   })();
 </script>
 

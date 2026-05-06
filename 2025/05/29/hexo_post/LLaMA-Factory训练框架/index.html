@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 初步了解 前面课程，我们了解了大模型的增量微调（bert模型的二分任务）和全量微调（GPT2模型的古诗词），还剩一种训练方式-局部微调，也是我们大部分需求需要采用训练大模型的方式，而LLaMa-Factory就是一种比较好的局部微调的平台。\n \n https://llamafactory.readthedocs.io/zh-cn/latest/index.html#\n\n\n2 安装和使用安装：\n1234567# 如果后面需要进行量化  需要在安装llamactory之前安装auto_gptqgit clone --depth 1 https://github.com/hiyouga/LLaMA-Factory.gitcd LLaMA-Factorypip install -e &quot;.[torch,metrics]&quot;\n\n启动：\n1llamafactory-cli webui\n\n注意：上面的启动时所处路径应该在LLaMa-Factory下，这样我们所用的数据集下拉选会自动匹配到自带的路径\n接下来介绍一些比较关键的设置，其他的可以自己对照官网设置\n1.语言\n2.模型及模型路径\n3.数据集数据集如果我们在前面指定目录启动就可以看到上图的下拉选，我们同样可以增加自己的自定义数据集（按照规定格式），放在data目录下，同时在dataset_info.json文件配置，这样下拉选就可以看到我们指定的数据集名称。\ndata目录下有一个identity.json文件，这个是自我认知训练的数据集，就是告诉使用者，这个大模型的自我信息\n4.训练时使用到的参数截断长度   我们每条数据截取的最大长度，需要合理设置，尽量覆盖到所有数据，过大会造成不必要的GPU显存占用\n训练轮次  对应训练完我们所有数据集所有的数据为一次\n批处理大小  就是一次放我们数据集中的多少条数据给我们GPU\n5.输出目录存放我们训练完成后的权重数据\n6.其他参数设置日志间隔  每隔步数打印日志\n保存间隔  每隔步数保存权重，这个我们需要保证我们的步数大于100，否则不会有权重保留下来\n\n3.训练数据集处理上一个章节介绍了对应的modelscope平台，我们可以从上面获取对应的数据集，此次我们的训练框架llamafactory有自己指定的数据集格式，我们局部训练采用的数据集为指令监督微调数据集\n\n\n如果我们自定义的数据集格式不符合就需要转换成这种格式，此次我们微调的数据集时三国演义中的一些知识\n\n4 效果评估训练的时候，利用验证集进行效果评估后，再进行权重的保存\n\n1234567891011&#123;    &quot;predict_bleu-4&quot;: 98.56705762711864,    &quot;predict_model_preparation_time&quot;: 0.0062,    &quot;predict_rouge-1&quot;: 100.0,    &quot;predict_rouge-2&quot;: 100.0,    &quot;predict_rouge-l&quot;: 100.0,    &quot;predict_runtime&quot;: 18.3976,    &quot;predict_samples_per_second&quot;: 3.207,    &quot;predict_steps_per_second&quot;: 0.217&#125;\n\n参考：\t\thttps://zhuanlan.zhihu.com/p/647310970\n上面的评估指标可以参考上面链接了解，因为是用的训练集作为评估时的数据集，得到都是偏高的，我们一般采用chat进行评估，就是挑选一些关注的数据进行验证\n\n\n5 合并模型并导出上面验证没有问题就可以进行合并导出我们自己训练好的模型\n我们导出完成后再加载我们导出的模型进行验证\n\n6 量化模型导出量化操作，可以i理解为将我们模型内部的参数位数降低，这样可以在低算力设备上进行模型的步数推理，但是精度降低也会随之带来效果变差\n上面的参数需要注意设置，模型比较大的时候需要设置分块大小，导出设备设置auto，导出的时候会自己判断，量化等级越高，对应的模型参数越小，需要的算力设备要求也越低，随之效果也越差上面到导出过程可能会出现报错，需要检查后台窗口是否有依赖包需要安装，安装好重启llamafactory后再进行尝试\n明显量化后的模型表现就变差了，越小的模型，量化的等级越低，效果会变得更差\n","dateCreated":"2025-05-29T14:29:00+08:00","dateModified":"2026-05-06T13:44:38+08:00","datePublished":"2025-05-29T14:29:00+08:00","description":"","headline":"LLaMA-Factory 训练框架","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/","keywords":"learn, LLM_Application, LLaMA-Factory, fine-tuning"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 初步了解 前面课程，我们了解了大模型的增量微调（bert模型的二分任务）和全量微调（GPT2模型的古诗词），还剩一种训练方式-局部微调，也是我们大部分需求需要采用训练大模型的方式，而LLaMa-Factory就是一种比较好的局部微调的平台。\n \n https://llamafactory.readthedocs.io/zh-cn/latest/index.html#\n\n\n2 安装和使用安装：\n1234567# 如果后面需要进行量化  需要在安装llamactory之前安装auto_gptqgit clone --depth 1 https://github.com/hiyouga/LLaMA-Factory.gitcd LLaMA-Factorypip install -e &quot;.[torch,metrics]&quot;\n\n启动：\n1llamafactory-cli webui\n\n注意：上面的启动时所处路径应该在LLaMa-Factory下，这样我们所用的数据集下拉选会自动匹配到自带的路径\n接下来介绍一些比较关键的设置，其他的可以自己对照官网设置\n1.语言\n2.模型及模型路径\n3.数据集数据集如果我们在前面指定目录启动就可以看到上图的下拉选，我们同样可以增加自己的自定义数据集（按照规定格式），放在data目录下，同时在dataset_info.json文件配置，这样下拉选就可以看到我们指定的数据集名称。\ndata目录下有一个identity.json文件，这个是自我认知训练的数据集，就是告诉使用者，这个大模型的自我信息\n4.训练时使用到的参数截断长度   我们每条数据截取的最大长度，需要合理设置，尽量覆盖到所有数据，过大会造成不必要的GPU显存占用\n训练轮次  对应训练完我们所有数据集所有的数据为一次\n批处理大小  就是一次放我们数据集中的多少条数据给我们GPU\n5.输出目录存放我们训练完成后的权重数据\n6.其他参数设置日志间隔  每隔步数打印日志\n保存间隔  每隔步数保存权重，这个我们需要保证我们的步数大于100，否则不会有权重保留下来\n\n3.训练数据集处理上一个章节介绍了对应的modelscope平台，我们可以从上面获取对应的数据集，此次我们的训练框架llamafactory有自己指定的数据集格式，我们局部训练采用的数据集为指令监督微调数据集\n\n\n如果我们自定义的数据集格式不符合就需要转换成这种格式，此次我们微调的数据集时三国演义中的一些知识\n\n4 效果评估训练的时候，利用验证集进行效果评估后，再进行权重的保存\n\n1234567891011&#123;    &quot;predict_bleu-4&quot;: 98.56705762711864,    &quot;predict_model_preparation_time&quot;: 0.0062,    &quot;predict_rouge-1&quot;: 100.0,    &quot;predict_rouge-2&quot;: 100.0,    &quot;predict_rouge-l&quot;: 100.0,    &quot;predict_runtime&quot;: 18.3976,    &quot;predict_samples_per_second&quot;: 3.207,    &quot;predict_steps_per_second&quot;: 0.217&#125;\n\n参考：\t\thttps://zhuanlan.zhihu.com/p/647310970\n上面的评估指标可以参考上面链接了解，因为是用的训练集作为评估时的数据集，得到都是偏高的，我们一般采用chat进行评估，就是挑选一些关注的数据进行验证\n\n\n5 合并模型并导出上面验证没有问题就可以进行合并导出我们自己训练好的模型\n我们导出完成后再加载我们导出的模型进行验证\n\n6 量化模型导出量化操作，可以i理解为将我们模型内部的参数位数降低，这样可以在低算力设备上进行模型的步数推理，但是精度降低也会随之带来效果变差\n上面的参数需要注意设置，模型比较大的时候需要设置分块大小，导出设备设置auto，导出的时候会自己判断，量化等级越高，对应的模型参数越小，需要的算力设备要求也越低，随之效果也越差上面到导出过程可能会出现报错，需要检查后台窗口是否有依赖包需要安装，安装好重启llamafactory后再进行尝试\n明显量化后的模型表现就变差了，越小的模型，量化的等级越低，效果会变得更差\n","dateCreated":"2025-05-29T14:33:09+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-05-29T14:33:09+08:00","description":"","headline":"LLaMA-Factory 训练框架","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/","keywords":"learn, LLM_Application, LLaMA-Factory, fine-tuning"}</script>
     <meta name="description" content="1 初步了解 前面课程，我们了解了大模型的增量微调（bert模型的二分任务）和全量微调（GPT2模型的古诗词），还剩一种训练方式-局部微调，也是我们大部分需求需要采用训练大模型的方式，而LLaMa-Factory就是一种比较好的局部微调的平台。    https:&#x2F;&#x2F;llamafactory.readthedocs.io&#x2F;zh-cn&#x2F;latest&#x2F;index.html#   2 安装和使用安装：">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="LLaMA-Factory 训练框架">
@@ -42,8 +42,8 @@
 <meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6-IMG-20260506131035246.png">
 <meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6-IMG-20260506131035392.png">
 <meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6-IMG-20260506131035525.png">
-<meta property="article:published_time" content="2025-05-29T06:29:00.000Z">
-<meta property="article:modified_time" content="2026-05-06T05:44:38.419Z">
+<meta property="article:published_time" content="2025-05-29T06:33:09.000Z">
+<meta property="article:modified_time" content="2026-05-06T06:17:57.675Z">
 <meta property="article:author" content="shaver">
 <meta property="article:tag" content="LLM_Application">
 <meta property="article:tag" content="LLaMA-Factory">
@@ -127,7 +127,7 @@
     
     
         <div class="post-meta">
-    <time datetime="2025-05-29T14:29:00+08:00">
+    <time datetime="2025-05-29T14:33:09+08:00">
 	
 		    2025 年 5 月 29 日
     	
@@ -208,9 +208,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/"
-                    data-tooltip="Xtuner 训练框架"
-                    aria-label="上一篇: Xtuner 训练框架"
+                    href="/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"
+                    data-tooltip="LMDeploy 推理框架"
+                    aria-label="上一篇: LMDeploy 推理框架"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -222,9 +222,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"
-                    data-tooltip="LMDeploy 推理框架"
-                    aria-label="下一篇: LMDeploy 推理框架"
+                    href="/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"
+                    data-tooltip="vLLM 推理框架"
+                    aria-label="下一篇: vLLM 推理框架"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
@@ -456,7 +456,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
                 >
                     
                     
@@ -464,10 +464,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
-                            aria-label=": HuggingFace 核心组件介绍"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
                         >
-                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -484,7 +484,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
                 >
                     
                     
@@ -492,10 +492,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
                         >
-                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -540,6 +540,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="gguf 模型  learn llm_application gguf quantization"
                 >
                     
@@ -552,62 +580,6 @@
                             aria-label=": GGUF 模型"
                         >
                             <h3 class="media-heading">GGUF 模型</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LMDeploy 推理框架"
-                        >
-                            <h3 class="media-heading">LMDeploy 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Ollama 推理框架"
-                        >
-                            <h3 class="media-heading">Ollama 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -680,7 +652,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
                 >
                     
                     
@@ -688,10 +660,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Xtuner 训练框架"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
                         >
-                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -736,6 +708,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
                 >
                     
@@ -764,7 +764,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="大模型部署  learn llm_application inference"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
                 >
                     
                     
@@ -772,10 +772,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
-                            aria-label=": 大模型部署"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
                         >
-                            <h3 class="media-heading">大模型部署</h3>
+                            <h3 class="media-heading">情绪对话项目实践</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -792,7 +792,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                    data-search-text="大模型部署  learn llm_application inference"
                 >
                     
                     
@@ -800,10 +800,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 情绪对话项目实践"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
                         >
-                            <h3 class="media-heading">情绪对话项目实践</h3>
+                            <h3 class="media-heading">大模型部署</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -1184,7 +1184,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain langgraph rag"
                 >
                     
                     
@@ -1574,6 +1574,75 @@
 
     input.addEventListener('input', runLocalSearch);
     updateCount(baseCount);
+  })();
+</script>
+
+<script>
+  (function() {
+    function getHighlightPlainText(figure) {
+      var pre = figure.querySelector('td.code pre, .code pre');
+      if (!pre) return '';
+      var t = pre.innerText != null ? pre.innerText : pre.textContent;
+      return String(t || '').replace(/\u00a0/g, ' ');
+    }
+
+    function attachPostCodeCopyButtons() {
+      var scope = document.querySelector('.post-content');
+      if (!scope) return;
+      var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
+      for (var i = 0; i < blocks.length; i++) {
+        (function(fig) {
+          if (fig.getAttribute('data-copy-btn')) return;
+          if (!fig.querySelector('.code pre, td.code pre')) return;
+          fig.setAttribute('data-copy-btn', '1');
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'post-code-copy-btn';
+          btn.setAttribute('aria-label', '复制代码');
+          btn.textContent = '复制';
+          btn.addEventListener('click', function() {
+            var text = getHighlightPlainText(fig);
+            function showState(label) {
+              btn.textContent = label;
+              setTimeout(function() {
+                btn.textContent = '复制';
+                btn.disabled = false;
+              }, 2000);
+            }
+            btn.disabled = true;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function() {
+                showState('已复制');
+              }).catch(function() {
+                showState('复制失败');
+              });
+            } else {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.left = '-10000px';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showState('已复制');
+              } catch (e) {
+                showState('复制失败');
+              }
+              document.body.removeChild(ta);
+            }
+          });
+          fig.appendChild(btn);
+        })(blocks[i]);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachPostCodeCopyButtons);
+    } else {
+      attachPostCodeCopyButtons();
+    }
   })();
 </script>
 

@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 安装说明1.1  要求\n系统：Linux\nPython: 3.9 – 3.12\nNVIDIA CUDA GPU：算力 7.0 及以上（如 V100、T4、RTX20xx、A100、L4、H100 等）\n\n1.2  安装123456# 建立虚拟环境conda create -n vllm python=3.12 -yconda activate vllm# 安装依赖pip install vllm\n\n2 推理2.1 OpenAI兼容服务器1vllm serve NousResearch/Meta-Llama-3-8B-Instruct --dtype auto\n\n2.2 指定jinja聊天模板123vllm serve &lt;model&gt; --chat-template ./path-to-chat-template.jinja\n注意  在llamafactory中训练的时候，如果能够对应上模型的对话模板 就不需要额外选择对应的jinja格式的模板，否则就需要将其大模型对应的对话模板转换成jinja格式(可以在template.py中进行jinja转换)\n思维链：双刃剑，针对于预训练模型，十分依赖于数据集，对于后续的lora模型意义不大\n2.3 调用单轮：\n12345678# 使用openai的API风格调用from openai import OpenAIclient = OpenAI(base_url=&quot;http://0.0.0.0:8000/v1/&quot;, api_key=&quot;suibianxie&quot;)chat_completion = client.chat.completions.create(    messages=[&#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;你好，请介绍下你自己。&quot;&#125;],    model=&quot;/root/autodl-tmp/model/Qwen/Qwen2___5-0___5B-Instruct&quot;)print(chat_completion.choices[0].message.content)\n多轮：\n123456789101112131415161718192021222324252627282930#多轮对话from openai import OpenAI#定义多轮对话方法def run_chat_session():    #初始化客户端    client = OpenAI(base_url=&quot;http://0.0.0.0:8000/v1/&quot;,api_key=&quot;suibianxie&quot;)    #初始化对话历史    chat_history = []    #启动对话循环    while True:        #获取用户输入        user_input = input(&quot;用户：&quot;)        if user_input.lower() == &quot;exit&quot;:            print(&quot;退出对话。&quot;)            break        #更新对话历史(添加用户输入)        chat_history.append(&#123;&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:user_input&#125;)        #调用模型回答        try:            chat_complition = client.chat.completions.create(messages=chat_history,model=&quot;/root/autodl-tmp/model/Qwen/Qwen2___5-0___5B-Instruct&quot;)            #获取最新回答            model_response = chat_complition.choices[0]            print(&quot;AI:&quot;,model_response.message.content)            #更新对话历史（添加AI模型的回复）            chat_history.append(&#123;&quot;role&quot;:&quot;assistant&quot;,&quot;content&quot;:model_response.message.content&#125;)        except Exception as e:            print(&quot;发生错误：&quot;,e)            breakif __name__ == &#x27;__main__&#x27;:    run_chat_session()\n\n2.4 多卡推理-分布式1vllm serve facebook/opt-13b --tensor-parallel-size 4\n要运行多 GPU 服务，请在启动服务器时传入 --tensor-parallel-size 参数。例如，要在 4 个 GPU 上运行 API 服务器\n\n其他操作可以参考官网查看！！！https://vllm.hyper.ai/docs/inference-and-serving/distributed_serving_new\n","dateCreated":"2025-05-29T14:27:00+08:00","dateModified":"2026-05-06T13:45:29+08:00","datePublished":"2025-05-29T14:27:00+08:00","description":"","headline":"vLLM 推理框架","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/","keywords":"learn, LLM_Application, inference, vLLM"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 安装说明1.1  要求\n系统：Linux\nPython: 3.9 – 3.12\nNVIDIA CUDA GPU：算力 7.0 及以上（如 V100、T4、RTX20xx、A100、L4、H100 等）\n\n1.2  安装123456# 建立虚拟环境conda create -n vllm python=3.12 -yconda activate vllm# 安装依赖pip install vllm\n\n2 推理2.1 OpenAI兼容服务器1vllm serve NousResearch/Meta-Llama-3-8B-Instruct --dtype auto\n\n2.2 指定jinja聊天模板123vllm serve &lt;model&gt; --chat-template ./path-to-chat-template.jinja\n注意  在llamafactory中训练的时候，如果能够对应上模型的对话模板 就不需要额外选择对应的jinja格式的模板，否则就需要将其大模型对应的对话模板转换成jinja格式(可以在template.py中进行jinja转换)\n思维链：双刃剑，针对于预训练模型，十分依赖于数据集，对于后续的lora模型意义不大\n2.3 调用单轮：\n12345678# 使用openai的API风格调用from openai import OpenAIclient = OpenAI(base_url=&quot;http://0.0.0.0:8000/v1/&quot;, api_key=&quot;suibianxie&quot;)chat_completion = client.chat.completions.create(    messages=[&#123;&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;你好，请介绍下你自己。&quot;&#125;],    model=&quot;/root/autodl-tmp/model/Qwen/Qwen2___5-0___5B-Instruct&quot;)print(chat_completion.choices[0].message.content)\n多轮：\n123456789101112131415161718192021222324252627282930#多轮对话from openai import OpenAI#定义多轮对话方法def run_chat_session():    #初始化客户端    client = OpenAI(base_url=&quot;http://0.0.0.0:8000/v1/&quot;,api_key=&quot;suibianxie&quot;)    #初始化对话历史    chat_history = []    #启动对话循环    while True:        #获取用户输入        user_input = input(&quot;用户：&quot;)        if user_input.lower() == &quot;exit&quot;:            print(&quot;退出对话。&quot;)            break        #更新对话历史(添加用户输入)        chat_history.append(&#123;&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:user_input&#125;)        #调用模型回答        try:            chat_complition = client.chat.completions.create(messages=chat_history,model=&quot;/root/autodl-tmp/model/Qwen/Qwen2___5-0___5B-Instruct&quot;)            #获取最新回答            model_response = chat_complition.choices[0]            print(&quot;AI:&quot;,model_response.message.content)            #更新对话历史（添加AI模型的回复）            chat_history.append(&#123;&quot;role&quot;:&quot;assistant&quot;,&quot;content&quot;:model_response.message.content&#125;)        except Exception as e:            print(&quot;发生错误：&quot;,e)            breakif __name__ == &#x27;__main__&#x27;:    run_chat_session()\n\n2.4 多卡推理-分布式1vllm serve facebook/opt-13b --tensor-parallel-size 4\n要运行多 GPU 服务，请在启动服务器时传入 --tensor-parallel-size 参数。例如，要在 4 个 GPU 上运行 API 服务器\n\n其他操作可以参考官网查看！！！https://vllm.hyper.ai/docs/inference-and-serving/distributed_serving_new\n","dateCreated":"2025-05-29T14:30:34+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-05-29T14:30:34+08:00","description":"","headline":"vLLM 推理框架","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/","keywords":"learn, LLM_Application, inference, vLLM"}</script>
     <meta name="description" content="1 安装说明1.1  要求 系统：Linux Python: 3.9 – 3.12 NVIDIA CUDA GPU：算力 7.0 及以上（如 V100、T4、RTX20xx、A100、L4、H100 等）  1.2  安装123456# 建立虚拟环境conda create -n vllm python&#x3D;3.12 -yconda activate vllm# 安装依赖pip install vll">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="vLLM 推理框架">
@@ -23,8 +23,8 @@
 <meta property="og:site_name" content="shaver&#39;s blog">
 <meta property="og:description" content="1 安装说明1.1  要求 系统：Linux Python: 3.9 – 3.12 NVIDIA CUDA GPU：算力 7.0 及以上（如 V100、T4、RTX20xx、A100、L4、H100 等）  1.2  安装123456# 建立虚拟环境conda create -n vllm python&#x3D;3.12 -yconda activate vllm# 安装依赖pip install vll">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-05-29T06:27:00.000Z">
-<meta property="article:modified_time" content="2026-05-06T05:45:29.263Z">
+<meta property="article:published_time" content="2025-05-29T06:30:34.000Z">
+<meta property="article:modified_time" content="2026-05-06T06:17:57.691Z">
 <meta property="article:author" content="shaver">
 <meta property="article:tag" content="LLM_Application">
 <meta property="article:tag" content="inference">
@@ -107,7 +107,7 @@
     
     
         <div class="post-meta">
-    <time datetime="2025-05-29T14:27:00+08:00">
+    <time datetime="2025-05-29T14:30:34+08:00">
 	
 		    2025 年 5 月 29 日
     	
@@ -166,9 +166,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"
-                    data-tooltip="Ollama 推理框架"
-                    aria-label="上一篇: Ollama 推理框架"
+                    href="/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/"
+                    data-tooltip="LLaMA-Factory 训练框架"
+                    aria-label="上一篇: LLaMA-Factory 训练框架"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -414,7 +414,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
                 >
                     
                     
@@ -422,10 +422,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
-                            aria-label=": HuggingFace 核心组件介绍"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
                         >
-                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -442,7 +442,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
                 >
                     
                     
@@ -450,10 +450,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
                         >
-                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -498,6 +498,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="gguf 模型  learn llm_application gguf quantization"
                 >
                     
@@ -510,62 +538,6 @@
                             aria-label=": GGUF 模型"
                         >
                             <h3 class="media-heading">GGUF 模型</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LMDeploy 推理框架"
-                        >
-                            <h3 class="media-heading">LMDeploy 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Ollama 推理框架"
-                        >
-                            <h3 class="media-heading">Ollama 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -638,7 +610,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
                 >
                     
                     
@@ -646,10 +618,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Xtuner 训练框架"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
                         >
-                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -694,6 +666,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
                 >
                     
@@ -722,7 +722,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="大模型部署  learn llm_application inference"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
                 >
                     
                     
@@ -730,10 +730,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
-                            aria-label=": 大模型部署"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
                         >
-                            <h3 class="media-heading">大模型部署</h3>
+                            <h3 class="media-heading">情绪对话项目实践</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -750,7 +750,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                    data-search-text="大模型部署  learn llm_application inference"
                 >
                     
                     
@@ -758,10 +758,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 情绪对话项目实践"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
                         >
-                            <h3 class="media-heading">情绪对话项目实践</h3>
+                            <h3 class="media-heading">大模型部署</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -1142,7 +1142,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain langgraph rag"
                 >
                     
                     
@@ -1532,6 +1532,75 @@
 
     input.addEventListener('input', runLocalSearch);
     updateCount(baseCount);
+  })();
+</script>
+
+<script>
+  (function() {
+    function getHighlightPlainText(figure) {
+      var pre = figure.querySelector('td.code pre, .code pre');
+      if (!pre) return '';
+      var t = pre.innerText != null ? pre.innerText : pre.textContent;
+      return String(t || '').replace(/\u00a0/g, ' ');
+    }
+
+    function attachPostCodeCopyButtons() {
+      var scope = document.querySelector('.post-content');
+      if (!scope) return;
+      var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
+      for (var i = 0; i < blocks.length; i++) {
+        (function(fig) {
+          if (fig.getAttribute('data-copy-btn')) return;
+          if (!fig.querySelector('.code pre, td.code pre')) return;
+          fig.setAttribute('data-copy-btn', '1');
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'post-code-copy-btn';
+          btn.setAttribute('aria-label', '复制代码');
+          btn.textContent = '复制';
+          btn.addEventListener('click', function() {
+            var text = getHighlightPlainText(fig);
+            function showState(label) {
+              btn.textContent = label;
+              setTimeout(function() {
+                btn.textContent = '复制';
+                btn.disabled = false;
+              }, 2000);
+            }
+            btn.disabled = true;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function() {
+                showState('已复制');
+              }).catch(function() {
+                showState('复制失败');
+              });
+            } else {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.left = '-10000px';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showState('已复制');
+              } catch (e) {
+                showState('复制失败');
+              }
+              document.body.removeChild(ta);
+            }
+          });
+          fig.appendChild(btn);
+        })(blocks[i]);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachPostCodeCopyButtons);
+    } else {
+      attachPostCodeCopyButtons();
+    }
   })();
 </script>
 

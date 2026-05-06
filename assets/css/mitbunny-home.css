@@ -510,6 +510,86 @@ body.is-home-landing #footer {
   padding: 10px 0;
 }
 
+/* Hexo figure.highlight：用样式隐藏行号列，效果接近 line_number:false，无需改 Markdown */
+.post-content figure.highlight .gutter,
+.post-content .codeblock .gutter {
+  display: none !important;
+}
+
+.post-content figure.highlight .code,
+.post-content .codeblock .code {
+  width: 100%;
+  padding: 0.35em 16px;
+  vertical-align: top;
+}
+
+.post-content figure.highlight .code pre,
+.post-content .codeblock .code pre {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.post-content figure.highlight,
+.post-content .codeblock {
+  position: relative;
+  margin: 14px 0;
+  padding: 38px 0 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f4;
+  background: #f6f8fc;
+  overflow: hidden;
+}
+
+.post-content .post-code-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 2;
+  margin: 0;
+  padding: 5px 12px;
+  font-size: 12px;
+  line-height: 1.2;
+  font-family: inherit;
+  color: #3a5080;
+  cursor: pointer;
+  border: 1px solid #c9d4eb;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 2px rgba(55, 76, 115, 0.06);
+}
+
+.post-content .post-code-copy-btn:hover {
+  background: #fff;
+  border-color: #9eb5e8;
+  color: #1f3e72;
+}
+
+.post-content .post-code-copy-btn:focus {
+  outline: 2px solid #6b93e8;
+  outline-offset: 2px;
+}
+
+.post-content .post-code-copy-btn:disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.post-content figure.highlight table,
+.post-content .codeblock table {
+  display: block;
+  width: 100%;
+}
+
+.post-content figure.highlight .line,
+.post-content .codeblock .line {
+  min-height: 1.5em;
+}
+
 @media (max-width: 768px) {
   .mitbunny-home {
     padding: 26px 16px 42px;

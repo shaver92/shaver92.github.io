@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"简介GGUF，全称 GPT-Generated Unified Format。\n提到GGUF 就不得不提到它的前身 GGML（GPT-Generated Model Language）。GGML 是专门为了机器学习设计的张量库，最早可以追溯到 2022/10。其目的是为了有一个单文件共享的格式，并且易于在不同架构的 GPU 和 CPU 上进行推理。但在后续的开发中，遇到了灵活性不足、相容性及难以维护的问题。\n\n在传统的 Deep Learning Model 开发中大多使用 PyTorch 来进行开发，但因为在部署时会面临相依 Lirbrary 太多、版本管理的问题于才有了 GGML、GGMF、GGJT 等格式，而在开源社群不停的迭代后 GGUF 就诞生了。\n\nGGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初面临的问题，包括：\n1）可扩展性：轻松为 GGML 架构下的工具添加新功能，或者向 GGUF 模型添加新 Feature，不会破坏与现有模型的兼容性。\n2）对 mmap（内存映射）的兼容性：该模型可以使用 mmap 进行加载（原理解析可见参考），实现快速载入和存储。（从 GGJT 开始导入，可参考 GitHub）\n3）易于使用：模型可以使用少量代码轻松加载和存储，无需依赖的 Library，同时对于不同编程语言支持程度也高。\n4）模型信息完整：加载模型所需的所有信息都包含在模型文件中，不需要额外编写设置文件。\n5）有利于模型量化：GGUF 支持模型量化（4 位、8 位、F16），在 GPU 变得越来越昂贵的情况下，节省 vRAM 成本也非常重要。\n\n\nGGUF转换工具llama.cpp官网：\thttps://github.com/ggml-org/llama.cpp\n安装：\n12git clone https://github.com/ggerganov/llama.cpp.gitpip install -r llama.cpp/requirements.txt\n\n操作说明：\n123456# 如果不量化，保留模型的效果python llama.cpp/convert_hf_to_gguf.py ./Meta-Llama-3-8B-Instruct --outtype f16--verbose --outfile Meta-Llama-3-8B-Instruct-gguf.gguf# 如果需要量化（加速并有损效果），直接执行下面脚本就可以python llama.cpp/convert_hf_to_gguf.py ./Meta-Llama-3-8B-Instruct --outtypeq8_0 --verbose --outfile Meta-Llama-3-8B-Instruct-gguf_q8_0.gguf\n参数说明：这里–outtype是输出类型，代表含义：&#x3D;&#x3D;q2_k：&#x3D;&#x3D;特定张量（Tensor）采用较高的精度设置，而其他的则保持基础级别。&#x3D;&#x3D;q3_k_l、q3_k_m、q3_k_s：&#x3D;&#x3D;这些变体在不同张量上使用不同级别的精度，从而达到性能和效率的平衡。&#x3D;&#x3D;q4_0&#x3D;&#x3D;：这是最初的量化方案，使用 4 位精度。&#x3D;&#x3D;q4_1 和 q4_k_m、q4_k_s：&#x3D;&#x3D;这些提供了不同程度的准确性和推理速度，适合需要平衡资源使用的场景。&#x3D;&#x3D;q5_0、q5_1、q5_k_m、q5_k_s：&#x3D;&#x3D;这些版本在保证更高准确度的同时，会使用更多的资源并且推理速度较慢。&#x3D;&#x3D;q6_k 和 q8_0：&#x3D;&#x3D;这些提供了最高的精度，但是因为高资源消耗和慢速度，可能不适合所有用户。&#x3D;&#x3D;fp16 和 f32:&#x3D;&#x3D; 不量化，保留原始精度。\n实践：\n1234python llama.cpp/convert_hf_to_gguf.py /root/autodl-tmp/model/Qwen/Qwen2.5-1.5B-Instruct --outtype q8_0 --verbose --outfile /root/autodl-tmp/model/Qwen/Qwen2.5-1.5B-Instruct-gguf_q8_0.gguf\n\n总结\n了解GGUF模型的来历及优点\n学会使用llama.cpp，以及自己导出GGUF模型\n\n","dateCreated":"2025-05-29T14:26:00+08:00","dateModified":"2026-05-06T13:45:07+08:00","datePublished":"2025-05-29T14:26:00+08:00","description":"","headline":"GGUF 模型","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/","keywords":"learn, LLM_Application, GGUF, quantization"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"简介GGUF，全称 GPT-Generated Unified Format。\n提到GGUF 就不得不提到它的前身 GGML（GPT-Generated Model Language）。GGML 是专门为了机器学习设计的张量库，最早可以追溯到 2022/10。其目的是为了有一个单文件共享的格式，并且易于在不同架构的 GPU 和 CPU 上进行推理。但在后续的开发中，遇到了灵活性不足、相容性及难以维护的问题。\n\n在传统的 Deep Learning Model 开发中大多使用 PyTorch 来进行开发，但因为在部署时会面临相依 Lirbrary 太多、版本管理的问题于才有了 GGML、GGMF、GGJT 等格式，而在开源社群不停的迭代后 GGUF 就诞生了。\n\nGGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初面临的问题，包括：\n1）可扩展性：轻松为 GGML 架构下的工具添加新功能，或者向 GGUF 模型添加新 Feature，不会破坏与现有模型的兼容性。\n2）对 mmap（内存映射）的兼容性：该模型可以使用 mmap 进行加载（原理解析可见参考），实现快速载入和存储。（从 GGJT 开始导入，可参考 GitHub）\n3）易于使用：模型可以使用少量代码轻松加载和存储，无需依赖的 Library，同时对于不同编程语言支持程度也高。\n4）模型信息完整：加载模型所需的所有信息都包含在模型文件中，不需要额外编写设置文件。\n5）有利于模型量化：GGUF 支持模型量化（4 位、8 位、F16），在 GPU 变得越来越昂贵的情况下，节省 vRAM 成本也非常重要。\n\n\nGGUF转换工具llama.cpp官网：\thttps://github.com/ggml-org/llama.cpp\n安装：\n12git clone https://github.com/ggerganov/llama.cpp.gitpip install -r llama.cpp/requirements.txt\n\n操作说明：\n123456# 如果不量化，保留模型的效果python llama.cpp/convert_hf_to_gguf.py ./Meta-Llama-3-8B-Instruct --outtype f16--verbose --outfile Meta-Llama-3-8B-Instruct-gguf.gguf# 如果需要量化（加速并有损效果），直接执行下面脚本就可以python llama.cpp/convert_hf_to_gguf.py ./Meta-Llama-3-8B-Instruct --outtypeq8_0 --verbose --outfile Meta-Llama-3-8B-Instruct-gguf_q8_0.gguf\n参数说明：这里–outtype是输出类型，代表含义：&#x3D;&#x3D;q2_k：&#x3D;&#x3D;特定张量（Tensor）采用较高的精度设置，而其他的则保持基础级别。&#x3D;&#x3D;q3_k_l、q3_k_m、q3_k_s：&#x3D;&#x3D;这些变体在不同张量上使用不同级别的精度，从而达到性能和效率的平衡。&#x3D;&#x3D;q4_0&#x3D;&#x3D;：这是最初的量化方案，使用 4 位精度。&#x3D;&#x3D;q4_1 和 q4_k_m、q4_k_s：&#x3D;&#x3D;这些提供了不同程度的准确性和推理速度，适合需要平衡资源使用的场景。&#x3D;&#x3D;q5_0、q5_1、q5_k_m、q5_k_s：&#x3D;&#x3D;这些版本在保证更高准确度的同时，会使用更多的资源并且推理速度较慢。&#x3D;&#x3D;q6_k 和 q8_0：&#x3D;&#x3D;这些提供了最高的精度，但是因为高资源消耗和慢速度，可能不适合所有用户。&#x3D;&#x3D;fp16 和 f32:&#x3D;&#x3D; 不量化，保留原始精度。\n实践：\n1234python llama.cpp/convert_hf_to_gguf.py /root/autodl-tmp/model/Qwen/Qwen2.5-1.5B-Instruct --outtype q8_0 --verbose --outfile /root/autodl-tmp/model/Qwen/Qwen2.5-1.5B-Instruct-gguf_q8_0.gguf\n\n总结\n了解GGUF模型的来历及优点\n学会使用llama.cpp，以及自己导出GGUF模型\n\n","dateCreated":"2025-05-29T14:23:47+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-05-29T14:23:47+08:00","description":"","headline":"GGUF 模型","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/","keywords":"learn, LLM_Application, GGUF, quantization"}</script>
     <meta name="description" content="简介GGUF，全称 GPT-Generated Unified Format。 提到GGUF 就不得不提到它的前身 GGML（GPT-Generated Model Language）。GGML 是专门为了机器学习设计的张量库，最早可以追溯到 2022&#x2F;10。其目的是为了有一个单文件共享的格式，并且易于在不同架构的 GPU 和 CPU 上进行推理。但在后续的开发中，遇到了灵活性不足、相容性及难以维">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="GGUF 模型">
@@ -25,8 +25,8 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/GGUF%E6%A8%A1%E5%9E%8B-IMG-20260506131005681.png">
 <meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/GGUF%E6%A8%A1%E5%9E%8B-IMG-20260506131005986.png">
-<meta property="article:published_time" content="2025-05-29T06:26:00.000Z">
-<meta property="article:modified_time" content="2026-05-06T05:45:07.216Z">
+<meta property="article:published_time" content="2025-05-29T06:23:47.000Z">
+<meta property="article:modified_time" content="2026-05-06T06:17:57.672Z">
 <meta property="article:author" content="shaver">
 <meta property="article:tag" content="GGUF">
 <meta property="article:tag" content="LLM_Application">
@@ -110,7 +110,7 @@
     
     
         <div class="post-meta">
-    <time datetime="2025-05-29T14:26:00+08:00">
+    <time datetime="2025-05-29T14:23:47+08:00">
 	
 		    2025 年 5 月 29 日
     	
@@ -189,9 +189,9 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EGPT2%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83%E5%AE%9E%E8%B7%B5/"
-                    data-tooltip="基于 GPT2 模型的微调训练实践"
-                    aria-label="下一篇: 基于 GPT2 模型的微调训练实践"
+                    href="/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/"
+                    data-tooltip="Xtuner 训练框架"
+                    aria-label="下一篇: Xtuner 训练框架"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
@@ -423,7 +423,7 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                 
                 <div
                     class="media"
-                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
                 >
                     
                     
@@ -431,10 +431,10 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
-                            aria-label=": HuggingFace 核心组件介绍"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
                         >
-                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -451,7 +451,7 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                 
                 <div
                     class="media"
-                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
                 >
                     
                     
@@ -459,10 +459,10 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
                         >
-                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -507,6 +507,34 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                 
                 <div
                     class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="gguf 模型  learn llm_application gguf quantization"
                 >
                     
@@ -519,62 +547,6 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                             aria-label=": GGUF 模型"
                         >
                             <h3 class="media-heading">GGUF 模型</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LMDeploy 推理框架"
-                        >
-                            <h3 class="media-heading">LMDeploy 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Ollama 推理框架"
-                        >
-                            <h3 class="media-heading">Ollama 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -647,7 +619,7 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                 
                 <div
                     class="media"
-                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
                 >
                     
                     
@@ -655,10 +627,10 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Xtuner 训练框架"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
                         >
-                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -703,6 +675,34 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                 
                 <div
                     class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
                 >
                     
@@ -731,7 +731,7 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                 
                 <div
                     class="media"
-                    data-search-text="大模型部署  learn llm_application inference"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
                 >
                     
                     
@@ -739,10 +739,10 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
-                            aria-label=": 大模型部署"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
                         >
-                            <h3 class="media-heading">大模型部署</h3>
+                            <h3 class="media-heading">情绪对话项目实践</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -759,7 +759,7 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                 
                 <div
                     class="media"
-                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                    data-search-text="大模型部署  learn llm_application inference"
                 >
                     
                     
@@ -767,10 +767,10 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 情绪对话项目实践"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
                         >
-                            <h3 class="media-heading">情绪对话项目实践</h3>
+                            <h3 class="media-heading">大模型部署</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -1151,7 +1151,7 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
                 
                 <div
                     class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain langgraph rag"
                 >
                     
                     
@@ -1541,6 +1541,75 @@ GGUF 实际上是基于 GGJT 的格式进行优化的，并解决了 GGML 当初
 
     input.addEventListener('input', runLocalSearch);
     updateCount(baseCount);
+  })();
+</script>
+
+<script>
+  (function() {
+    function getHighlightPlainText(figure) {
+      var pre = figure.querySelector('td.code pre, .code pre');
+      if (!pre) return '';
+      var t = pre.innerText != null ? pre.innerText : pre.textContent;
+      return String(t || '').replace(/\u00a0/g, ' ');
+    }
+
+    function attachPostCodeCopyButtons() {
+      var scope = document.querySelector('.post-content');
+      if (!scope) return;
+      var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
+      for (var i = 0; i < blocks.length; i++) {
+        (function(fig) {
+          if (fig.getAttribute('data-copy-btn')) return;
+          if (!fig.querySelector('.code pre, td.code pre')) return;
+          fig.setAttribute('data-copy-btn', '1');
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'post-code-copy-btn';
+          btn.setAttribute('aria-label', '复制代码');
+          btn.textContent = '复制';
+          btn.addEventListener('click', function() {
+            var text = getHighlightPlainText(fig);
+            function showState(label) {
+              btn.textContent = label;
+              setTimeout(function() {
+                btn.textContent = '复制';
+                btn.disabled = false;
+              }, 2000);
+            }
+            btn.disabled = true;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function() {
+                showState('已复制');
+              }).catch(function() {
+                showState('复制失败');
+              });
+            } else {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.left = '-10000px';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showState('已复制');
+              } catch (e) {
+                showState('复制失败');
+              }
+              document.body.removeChild(ta);
+            }
+          });
+          fig.appendChild(btn);
+        })(blocks[i]);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachPostCodeCopyButtons);
+    } else {
+      attachPostCodeCopyButtons();
+    }
   })();
 </script>
 

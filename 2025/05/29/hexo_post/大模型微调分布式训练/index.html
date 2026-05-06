@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 基本概念\n模型规模爆炸：现代大模型（如GPT-3、LLaMA等）参数量达千亿级别，单卡GPU无法存储完整模型。\n计算资源需求：训练大模型需要海量计算（如GPT-3需数万GPU小时），分布式训练可加速训练过程。\n内存瓶颈：单卡显存不足以容纳大模型参数、梯度及优化器状态。\n\n处于上面3个背景下，大模型微调分布式训练方案就因运而生\n\n2 核心技术数据并行（Data Parallelism）\t原理：将数据划分为多个批次，分发到不同设备，每个设备拥有完整的模型副本。\t同步方式：通过All-Reduce操作同步梯度（如PyTorch的DistributedDataParallel）。\t挑战：通信开销大，显存占用高（需存储完整模型参数和优化器状态）。\n模型并行（Model Parallelism）\t原理：将模型切分到不同设备（如按层或张量分片）。\t类型：\t\t横向并行（层拆分）：将模型的层分配到不同设备。\t\t纵向并行（张量拆分）：如Megatron-LM将矩阵乘法分片。\t挑战：设备间通信频繁，负载均衡需精细设计。\n流水线并行（Pipeline Parallelism）\t原理：将模型按层划分为多个阶段（stage），数据分块后按流水线执行。\t优化：微批次（Micro-batching）减少流水线气泡（Bubble）。\t挑战：需平衡阶段划分，避免资源闲置。\n混合并行（3D并行）\t组合策略：结合数据并行、模型并行、流水线并行，典型应用如训练千亿级模型。\t案例：微软Turing-NLG、Meta的LLaMA-2。\n\n3 deepseed分布式训练优化框架3.1 概述定位：微软开源的分布式训练优化框架，支持千亿参数模型训练。核心目标：降低大模型训练成本，提升显存和计算效率。集成生态：与PyTorch无缝兼容，支持Hugging Face，Transformers库。\n3.2 核心技术ZeRO（Zero Redundancy Optimizer）原理：通过分片优化器状态、梯度、参数，消除数据并行中的显存冗余。阶段划分：\tZeRO-1：优化器状态分片。\tZeRO-2：梯度分片 + 优化器状态分片。\tZeRO-3：参数分片 + 梯度分片 + 优化器状态分片。\t优势：显存占用随设备数线性下降，支持训练更大模型。\n3.3 显存优化技术梯度检查点（Activation Checkpointing）：\t用时间换空间，减少激活值显存占用。\tCPU Offloading：\t将优化器状态和梯度卸载到CPU内存。\t混合精度训练：\tFP16&#x2F;BP16与动态损失缩放（Loss Scaling）。\t大规模推理支持：\t模型并行推理（如ZeRO-Inference）。\t自适应通信优化：\t自动选择最佳通信策略（如All-Reduce vs. All-Gather）。\n3.4 优势与特点显存效率高：\tZeRO-3可将显存占用降低至1&#x2F;设备数。\n易用性强：\t通过少量代码修改即可应用（如DeepSpeed配置JSON文件）。\n扩展性优秀：\t支持千卡级集群训练。\n开源社区支持：\t持续更新，与Hugging Face等生态深度集成。\n3.5 使用场景训练百亿&#x2F;千亿参数模型（如GPT-3、Turing-NLG）。资源受限环境：单机多卡训练时通过Offloading扩展模型规模。快速实验：通过ZeRO-2加速中等规模模型训练。\n","dateCreated":"2025-05-29T15:58:00+08:00","dateModified":"2026-05-06T13:45:27+08:00","datePublished":"2025-05-29T15:58:00+08:00","description":"","headline":"大模型微调分布式训练","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/","keywords":"learn, LLM_Application, fine-tuning, distributed-training"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 基本概念\n模型规模爆炸：现代大模型（如GPT-3、LLaMA等）参数量达千亿级别，单卡GPU无法存储完整模型。\n计算资源需求：训练大模型需要海量计算（如GPT-3需数万GPU小时），分布式训练可加速训练过程。\n内存瓶颈：单卡显存不足以容纳大模型参数、梯度及优化器状态。\n\n处于上面3个背景下，大模型微调分布式训练方案就因运而生\n\n2 核心技术数据并行（Data Parallelism）\t原理：将数据划分为多个批次，分发到不同设备，每个设备拥有完整的模型副本。\t同步方式：通过All-Reduce操作同步梯度（如PyTorch的DistributedDataParallel）。\t挑战：通信开销大，显存占用高（需存储完整模型参数和优化器状态）。\n模型并行（Model Parallelism）\t原理：将模型切分到不同设备（如按层或张量分片）。\t类型：\t\t横向并行（层拆分）：将模型的层分配到不同设备。\t\t纵向并行（张量拆分）：如Megatron-LM将矩阵乘法分片。\t挑战：设备间通信频繁，负载均衡需精细设计。\n流水线并行（Pipeline Parallelism）\t原理：将模型按层划分为多个阶段（stage），数据分块后按流水线执行。\t优化：微批次（Micro-batching）减少流水线气泡（Bubble）。\t挑战：需平衡阶段划分，避免资源闲置。\n混合并行（3D并行）\t组合策略：结合数据并行、模型并行、流水线并行，典型应用如训练千亿级模型。\t案例：微软Turing-NLG、Meta的LLaMA-2。\n\n3 deepseed分布式训练优化框架3.1 概述定位：微软开源的分布式训练优化框架，支持千亿参数模型训练。核心目标：降低大模型训练成本，提升显存和计算效率。集成生态：与PyTorch无缝兼容，支持Hugging Face，Transformers库。\n3.2 核心技术ZeRO（Zero Redundancy Optimizer）原理：通过分片优化器状态、梯度、参数，消除数据并行中的显存冗余。阶段划分：\tZeRO-1：优化器状态分片。\tZeRO-2：梯度分片 + 优化器状态分片。\tZeRO-3：参数分片 + 梯度分片 + 优化器状态分片。\t优势：显存占用随设备数线性下降，支持训练更大模型。\n3.3 显存优化技术梯度检查点（Activation Checkpointing）：\t用时间换空间，减少激活值显存占用。\tCPU Offloading：\t将优化器状态和梯度卸载到CPU内存。\t混合精度训练：\tFP16&#x2F;BP16与动态损失缩放（Loss Scaling）。\t大规模推理支持：\t模型并行推理（如ZeRO-Inference）。\t自适应通信优化：\t自动选择最佳通信策略（如All-Reduce vs. All-Gather）。\n3.4 优势与特点显存效率高：\tZeRO-3可将显存占用降低至1&#x2F;设备数。\n易用性强：\t通过少量代码修改即可应用（如DeepSpeed配置JSON文件）。\n扩展性优秀：\t支持千卡级集群训练。\n开源社区支持：\t持续更新，与Hugging Face等生态深度集成。\n3.5 使用场景训练百亿&#x2F;千亿参数模型（如GPT-3、Turing-NLG）。资源受限环境：单机多卡训练时通过Offloading扩展模型规模。快速实验：通过ZeRO-2加速中等规模模型训练。\n","dateCreated":"2025-05-29T15:09:58+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-05-29T15:09:58+08:00","description":"","headline":"大模型微调分布式训练","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/","keywords":"learn, LLM_Application, fine-tuning, distributed-training"}</script>
     <meta name="description" content="1 基本概念 模型规模爆炸：现代大模型（如GPT-3、LLaMA等）参数量达千亿级别，单卡GPU无法存储完整模型。 计算资源需求：训练大模型需要海量计算（如GPT-3需数万GPU小时），分布式训练可加速训练过程。 内存瓶颈：单卡显存不足以容纳大模型参数、梯度及优化器状态。  处于上面3个背景下，大模型微调分布式训练方案就因运而生  2 核心技术数据并行（Data Parallelism）	原理：将">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="大模型微调分布式训练">
@@ -23,8 +23,8 @@
 <meta property="og:site_name" content="shaver&#39;s blog">
 <meta property="og:description" content="1 基本概念 模型规模爆炸：现代大模型（如GPT-3、LLaMA等）参数量达千亿级别，单卡GPU无法存储完整模型。 计算资源需求：训练大模型需要海量计算（如GPT-3需数万GPU小时），分布式训练可加速训练过程。 内存瓶颈：单卡显存不足以容纳大模型参数、梯度及优化器状态。  处于上面3个背景下，大模型微调分布式训练方案就因运而生  2 核心技术数据并行（Data Parallelism）	原理：将">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-05-29T07:58:00.000Z">
-<meta property="article:modified_time" content="2026-05-06T05:45:27.469Z">
+<meta property="article:published_time" content="2025-05-29T07:09:58.000Z">
+<meta property="article:modified_time" content="2026-05-06T06:17:57.695Z">
 <meta property="article:author" content="shaver">
 <meta property="article:tag" content="LLM_Application">
 <meta property="article:tag" content="distributed-training">
@@ -107,7 +107,7 @@
     
     
         <div class="post-meta">
-    <time datetime="2025-05-29T15:58:00+08:00">
+    <time datetime="2025-05-29T15:09:58+08:00">
 	
 		    2025 年 5 月 29 日
     	
@@ -179,9 +179,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/05/29/hexo_post/OpenCompass%E8%AF%84%E4%BC%B0%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6/"
-                    data-tooltip="OpenCompass 评估测试框架"
-                    aria-label="下一篇: OpenCompass 评估测试框架"
+                    href="/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"
+                    data-tooltip="Ollama 推理框架"
+                    aria-label="下一篇: Ollama 推理框架"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
@@ -413,7 +413,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
                 >
                     
                     
@@ -421,10 +421,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
-                            aria-label=": HuggingFace 核心组件介绍"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
                         >
-                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -441,7 +441,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
                 >
                     
                     
@@ -449,10 +449,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
                         >
-                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -497,6 +497,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="gguf 模型  learn llm_application gguf quantization"
                 >
                     
@@ -509,62 +537,6 @@
                             aria-label=": GGUF 模型"
                         >
                             <h3 class="media-heading">GGUF 模型</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LMDeploy 推理框架"
-                        >
-                            <h3 class="media-heading">LMDeploy 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Ollama 推理框架"
-                        >
-                            <h3 class="media-heading">Ollama 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -637,7 +609,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
                 >
                     
                     
@@ -645,10 +617,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Xtuner 训练框架"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
                         >
-                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -693,6 +665,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
                 >
                     
@@ -721,7 +721,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="大模型部署  learn llm_application inference"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
                 >
                     
                     
@@ -729,10 +729,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
-                            aria-label=": 大模型部署"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
                         >
-                            <h3 class="media-heading">大模型部署</h3>
+                            <h3 class="media-heading">情绪对话项目实践</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -749,7 +749,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                    data-search-text="大模型部署  learn llm_application inference"
                 >
                     
                     
@@ -757,10 +757,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 情绪对话项目实践"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
                         >
-                            <h3 class="media-heading">情绪对话项目实践</h3>
+                            <h3 class="media-heading">大模型部署</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -1141,7 +1141,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain langgraph rag"
                 >
                     
                     
@@ -1531,6 +1531,75 @@
 
     input.addEventListener('input', runLocalSearch);
     updateCount(baseCount);
+  })();
+</script>
+
+<script>
+  (function() {
+    function getHighlightPlainText(figure) {
+      var pre = figure.querySelector('td.code pre, .code pre');
+      if (!pre) return '';
+      var t = pre.innerText != null ? pre.innerText : pre.textContent;
+      return String(t || '').replace(/\u00a0/g, ' ');
+    }
+
+    function attachPostCodeCopyButtons() {
+      var scope = document.querySelector('.post-content');
+      if (!scope) return;
+      var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
+      for (var i = 0; i < blocks.length; i++) {
+        (function(fig) {
+          if (fig.getAttribute('data-copy-btn')) return;
+          if (!fig.querySelector('.code pre, td.code pre')) return;
+          fig.setAttribute('data-copy-btn', '1');
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'post-code-copy-btn';
+          btn.setAttribute('aria-label', '复制代码');
+          btn.textContent = '复制';
+          btn.addEventListener('click', function() {
+            var text = getHighlightPlainText(fig);
+            function showState(label) {
+              btn.textContent = label;
+              setTimeout(function() {
+                btn.textContent = '复制';
+                btn.disabled = false;
+              }, 2000);
+            }
+            btn.disabled = true;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function() {
+                showState('已复制');
+              }).catch(function() {
+                showState('复制失败');
+              });
+            } else {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.left = '-10000px';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showState('已复制');
+              } catch (e) {
+                showState('复制失败');
+              }
+              document.body.removeChild(ta);
+            }
+          });
+          fig.appendChild(btn);
+        })(blocks[i]);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachPostCodeCopyButtons);
+    } else {
+      attachPostCodeCopyButtons();
+    }
   })();
 </script>
 

@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 简介https://lmdeploy.readthedocs.io/zh-cn/latest/index.html\nLMDeploy 是一个用于大型语言模型（LLMs）和视觉-语言模型（VLMs）压缩、部署和服务的 Python 库。 其核心推理引擎包括 TurboMind 引擎和 PyTorch 引擎。前者由 C++ 和 CUDA 开发，致力于推理性能的优化，而后者纯 Python 开发，旨在降低开发者的门槛。\n\n有如下核心功能：高效的推理： \t\tLMDeploy 开发了 Persistent Batch(即 Continuous Batch)，Blocked K&#x2F;V Cache，动态拆分和融合，张量并行，高效的计算 kernel等重要特性。推理性能是 vLLM 的 1.8 倍\t\t可靠的量化： \tLMDeploy 支持权重量化和 k&#x2F;v 量化。4bit 模型推理效率是 FP16 下的 2.4 倍。量化模型的可靠性已通过 OpenCompass 评测得到充分验证。\n便捷的服务： \t通过请求分发服务，LMDeploy 支持多模型在多机、多卡上的推理服务。\n有状态推理： \t通过缓存多轮对话过程中 attention 的 k&#x2F;v，记住对话历史，从而避免重复处理历史会话。显著提升长文本多轮对话场景中的效率。\n卓越的兼容性: \tLMDeploy 支持 KV Cache 量化, AWQ 和 Automatic Prefix Caching 同时使用。\n\n2 安装说明2.1 安装要求LMDeploy 支持在 Linux 和 Windows 平台上部署 LLMs 和 VLMs，最低要求 CUDA 版本为 11.3。\n此外，它还与以下 NVIDIA GPU 兼容：\n\tVolta(sm70): V100 Turing(sm75): 20 系列，\n\tT4 Ampere(sm80,sm86): 30 系列，A10, A16, A30, A100 Ada        Lovelace(sm89): 40 系列\n\n2.2 安装步骤123conda create -n lmdeploy python=3.8 -yconda activate lmdeploypip install lmdeploy\n\n3 推理部署3.1  LLM 离线推理 pipeline基本使用：\n123456from lmdeploy import pipelinepipe = pipeline(&#x27;internlm/internlm2_5-7b-chat&#x27;)response = pipe([&#x27;Hi, pls intro yourself&#x27;, &#x27;Shanghai is&#x27;])print(response)\n调节k&#x2F;v cache  占用gpu显存比例\n123456789from lmdeploy import pipeline, TurbomindEngineConfig# 调低 k/v cache内存占比调整为总显存的 20%backend_config = TurbomindEngineConfig(cache_max_entry_count=0.2)pipe = pipeline(&#x27;internlm/internlm2_5-7b-chat&#x27;,                backend_config=backend_config)response = pipe([&#x27;Hi, pls intro yourself&#x27;, &#x27;Shanghai is&#x27;])print(response)\n\n设置多卡并行\n1234567from lmdeploy import pipeline, TurbomindEngineConfigbackend_config = TurbomindEngineConfig(tp=2)pipe = pipeline(&#x27;internlm/internlm2_5-7b-chat&#x27;,                backend_config=backend_config)response = pipe([&#x27;Hi, pls intro yourself&#x27;, &#x27;Shanghai is&#x27;])print(response)\n\n3.2 部署LLM类openai服务1lmdeploy serve api_server internlm/internlm2_5-7b-chat --server-port 23333\n\n调用参考上面的vllm的模型调用\n\n4 量化4.1 INT4 模型量化和部署LMDeploy自身可以对模型进行量化\n1lmdeploy lite auto_awq internlm/internlm2_5-7b-chat --work-dir internlm2_5-7b-chat-4bit\nNote:\n\n我们建议 –work-dir 参数带有模型名字，就像上面的例子展示的那样。这样在推理时，就不用指定对话模板了。因为推理接口会以模糊搜索方式，选出和 –work-dir 近似的对话模板\n\n如果量化模型精度有损，建议开启 –search-scale 重新量化，并调大 –batch-size，比如 8。search_scale 开启后，量化过程会比较耗时。–batch-size 会影响内存占用量，可以根据实际情况，酌情调整。量化后的模型，可以用一些工具快速验证对话效果。\n\n\n测试量化模型：\n1lmdeploy chat ./internlm2_5-7b-chat-4bit --model-format awq\n或者，启动gradio服务，\n1lmdeploy serve gradio ./internlm2_5-7b-chat-4bit --server-name &#123;ip_addr&#125; --server-port &#123;port&#125; --model-format awq\n然后，在浏览器中打开 http:&#x2F;&#x2F;{ip_addr}:{port}，即可在线对话\n4.2 W8A8 LLM模型部署上面是进行4位量化（也可以采用修改参数进行8位量化），这部分是采用int8和fb8的量化int8:\n1lmdeploy lite smooth_quant internlm/internlm2_5-7b-chat --work-dir ./internlm2_5-7b-chat-int8 --quant-dtype int8\n\nfb8:\n1lmdeploy lite smooth_quant internlm/internlm2_5-7b-chat --work-dir ./internlm2_5-7b-chat-fp8 --quant-dtype fp8\n\n\n4.3 Key-Value（KV）Cache量化上面4.1和4.2 介绍的是部署的量化，接下来是介绍推理量化离线推理：\n123456from lmdeploy import pipeline, TurbomindEngineConfigengine_config = TurbomindEngineConfig(quant_policy=8)pipe = pipeline(&quot;internlm/internlm2_5-7b-chat&quot;, backend_config=engine_config)response = pipe([&quot;Hi, pls intro yourself&quot;, &quot;Shanghai is&quot;])print(response)\n\n推理服务：\n1lmdeploy serve api_server internlm/internlm2_5-7b-chat --quant-policy 8\n\n5 turboMind引擎将模型转换为turboMind\n123# 转换模型（FastTransformer格式） TurboMindlmdeploy convert internlm-chat-7b /path/to/internlm-chat-7b\n\n执行完成后将会在当前目录生成一个 workspace 的文件夹。这里面包含的就是 TurboMind 和 Triton“模型推理”需要到的文件。\n\n   weights 和 tokenizer 目录分别放的是拆分后的参数和 Tokenizer。如果我们进一步查看 weights的目录，就会发现参数是按层和模块拆开的，如下图所示。\n\n每一份参数第一个 0 表示“层”的索引，后面的那个0表示 Tensor 并行的索引，因为我们只有一张卡，所以被拆分成 1 份。如果有两张卡可以用来推理，则会生成0和1两份，也就是说，会把同一个参数拆成两份。比如 layers.0.attention.w_qkv.0.weight 会变成 layers.0.attention.w_qkv.0.weight和 layers.0.attention.w_qkv.1.weight 。执行 lmdeploy convert 命令时，可以通过 –tp 指定（tp 表示 tensor parallel，该参数默认值为1也就是一张卡）。\n模型转换完成后，我们就具备了使用模型推理的条件，接下来就可以进行真正的模型推理环节。我们可以尝试本地对话，在这里其实是跳过 API Server 直接调用 TurboMind执行命令如下\n1lmdeploy chat ./workspace\n\n\n6 自定义对话模板目前LMDeploy支持两种添加对话模板的方式：\n配置json文件\njson格式如下：\n\t\n12345678910111213&#123;    &quot;model_name&quot;: &quot;your awesome chat template name&quot;,    &quot;system&quot;: &quot;&lt;|im_start|&gt;system\\n&quot;,    &quot;meta_instruction&quot;: &quot;You are a robot developed by LMDeploy.&quot;,    &quot;eosys&quot;: &quot;&lt;|im_end|&gt;\\n&quot;,    &quot;user&quot;: &quot;&lt;|im_start|&gt;user\\n&quot;,    &quot;eoh&quot;: &quot;&lt;|im_end|&gt;\\n&quot;,    &quot;assistant&quot;: &quot;&lt;|im_start|&gt;assistant\\n&quot;,    &quot;eoa&quot;: &quot;&lt;|im_end|&gt;&quot;,    &quot;separator&quot;: &quot;\\n&quot;,    &quot;capability&quot;: &quot;chat&quot;,    &quot;stop_words&quot;: [&quot;&lt;|im_end|&gt;&quot;]&#125;\nmodel_name 为必填项，可以是 LMDeploy 内置对话模板名（通过 lmdeploy list 可查阅），也可以是新名字。其他字段可选填。 当 model_name 是内置对话模板名时，json文件中各非 null 字段会覆盖原有对话模板的对应属性。 而当 model_name 是新名字时，它会把将BaseChatTemplate直接注册成新的对话模板。其具体定义可以参考BaseChatTemplate。\n这样一个模板将会以下面的形式进行拼接。\n12&#123;system&#125;&#123;meta_instruction&#125;&#123;eosys&#125;&#123;user&#125;&#123;user_content&#125;&#123;eoh&#125;&#123;assistant&#125;&#123;assistant_content&#125;&#123;eoa&#125;&#123;separator&#125;&#123;user&#125;...\n在使用 CLI 工具时，可以通过 --chat-template 传入自定义对话模板，比如：\n12lmdeploy serve api_server internlm/internlm2_5-7b-chat --chat-template $&#123;JSON_FILE&#125;\n接口函数传入：\n12345from lmdeploy import ChatTemplateConfig, serveserve(&#x27;internlm/internlm2_5-7b-chat&#x27;,      chat_template_config=ChatTemplateConfig.from_json(&#x27;$&#123;JSON_FILE&#125;&#x27;))\n\n\n\n\n注册模板\n12345678910111213141516171819202122232425262728293031323334from lmdeploy.model import MODELS, BaseChatTemplate@MODELS.register_module(name=&#x27;customized_model&#x27;)class CustomizedModel(BaseChatTemplate):    &quot;&quot;&quot;A customized chat template.&quot;&quot;&quot;    def __init__(self,                 system=&#x27;&lt;|im_start|&gt;system\\n&#x27;,                 meta_instruction=&#x27;You are a robot developed by LMDeploy.&#x27;,                 user=&#x27;&lt;|im_start|&gt;user\\n&#x27;,                 assistant=&#x27;&lt;|im_start|&gt;assistant\\n&#x27;,                 eosys=&#x27;&lt;|im_end|&gt;\\n&#x27;,                 eoh=&#x27;&lt;|im_end|&gt;\\n&#x27;,                 eoa=&#x27;&lt;|im_end|&gt;&#x27;,                 separator=&#x27;\\n&#x27;,                 stop_words=[&#x27;&lt;|im_end|&gt;&#x27;, &#x27;&lt;|action_end|&gt;&#x27;]):        super().__init__(system=system,                         meta_instruction=meta_instruction,                         eosys=eosys,                         user=user,                         eoh=eoh,                         assistant=assistant,                         eoa=eoa,                         separator=separator,                         stop_words=stop_words)from lmdeploy import ChatTemplateConfig, pipelinemessages = [&#123;&#x27;role&#x27;: &#x27;user&#x27;, &#x27;content&#x27;: &#x27;who are you?&#x27;&#125;]pipe = pipeline(&#x27;internlm/internlm2_5-7b-chat&#x27;,                chat_template_config=ChatTemplateConfig(&#x27;customized_model&#x27;))for response in pipe.stream_infer(messages):    print(response.text, end=&#x27;&#x27;)","dateCreated":"2025-05-29T14:27:00+08:00","dateModified":"2026-05-06T13:45:03+08:00","datePublished":"2025-05-29T14:27:00+08:00","description":"","headline":"LMDeploy 推理框架","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/","keywords":"learn, LLM_Application, LMDeploy, inference"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"1 简介https://lmdeploy.readthedocs.io/zh-cn/latest/index.html\nLMDeploy 是一个用于大型语言模型（LLMs）和视觉-语言模型（VLMs）压缩、部署和服务的 Python 库。 其核心推理引擎包括 TurboMind 引擎和 PyTorch 引擎。前者由 C++ 和 CUDA 开发，致力于推理性能的优化，而后者纯 Python 开发，旨在降低开发者的门槛。\n\n有如下核心功能：高效的推理： \t\tLMDeploy 开发了 Persistent Batch(即 Continuous Batch)，Blocked K&#x2F;V Cache，动态拆分和融合，张量并行，高效的计算 kernel等重要特性。推理性能是 vLLM 的 1.8 倍\t\t可靠的量化： \tLMDeploy 支持权重量化和 k&#x2F;v 量化。4bit 模型推理效率是 FP16 下的 2.4 倍。量化模型的可靠性已通过 OpenCompass 评测得到充分验证。\n便捷的服务： \t通过请求分发服务，LMDeploy 支持多模型在多机、多卡上的推理服务。\n有状态推理： \t通过缓存多轮对话过程中 attention 的 k&#x2F;v，记住对话历史，从而避免重复处理历史会话。显著提升长文本多轮对话场景中的效率。\n卓越的兼容性: \tLMDeploy 支持 KV Cache 量化, AWQ 和 Automatic Prefix Caching 同时使用。\n\n2 安装说明2.1 安装要求LMDeploy 支持在 Linux 和 Windows 平台上部署 LLMs 和 VLMs，最低要求 CUDA 版本为 11.3。\n此外，它还与以下 NVIDIA GPU 兼容：\n\tVolta(sm70): V100 Turing(sm75): 20 系列，\n\tT4 Ampere(sm80,sm86): 30 系列，A10, A16, A30, A100 Ada        Lovelace(sm89): 40 系列\n\n2.2 安装步骤123conda create -n lmdeploy python=3.8 -yconda activate lmdeploypip install lmdeploy\n\n3 推理部署3.1  LLM 离线推理 pipeline基本使用：\n123456from lmdeploy import pipelinepipe = pipeline(&#x27;internlm/internlm2_5-7b-chat&#x27;)response = pipe([&#x27;Hi, pls intro yourself&#x27;, &#x27;Shanghai is&#x27;])print(response)\n调节k&#x2F;v cache  占用gpu显存比例\n123456789from lmdeploy import pipeline, TurbomindEngineConfig# 调低 k/v cache内存占比调整为总显存的 20%backend_config = TurbomindEngineConfig(cache_max_entry_count=0.2)pipe = pipeline(&#x27;internlm/internlm2_5-7b-chat&#x27;,                backend_config=backend_config)response = pipe([&#x27;Hi, pls intro yourself&#x27;, &#x27;Shanghai is&#x27;])print(response)\n\n设置多卡并行\n1234567from lmdeploy import pipeline, TurbomindEngineConfigbackend_config = TurbomindEngineConfig(tp=2)pipe = pipeline(&#x27;internlm/internlm2_5-7b-chat&#x27;,                backend_config=backend_config)response = pipe([&#x27;Hi, pls intro yourself&#x27;, &#x27;Shanghai is&#x27;])print(response)\n\n3.2 部署LLM类openai服务1lmdeploy serve api_server internlm/internlm2_5-7b-chat --server-port 23333\n\n调用参考上面的vllm的模型调用\n\n4 量化4.1 INT4 模型量化和部署LMDeploy自身可以对模型进行量化\n1lmdeploy lite auto_awq internlm/internlm2_5-7b-chat --work-dir internlm2_5-7b-chat-4bit\nNote:\n\n我们建议 –work-dir 参数带有模型名字，就像上面的例子展示的那样。这样在推理时，就不用指定对话模板了。因为推理接口会以模糊搜索方式，选出和 –work-dir 近似的对话模板\n\n如果量化模型精度有损，建议开启 –search-scale 重新量化，并调大 –batch-size，比如 8。search_scale 开启后，量化过程会比较耗时。–batch-size 会影响内存占用量，可以根据实际情况，酌情调整。量化后的模型，可以用一些工具快速验证对话效果。\n\n\n测试量化模型：\n1lmdeploy chat ./internlm2_5-7b-chat-4bit --model-format awq\n或者，启动gradio服务，\n1lmdeploy serve gradio ./internlm2_5-7b-chat-4bit --server-name &#123;ip_addr&#125; --server-port &#123;port&#125; --model-format awq\n然后，在浏览器中打开 http:&#x2F;&#x2F;{ip_addr}:{port}，即可在线对话\n4.2 W8A8 LLM模型部署上面是进行4位量化（也可以采用修改参数进行8位量化），这部分是采用int8和fb8的量化int8:\n1lmdeploy lite smooth_quant internlm/internlm2_5-7b-chat --work-dir ./internlm2_5-7b-chat-int8 --quant-dtype int8\n\nfb8:\n1lmdeploy lite smooth_quant internlm/internlm2_5-7b-chat --work-dir ./internlm2_5-7b-chat-fp8 --quant-dtype fp8\n\n\n4.3 Key-Value（KV）Cache量化上面4.1和4.2 介绍的是部署的量化，接下来是介绍推理量化离线推理：\n123456from lmdeploy import pipeline, TurbomindEngineConfigengine_config = TurbomindEngineConfig(quant_policy=8)pipe = pipeline(&quot;internlm/internlm2_5-7b-chat&quot;, backend_config=engine_config)response = pipe([&quot;Hi, pls intro yourself&quot;, &quot;Shanghai is&quot;])print(response)\n\n推理服务：\n1lmdeploy serve api_server internlm/internlm2_5-7b-chat --quant-policy 8\n\n5 turboMind引擎将模型转换为turboMind\n123# 转换模型（FastTransformer格式） TurboMindlmdeploy convert internlm-chat-7b /path/to/internlm-chat-7b\n\n执行完成后将会在当前目录生成一个 workspace 的文件夹。这里面包含的就是 TurboMind 和 Triton“模型推理”需要到的文件。\n\n   weights 和 tokenizer 目录分别放的是拆分后的参数和 Tokenizer。如果我们进一步查看 weights的目录，就会发现参数是按层和模块拆开的，如下图所示。\n\n每一份参数第一个 0 表示“层”的索引，后面的那个0表示 Tensor 并行的索引，因为我们只有一张卡，所以被拆分成 1 份。如果有两张卡可以用来推理，则会生成0和1两份，也就是说，会把同一个参数拆成两份。比如 layers.0.attention.w_qkv.0.weight 会变成 layers.0.attention.w_qkv.0.weight和 layers.0.attention.w_qkv.1.weight 。执行 lmdeploy convert 命令时，可以通过 –tp 指定（tp 表示 tensor parallel，该参数默认值为1也就是一张卡）。\n模型转换完成后，我们就具备了使用模型推理的条件，接下来就可以进行真正的模型推理环节。我们可以尝试本地对话，在这里其实是跳过 API Server 直接调用 TurboMind执行命令如下\n1lmdeploy chat ./workspace\n\n\n6 自定义对话模板目前LMDeploy支持两种添加对话模板的方式：\n配置json文件\njson格式如下：\n\t\n12345678910111213&#123;    &quot;model_name&quot;: &quot;your awesome chat template name&quot;,    &quot;system&quot;: &quot;&lt;|im_start|&gt;system\\n&quot;,    &quot;meta_instruction&quot;: &quot;You are a robot developed by LMDeploy.&quot;,    &quot;eosys&quot;: &quot;&lt;|im_end|&gt;\\n&quot;,    &quot;user&quot;: &quot;&lt;|im_start|&gt;user\\n&quot;,    &quot;eoh&quot;: &quot;&lt;|im_end|&gt;\\n&quot;,    &quot;assistant&quot;: &quot;&lt;|im_start|&gt;assistant\\n&quot;,    &quot;eoa&quot;: &quot;&lt;|im_end|&gt;&quot;,    &quot;separator&quot;: &quot;\\n&quot;,    &quot;capability&quot;: &quot;chat&quot;,    &quot;stop_words&quot;: [&quot;&lt;|im_end|&gt;&quot;]&#125;\nmodel_name 为必填项，可以是 LMDeploy 内置对话模板名（通过 lmdeploy list 可查阅），也可以是新名字。其他字段可选填。 当 model_name 是内置对话模板名时，json文件中各非 null 字段会覆盖原有对话模板的对应属性。 而当 model_name 是新名字时，它会把将BaseChatTemplate直接注册成新的对话模板。其具体定义可以参考BaseChatTemplate。\n这样一个模板将会以下面的形式进行拼接。\n12&#123;system&#125;&#123;meta_instruction&#125;&#123;eosys&#125;&#123;user&#125;&#123;user_content&#125;&#123;eoh&#125;&#123;assistant&#125;&#123;assistant_content&#125;&#123;eoa&#125;&#123;separator&#125;&#123;user&#125;...\n在使用 CLI 工具时，可以通过 --chat-template 传入自定义对话模板，比如：\n12lmdeploy serve api_server internlm/internlm2_5-7b-chat --chat-template $&#123;JSON_FILE&#125;\n接口函数传入：\n12345from lmdeploy import ChatTemplateConfig, serveserve(&#x27;internlm/internlm2_5-7b-chat&#x27;,      chat_template_config=ChatTemplateConfig.from_json(&#x27;$&#123;JSON_FILE&#125;&#x27;))\n\n\n\n\n注册模板\n12345678910111213141516171819202122232425262728293031323334from lmdeploy.model import MODELS, BaseChatTemplate@MODELS.register_module(name=&#x27;customized_model&#x27;)class CustomizedModel(BaseChatTemplate):    &quot;&quot;&quot;A customized chat template.&quot;&quot;&quot;    def __init__(self,                 system=&#x27;&lt;|im_start|&gt;system\\n&#x27;,                 meta_instruction=&#x27;You are a robot developed by LMDeploy.&#x27;,                 user=&#x27;&lt;|im_start|&gt;user\\n&#x27;,                 assistant=&#x27;&lt;|im_start|&gt;assistant\\n&#x27;,                 eosys=&#x27;&lt;|im_end|&gt;\\n&#x27;,                 eoh=&#x27;&lt;|im_end|&gt;\\n&#x27;,                 eoa=&#x27;&lt;|im_end|&gt;&#x27;,                 separator=&#x27;\\n&#x27;,                 stop_words=[&#x27;&lt;|im_end|&gt;&#x27;, &#x27;&lt;|action_end|&gt;&#x27;]):        super().__init__(system=system,                         meta_instruction=meta_instruction,                         eosys=eosys,                         user=user,                         eoh=eoh,                         assistant=assistant,                         eoa=eoa,                         separator=separator,                         stop_words=stop_words)from lmdeploy import ChatTemplateConfig, pipelinemessages = [&#123;&#x27;role&#x27;: &#x27;user&#x27;, &#x27;content&#x27;: &#x27;who are you?&#x27;&#125;]pipe = pipeline(&#x27;internlm/internlm2_5-7b-chat&#x27;,                chat_template_config=ChatTemplateConfig(&#x27;customized_model&#x27;))for response in pipe.stream_infer(messages):    print(response.text, end=&#x27;&#x27;)","dateCreated":"2025-05-29T14:38:23+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-05-29T14:38:23+08:00","description":"","headline":"LMDeploy 推理框架","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/","keywords":"learn, LLM_Application, LMDeploy, inference"}</script>
     <meta name="description" content="1 简介https:&#x2F;&#x2F;lmdeploy.readthedocs.io&#x2F;zh-cn&#x2F;latest&#x2F;index.html LMDeploy 是一个用于大型语言模型（LLMs）和视觉-语言模型（VLMs）压缩、部署和服务的 Python 库。 其核心推理引擎包括 TurboMind 引擎和 PyTorch 引擎。前者由 C++ 和 CUDA 开发，致力于推理性能的优化，而后者纯 Python 开发，旨">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="LMDeploy 推理框架">
@@ -25,8 +25,8 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6-IMG-20260506131022557.png">
 <meta property="og:image" content="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6-IMG-20260506131022863.png">
-<meta property="article:published_time" content="2025-05-29T06:27:00.000Z">
-<meta property="article:modified_time" content="2026-05-06T05:45:03.207Z">
+<meta property="article:published_time" content="2025-05-29T06:38:23.000Z">
+<meta property="article:modified_time" content="2026-05-06T06:17:57.681Z">
 <meta property="article:author" content="shaver">
 <meta property="article:tag" content="LLM_Application">
 <meta property="article:tag" content="LMDeploy">
@@ -110,7 +110,7 @@
     
     
         <div class="post-meta">
-    <time datetime="2025-05-29T14:27:00+08:00">
+    <time datetime="2025-05-29T14:38:23+08:00">
 	
 		    2025 年 5 月 29 日
     	
@@ -231,9 +231,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/"
-                    data-tooltip="LLaMA-Factory 训练框架"
-                    aria-label="上一篇: LLaMA-Factory 训练框架"
+                    href="/2025/05/29/hexo_post/OpenCompass%E8%AF%84%E4%BC%B0%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6/"
+                    data-tooltip="OpenCompass 评估测试框架"
+                    aria-label="上一篇: OpenCompass 评估测试框架"
                 >
                     
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
@@ -245,9 +245,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/"
-                    data-tooltip="Ollama 推理框架"
-                    aria-label="下一篇: Ollama 推理框架"
+                    href="/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/"
+                    data-tooltip="LLaMA-Factory 训练框架"
+                    aria-label="下一篇: LLaMA-Factory 训练框架"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
@@ -479,7 +479,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
                 >
                     
                     
@@ -487,10 +487,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
-                            aria-label=": HuggingFace 核心组件介绍"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
                         >
-                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -507,7 +507,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
                 >
                     
                     
@@ -515,10 +515,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
                         >
-                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -563,6 +563,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="gguf 模型  learn llm_application gguf quantization"
                 >
                     
@@ -575,62 +603,6 @@
                             aria-label=": GGUF 模型"
                         >
                             <h3 class="media-heading">GGUF 模型</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LMDeploy 推理框架"
-                        >
-                            <h3 class="media-heading">LMDeploy 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Ollama 推理框架"
-                        >
-                            <h3 class="media-heading">Ollama 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -703,7 +675,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
                 >
                     
                     
@@ -711,10 +683,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Xtuner 训练框架"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
                         >
-                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -759,6 +731,34 @@
                 
                 <div
                     class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
                 >
                     
@@ -787,7 +787,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="大模型部署  learn llm_application inference"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
                 >
                     
                     
@@ -795,10 +795,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
-                            aria-label=": 大模型部署"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
                         >
-                            <h3 class="media-heading">大模型部署</h3>
+                            <h3 class="media-heading">情绪对话项目实践</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -815,7 +815,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                    data-search-text="大模型部署  learn llm_application inference"
                 >
                     
                     
@@ -823,10 +823,10 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 情绪对话项目实践"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
                         >
-                            <h3 class="media-heading">情绪对话项目实践</h3>
+                            <h3 class="media-heading">大模型部署</h3>
                         </a>
                         <span class="media-meta">
                             <span class="media-date text-small">
@@ -1207,7 +1207,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain langgraph rag"
                 >
                     
                     
@@ -1597,6 +1597,75 @@
 
     input.addEventListener('input', runLocalSearch);
     updateCount(baseCount);
+  })();
+</script>
+
+<script>
+  (function() {
+    function getHighlightPlainText(figure) {
+      var pre = figure.querySelector('td.code pre, .code pre');
+      if (!pre) return '';
+      var t = pre.innerText != null ? pre.innerText : pre.textContent;
+      return String(t || '').replace(/\u00a0/g, ' ');
+    }
+
+    function attachPostCodeCopyButtons() {
+      var scope = document.querySelector('.post-content');
+      if (!scope) return;
+      var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
+      for (var i = 0; i < blocks.length; i++) {
+        (function(fig) {
+          if (fig.getAttribute('data-copy-btn')) return;
+          if (!fig.querySelector('.code pre, td.code pre')) return;
+          fig.setAttribute('data-copy-btn', '1');
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'post-code-copy-btn';
+          btn.setAttribute('aria-label', '复制代码');
+          btn.textContent = '复制';
+          btn.addEventListener('click', function() {
+            var text = getHighlightPlainText(fig);
+            function showState(label) {
+              btn.textContent = label;
+              setTimeout(function() {
+                btn.textContent = '复制';
+                btn.disabled = false;
+              }, 2000);
+            }
+            btn.disabled = true;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function() {
+                showState('已复制');
+              }).catch(function() {
+                showState('复制失败');
+              });
+            } else {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.left = '-10000px';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showState('已复制');
+              } catch (e) {
+                showState('复制失败');
+              }
+              document.body.removeChild(ta);
+            }
+          });
+          fig.appendChild(btn);
+        })(blocks[i]);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachPostCodeCopyButtons);
+    } else {
+      attachPostCodeCopyButtons();
+    }
   })();
 </script>
 
