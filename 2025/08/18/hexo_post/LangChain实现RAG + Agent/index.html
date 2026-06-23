@@ -15,7 +15,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"LLM 可以理解为一个超级大脑，Agent可以理解为手，脚，嘴等，LLM做决策，Agent接收LLM的决策，进行下一步的行动\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128129130131132133134135136137138139140141142143144145146147148149150151152153154155156157158159160161162163164165166167168169170171172173174175176177178179180181182183184185186187188189190191192# -*- coding: utf-8 -*-# -------------------------------------------------------------------------------# Name:         demo16# Description:  langchain 实现 RAG + agent# Author:       shaver# Date:         2025/8/18# -------------------------------------------------------------------------------import osfrom typing import Optional, Anyimport bs4from dotenv import load_dotenvfrom langchain import hubfrom langchain.agents import AgentExecutor, create_openai_functions_agentfrom langchain.chat_models import init_chat_modelfrom langchain.tools.retriever import create_retriever_toolfrom langchain_community.document_loaders import WebBaseLoaderfrom langchain_community.embeddings import DashScopeEmbeddingsfrom langchain_community.vectorstores import FAISSfrom langchain_text_splitters import RecursiveCharacterTextSplitterclass Config:    &quot;&quot;&quot; 配置项 延迟实例化    Attributes:        embeddings: 嵌入模型        llm: 语言模型        prompt: 语言模型提示    Methods:        initialize: 实例化配置项    &quot;&quot;&quot;    embeddings: Optional[DashScopeEmbeddings] = None    llm: Optional[Any] = None    prompt: Optional[Any] = None    @classmethod    def initialize(cls):        &quot;&quot;&quot;延迟初始化所有配置项（避免类定义时执行）        :arg cls: 配置类        :return: None        &quot;&quot;&quot;        cls.embeddings = DashScopeEmbeddings(model=&quot;text-embedding-v1&quot;)        cls.llm = init_chat_model(&quot;deepseek-chat&quot;, model_provider=&quot;deepseek&quot;, temperature=0.5)        cls.prompt = hub.pull(&quot;hwchase17/openai-functions-agent&quot;)class FAISSTool:    &quot;&quot;&quot; FAISS 向量存储工具    Attributes:        Methods:        save_web_docs: 将在线网页信息文档保存到 FAISS 向量数据库中    &quot;&quot;&quot;    @staticmethod    def save_web_docs(web_path, folder_path):        &quot;&quot;&quot;将文档保存到 FAISS 向量数据库中        &quot;&quot;&quot;        # 显式配置代理和请求参数        loader = WebBaseLoader(            # web_path=&quot;https://www.gov.cn/xinwen/2020-06/01/content_5516649.htm&quot;,            web_path=web_path,            bs_kwargs=dict(parse_only=bs4.SoupStrainer(id=&quot;UCAP-CONTENT&quot;)),            proxies=&#123;                &quot;http&quot;: &quot;http://127.0.0.1:1083&quot;,                &quot;https&quot;: &quot;http://127.0.0.1:1083&quot;            &#125;,            requests_kwargs=&#123;                &quot;headers&quot;: &#123;&quot;User-Agent&quot;: &quot;Mozilla/5.0&quot;&#125;,                &quot;timeout&quot;: 10,                &quot;verify&quot;: False  # 仅调试时禁用SSL验证            &#125;        )        docs = loader.load()        # 使用分割器分割文档        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)        documents = text_splitter.split_documents(docs)        vector_db = FAISS.from_documents(documents, Config.embeddings)        # 5. 持久化到本地（包含index.faiss和index.pkl文件）        os.makedirs(folder_path, exist_ok=True)  # 确保目录存在        vector_db.save_local(            folder_path=folder_path,        )        print(f&quot;向量库已保存至 &#123;folder_path&#125;&quot;)    @staticmethod    def load_web_docs(folder_path):        &quot;&quot;&quot; 记载本地 FAISS 向量数据库        :param folder_path: 本地向量数据库路径        :return: 返回 FAISS 向量数据库        &quot;&quot;&quot;        return FAISS.load_local(            folder_path=folder_path,            embeddings=Config.embeddings,            allow_dangerous_deserialization=True        )class AgentTool:    &quot;&quot;&quot; Agent 工具        Attributes:    Methods:        create_agent_tool: 创建检索器工具        crete_agent: 创建 agent    &quot;&quot;&quot;    @staticmethod    def create_agent_tool(vector_db, name, description):        &quot;&quot;&quot;创建 agent 工具        :param vector_db: 向量数据库        :param name: 名称        :param description: 描述        :return: 工具        &quot;&quot;&quot;        retriever = vector_db.as_retriever()        retriever.search_kwargs = &#123;&quot;k&quot;: 3&#125;  # 限制为最多检索3个文档        # 检索器工具        return create_retriever_tool(            retriever,            name,            description,        )    @staticmethod    def crete_agent(llm, tools, prompt):        &quot;&quot;&quot; 创建 agent        :param llm: 语言模型        :param tools: 工具列表        :param prompt: 语言模型提示        :return: agent        &quot;&quot;&quot;        return create_openai_functions_agent(llm, tools, prompt)    @staticmethod    def crete_agent_executor(agent, tools):        &quot;&quot;&quot; 创建 agent 执行器        :param agent: agent 名称        :param tools: 工具列表        :return: agent 执行器        &quot;&quot;&quot;        return AgentExecutor(agent=agent, tools=tools, verbose=True)if __name__ == &#x27;__main__&#x27;:    # 1. 记载环境变量    load_dotenv()    # 2. 初始化配置项    Config.initialize()    # 3. 加载网页文档到向量数据库  or 加载本地向量数据库    # FAISSTool.save_web_docs(&quot;https://www.gov.cn/xinwen/2020-06/01/content_5516649.htm&quot;,    #                         &quot;./web_docs&quot;)    vertex_db = FAISSTool.load_web_docs(&quot;./web_docs&quot;)    # 4.创建检索器工具 可以根据需要创建多个检索器工具    retriever_tools = []    retriever_tool_web_docs = AgentTool.create_agent_tool(vertex_db, &quot;web_docs&quot;, &quot;web_docs&quot;)    retriever_tools.append(retriever_tool_web_docs)    # 5.创建agent    agent = AgentTool.crete_agent(Config.llm, retriever_tools, Config.prompt)    # 6. 创建代理执行器 并运行    agent_executor = AgentTool.crete_agent_executor(agent, retriever_tools)    # 7. 启动交互    while True:        # 6. 输入文本        text = input(&quot;请输入文本：&quot;)        if not text:            continue        # 7. 执行agent        result = agent_executor.invoke(&#123;&quot;input&quot;: text&#125;)        # 8. 输出结果        print(result.get(&quot;output&quot;))\n\n效果：\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104/Users/shaver/Documents/conda_space/envs/langchain/bin/python3.11 /Users/shaver/PycharmProjects/AI/langchain/demo16.py USER_AGENT environment variable not set, consider setting it to identify your requests.请输入文本：建设用地使用权是什么？&gt; Entering new AgentExecutor chain...建设用地使用权是中国《物权法》和《民法典》中规定的一项重要用益物权，指权利人依法对国家所有的土地享有占有、使用和收益的权利，有权利用该土地建造建筑物、构筑物及其附属设施。以下是其核心要点：---### **1. 基本概念**- **所有权归属**：土地归国家或集体所有，但使用权可依法分离。- **用途限制**：仅用于建造建筑物、构筑物（如房屋、桥梁、道路等），不可直接用于农业耕作。- **权利来源**：通过划拨、出让、租赁等方式取得，其中出让（招拍挂）是最常见方式。---### **2. 主要类型**- **国有建设用地使用权**：  - **出让方式**：有偿取得，需支付土地出让金，期限一般为40年（商业）、50年（工业）、70年（住宅）。  - **划拨方式**：无偿或低偿取得，用于公益或特定项目（如学校、市政设施），无固定期限，但转让时需补缴出让金。- **集体建设用地使用权**：限于集体土地，需符合乡村规划，流转受限（需依法经集体同意）。---### **3. 权利内容**- **占有使用**：在土地上合法建设并保有建筑物。- **收益权**：通过出租、转让、抵押等方式获得收益。- **处分权**：可依法转让、抵押、继承（划拨土地需补缴出让金后处分）。---### **4. 法律依据**- **《民法典》物权编**（第344-361条）：明确权利设立、转让、续期等规则。- **《土地管理法》**：规定土地用途管制、审批程序等。- **《城市房地产管理法》**：细化房地产开发中的使用权问题。---### **5. 注意事项**- **期限与续期**：住宅用地到期自动续期；非住宅用地需依法申请续期，未获批准则收回。- **闲置土地**：满2年未开发可能被无偿收回。- **转让条件**：需完成开发投资总额的25%以上（防止炒地）。---### **6. 与土地使用权的区别**- **广义土地使用权**：包括建设用地、农用地、未利用地等。- **建设用地使用权**：特指用于建设的土地，属于土地使用权的一种具体类型。---若涉及具体问题（如拆迁补偿、续期流程等），需结合当地政策和合同条款进一步分析。&gt; Finished chain.建设用地使用权是中国《物权法》和《民法典》中规定的一项重要用益物权，指权利人依法对国家所有的土地享有占有、使用和收益的权利，有权利用该土地建造建筑物、构筑物及其附属设施。以下是其核心要点：---### **1. 基本概念**- **所有权归属**：土地归国家或集体所有，但使用权可依法分离。- **用途限制**：仅用于建造建筑物、构筑物（如房屋、桥梁、道路等），不可直接用于农业耕作。- **权利来源**：通过划拨、出让、租赁等方式取得，其中出让（招拍挂）是最常见方式。---### **2. 主要类型**- **国有建设用地使用权**：  - **出让方式**：有偿取得，需支付土地出让金，期限一般为40年（商业）、50年（工业）、70年（住宅）。  - **划拨方式**：无偿或低偿取得，用于公益或特定项目（如学校、市政设施），无固定期限，但转让时需补缴出让金。- **集体建设用地使用权**：限于集体土地，需符合乡村规划，流转受限（需依法经集体同意）。---### **3. 权利内容**- **占有使用**：在土地上合法建设并保有建筑物。- **收益权**：通过出租、转让、抵押等方式获得收益。- **处分权**：可依法转让、抵押、继承（划拨土地需补缴出让金后处分）。---### **4. 法律依据**- **《民法典》物权编**（第344-361条）：明确权利设立、转让、续期等规则。- **《土地管理法》**：规定土地用途管制、审批程序等。- **《城市房地产管理法》**：细化房地产开发中的使用权问题。---### **5. 注意事项**- **期限与续期**：住宅用地到期自动续期；非住宅用地需依法申请续期，未获批准则收回。- **闲置土地**：满2年未开发可能被无偿收回。- **转让条件**：需完成开发投资总额的25%以上（防止炒地）。---### **6. 与土地使用权的区别**- **广义土地使用权**：包括建设用地、农用地、未利用地等。- **建设用地使用权**：特指用于建设的土地，属于土地使用权的一种具体类型。---若涉及具体问题（如拆迁补偿、续期流程等），需结合当地政策和合同条款进一步分析。请输入文本：","dateCreated":"2025-08-18T12:36:22+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-08-18T12:36:22+08:00","description":"","headline":"LangChain 实现 RAG + Agent","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/","keywords":"learn, LangChain, RAG, Agent"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"LLM 可以理解为一个超级大脑，Agent可以理解为手，脚，嘴等，LLM做决策，Agent接收LLM的决策，进行下一步的行动\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128129130131132133134135136137138139140141142143144145146147148149150151152153154155156157158159160161162163164165166167168169170171172173174175176177178179180181182183184185186187188189190191192# -*- coding: utf-8 -*-# -------------------------------------------------------------------------------# Name:         demo16# Description:  langchain 实现 RAG + agent# Author:       shaver# Date:         2025/8/18# -------------------------------------------------------------------------------import osfrom typing import Optional, Anyimport bs4from dotenv import load_dotenvfrom langchain import hubfrom langchain.agents import AgentExecutor, create_openai_functions_agentfrom langchain.chat_models import init_chat_modelfrom langchain.tools.retriever import create_retriever_toolfrom langchain_community.document_loaders import WebBaseLoaderfrom langchain_community.embeddings import DashScopeEmbeddingsfrom langchain_community.vectorstores import FAISSfrom langchain_text_splitters import RecursiveCharacterTextSplitterclass Config:    &quot;&quot;&quot; 配置项 延迟实例化    Attributes:        embeddings: 嵌入模型        llm: 语言模型        prompt: 语言模型提示    Methods:        initialize: 实例化配置项    &quot;&quot;&quot;    embeddings: Optional[DashScopeEmbeddings] = None    llm: Optional[Any] = None    prompt: Optional[Any] = None    @classmethod    def initialize(cls):        &quot;&quot;&quot;延迟初始化所有配置项（避免类定义时执行）        :arg cls: 配置类        :return: None        &quot;&quot;&quot;        cls.embeddings = DashScopeEmbeddings(model=&quot;text-embedding-v1&quot;)        cls.llm = init_chat_model(&quot;deepseek-chat&quot;, model_provider=&quot;deepseek&quot;, temperature=0.5)        cls.prompt = hub.pull(&quot;hwchase17/openai-functions-agent&quot;)class FAISSTool:    &quot;&quot;&quot; FAISS 向量存储工具    Attributes:        Methods:        save_web_docs: 将在线网页信息文档保存到 FAISS 向量数据库中    &quot;&quot;&quot;    @staticmethod    def save_web_docs(web_path, folder_path):        &quot;&quot;&quot;将文档保存到 FAISS 向量数据库中        &quot;&quot;&quot;        # 显式配置代理和请求参数        loader = WebBaseLoader(            # web_path=&quot;https://www.gov.cn/xinwen/2020-06/01/content_5516649.htm&quot;,            web_path=web_path,            bs_kwargs=dict(parse_only=bs4.SoupStrainer(id=&quot;UCAP-CONTENT&quot;)),            proxies=&#123;                &quot;http&quot;: &quot;http://127.0.0.1:1083&quot;,                &quot;https&quot;: &quot;http://127.0.0.1:1083&quot;            &#125;,            requests_kwargs=&#123;                &quot;headers&quot;: &#123;&quot;User-Agent&quot;: &quot;Mozilla/5.0&quot;&#125;,                &quot;timeout&quot;: 10,                &quot;verify&quot;: False  # 仅调试时禁用SSL验证            &#125;        )        docs = loader.load()        # 使用分割器分割文档        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)        documents = text_splitter.split_documents(docs)        vector_db = FAISS.from_documents(documents, Config.embeddings)        # 5. 持久化到本地（包含index.faiss和index.pkl文件）        os.makedirs(folder_path, exist_ok=True)  # 确保目录存在        vector_db.save_local(            folder_path=folder_path,        )        print(f&quot;向量库已保存至 &#123;folder_path&#125;&quot;)    @staticmethod    def load_web_docs(folder_path):        &quot;&quot;&quot; 记载本地 FAISS 向量数据库        :param folder_path: 本地向量数据库路径        :return: 返回 FAISS 向量数据库        &quot;&quot;&quot;        return FAISS.load_local(            folder_path=folder_path,            embeddings=Config.embeddings,            allow_dangerous_deserialization=True        )class AgentTool:    &quot;&quot;&quot; Agent 工具        Attributes:    Methods:        create_agent_tool: 创建检索器工具        crete_agent: 创建 agent    &quot;&quot;&quot;    @staticmethod    def create_agent_tool(vector_db, name, description):        &quot;&quot;&quot;创建 agent 工具        :param vector_db: 向量数据库        :param name: 名称        :param description: 描述        :return: 工具        &quot;&quot;&quot;        retriever = vector_db.as_retriever()        retriever.search_kwargs = &#123;&quot;k&quot;: 3&#125;  # 限制为最多检索3个文档        # 检索器工具        return create_retriever_tool(            retriever,            name,            description,        )    @staticmethod    def crete_agent(llm, tools, prompt):        &quot;&quot;&quot; 创建 agent        :param llm: 语言模型        :param tools: 工具列表        :param prompt: 语言模型提示        :return: agent        &quot;&quot;&quot;        return create_openai_functions_agent(llm, tools, prompt)    @staticmethod    def crete_agent_executor(agent, tools):        &quot;&quot;&quot; 创建 agent 执行器        :param agent: agent 名称        :param tools: 工具列表        :return: agent 执行器        &quot;&quot;&quot;        return AgentExecutor(agent=agent, tools=tools, verbose=True)if __name__ == &#x27;__main__&#x27;:    # 1. 记载环境变量    load_dotenv()    # 2. 初始化配置项    Config.initialize()    # 3. 加载网页文档到向量数据库  or 加载本地向量数据库    # FAISSTool.save_web_docs(&quot;https://www.gov.cn/xinwen/2020-06/01/content_5516649.htm&quot;,    #                         &quot;./web_docs&quot;)    vertex_db = FAISSTool.load_web_docs(&quot;./web_docs&quot;)    # 4.创建检索器工具 可以根据需要创建多个检索器工具    retriever_tools = []    retriever_tool_web_docs = AgentTool.create_agent_tool(vertex_db, &quot;web_docs&quot;, &quot;web_docs&quot;)    retriever_tools.append(retriever_tool_web_docs)    # 5.创建agent    agent = AgentTool.crete_agent(Config.llm, retriever_tools, Config.prompt)    # 6. 创建代理执行器 并运行    agent_executor = AgentTool.crete_agent_executor(agent, retriever_tools)    # 7. 启动交互    while True:        # 6. 输入文本        text = input(&quot;请输入文本：&quot;)        if not text:            continue        # 7. 执行agent        result = agent_executor.invoke(&#123;&quot;input&quot;: text&#125;)        # 8. 输出结果        print(result.get(&quot;output&quot;))\n\n效果：\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104/Users/shaver/Documents/conda_space/envs/langchain/bin/python3.11 /Users/shaver/PycharmProjects/AI/langchain/demo16.py USER_AGENT environment variable not set, consider setting it to identify your requests.请输入文本：建设用地使用权是什么？&gt; Entering new AgentExecutor chain...建设用地使用权是中国《物权法》和《民法典》中规定的一项重要用益物权，指权利人依法对国家所有的土地享有占有、使用和收益的权利，有权利用该土地建造建筑物、构筑物及其附属设施。以下是其核心要点：---### **1. 基本概念**- **所有权归属**：土地归国家或集体所有，但使用权可依法分离。- **用途限制**：仅用于建造建筑物、构筑物（如房屋、桥梁、道路等），不可直接用于农业耕作。- **权利来源**：通过划拨、出让、租赁等方式取得，其中出让（招拍挂）是最常见方式。---### **2. 主要类型**- **国有建设用地使用权**：  - **出让方式**：有偿取得，需支付土地出让金，期限一般为40年（商业）、50年（工业）、70年（住宅）。  - **划拨方式**：无偿或低偿取得，用于公益或特定项目（如学校、市政设施），无固定期限，但转让时需补缴出让金。- **集体建设用地使用权**：限于集体土地，需符合乡村规划，流转受限（需依法经集体同意）。---### **3. 权利内容**- **占有使用**：在土地上合法建设并保有建筑物。- **收益权**：通过出租、转让、抵押等方式获得收益。- **处分权**：可依法转让、抵押、继承（划拨土地需补缴出让金后处分）。---### **4. 法律依据**- **《民法典》物权编**（第344-361条）：明确权利设立、转让、续期等规则。- **《土地管理法》**：规定土地用途管制、审批程序等。- **《城市房地产管理法》**：细化房地产开发中的使用权问题。---### **5. 注意事项**- **期限与续期**：住宅用地到期自动续期；非住宅用地需依法申请续期，未获批准则收回。- **闲置土地**：满2年未开发可能被无偿收回。- **转让条件**：需完成开发投资总额的25%以上（防止炒地）。---### **6. 与土地使用权的区别**- **广义土地使用权**：包括建设用地、农用地、未利用地等。- **建设用地使用权**：特指用于建设的土地，属于土地使用权的一种具体类型。---若涉及具体问题（如拆迁补偿、续期流程等），需结合当地政策和合同条款进一步分析。&gt; Finished chain.建设用地使用权是中国《物权法》和《民法典》中规定的一项重要用益物权，指权利人依法对国家所有的土地享有占有、使用和收益的权利，有权利用该土地建造建筑物、构筑物及其附属设施。以下是其核心要点：---### **1. 基本概念**- **所有权归属**：土地归国家或集体所有，但使用权可依法分离。- **用途限制**：仅用于建造建筑物、构筑物（如房屋、桥梁、道路等），不可直接用于农业耕作。- **权利来源**：通过划拨、出让、租赁等方式取得，其中出让（招拍挂）是最常见方式。---### **2. 主要类型**- **国有建设用地使用权**：  - **出让方式**：有偿取得，需支付土地出让金，期限一般为40年（商业）、50年（工业）、70年（住宅）。  - **划拨方式**：无偿或低偿取得，用于公益或特定项目（如学校、市政设施），无固定期限，但转让时需补缴出让金。- **集体建设用地使用权**：限于集体土地，需符合乡村规划，流转受限（需依法经集体同意）。---### **3. 权利内容**- **占有使用**：在土地上合法建设并保有建筑物。- **收益权**：通过出租、转让、抵押等方式获得收益。- **处分权**：可依法转让、抵押、继承（划拨土地需补缴出让金后处分）。---### **4. 法律依据**- **《民法典》物权编**（第344-361条）：明确权利设立、转让、续期等规则。- **《土地管理法》**：规定土地用途管制、审批程序等。- **《城市房地产管理法》**：细化房地产开发中的使用权问题。---### **5. 注意事项**- **期限与续期**：住宅用地到期自动续期；非住宅用地需依法申请续期，未获批准则收回。- **闲置土地**：满2年未开发可能被无偿收回。- **转让条件**：需完成开发投资总额的25%以上（防止炒地）。---### **6. 与土地使用权的区别**- **广义土地使用权**：包括建设用地、农用地、未利用地等。- **建设用地使用权**：特指用于建设的土地，属于土地使用权的一种具体类型。---若涉及具体问题（如拆迁补偿、续期流程等），需结合当地政策和合同条款进一步分析。请输入文本：","dateCreated":"2025-08-18T12:36:22+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-08-18T12:36:22+08:00","description":"","headline":"LangChain 实现 RAG + Agent","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/","keywords":"learn, Agent, LangChain, RAG"}</script>
     <meta name="description" content="LLM 可以理解为一个超级大脑，Agent可以理解为手，脚，嘴等，LLM做决策，Agent接收LLM的决策，进行下一步的行动 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="LangChain 实现 RAG + Agent">
@@ -1125,7 +1125,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain langgraph rag"
                 >
                     
                     
@@ -1181,7 +1181,7 @@
                 
                 <div
                     class="media"
-                    data-search-text="langchain 实现 rag + agent  learn langchain rag agent"
+                    data-search-text="langchain 实现 rag + agent  learn agent langchain rag"
                 >
                     
                     
@@ -1405,6 +1405,118 @@
                 
                 <div
                     class="media"
+                    data-search-text="全流程docker&k8s操作  ubuntun docker k8s linux"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/14/hexo_post/%E5%85%A8%E6%B5%81%E7%A8%8Bdocker&amp;k8s%E6%93%8D%E4%BD%9C%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 全流程docker&amp;k8s操作"
+                        >
+                            <h3 class="media-heading">全流程docker&amp;k8s操作</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月14日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="harness engineering理论  harness agent"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/15/hexo_post/Harness%20Engineering%E7%90%86%E8%AE%BA%E5%86%85%E6%A0%B8/?from=search"
+                            aria-label=": Harness Engineering理论"
+                        >
+                            <h3 class="media-heading">Harness Engineering理论</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="harness engineering 实现 — gstack  gstack harness claude code ai agent 软件工程"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/18/hexo_post/Harness%20Engineering%E5%AE%9E%E7%8E%B0-GStack/?from=search"
+                            aria-label=": Harness Engineering 实现 — GStack"
+                        >
+                            <h3 class="media-heading">Harness Engineering 实现 — GStack</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="gstack实际操作  gstack skills"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/18/hexo_post/GStack%E5%AE%9E%E9%99%85%E6%93%8D%E4%BD%9C/?from=search"
+                            aria-label=": GStack实际操作"
+                        >
+                            <h3 class="media-heading">GStack实际操作</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
                     data-search-text="  "
                 >
                     
@@ -1413,7 +1525,7 @@
                     <div class="media-body">
                         <a
                             class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/06/hexo_post/%E6%B5%8B%E8%AF%95112/?from=search"
+                            href="https://shaver92.github.io/2026/05/21/hexo_post/openclaw/?from=search"
                             aria-label=": "
                         >
                             <h3 class="media-heading"></h3>
@@ -1421,7 +1533,119 @@
                         <span class="media-meta">
                             <span class="media-date text-small">
                                 
-                                    2026年5月6日
+                                    2026年5月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="  "
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/25/hexo_post/GStack/?from=search"
+                            aria-label=": "
+                        >
+                            <h3 class="media-heading"></h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月25日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="  "
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/?from=search"
+                            aria-label=": "
+                        >
+                            <h3 class="media-heading"></h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年6月2日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="佳明手表配置openweatherkey方法  佳明手表 weather openai_api_key"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/06/24/%E4%BD%B3%E6%98%8E%E6%89%8B%E8%A1%A8%E9%85%8D%E7%BD%AEopenweatherkey%E6%96%B9%E6%B3%95/?from=search"
+                            aria-label=": 佳明手表配置openweatherkey方法"
+                        >
+                            <h3 class="media-heading">佳明手表配置openweatherkey方法</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年6月24日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="佳明手表配置openweatherkey方法  佳明手表 weather openai_api_key"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/06/24/hexo_post/%E4%BD%B3%E6%98%8E%E6%89%8B%E8%A1%A8%E9%85%8D%E7%BD%AEopenweatherkey%E6%96%B9%E6%B3%95/?from=search"
+                            aria-label=": 佳明手表配置openweatherkey方法"
+                        >
+                            <h3 class="media-heading">佳明手表配置openweatherkey方法</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年6月24日
                                 
                             </span>
                         </span>
@@ -1438,7 +1662,7 @@
                 data-message-zero="没有找到文章"
                 data-message-one="找到 1 篇文章"
                 data-message-other="找到 {n} 篇文章">
-                找到 41 篇文章
+                找到 49 篇文章
             </p>
         </div>
     </div>

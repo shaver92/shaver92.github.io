@@ -1,0 +1,2162 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn,en,default">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="shaver&#39;s blog">
+    <title> - shaver&#39;s blog</title>
+    <meta name="author" content="shaver">
+    
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"核心： 先设计前架构，规范，再放大AI产能\n\n昨天看到x上说的一句话，我觉得非常值得所有正在用 AI 写代码的人停下来想一想：\n\n如果一个代码库一开始就是由 agent 写出来的，那你不应该把主要精力放在“逐行读懂它”上。\n\n这句话听起来有点反直觉，但它点中了一个非常现实的问题。\n很多团队在用了 AI 之后，代码产出速度会突然暴涨。页面能很快出来，接口能很快补齐，脚本能很快跑通，Bug 也能被快速修掉。表面上看，一切都在提速；但过一段时间你再回头，会发现另外一件事也在同时发生：\n系统正在失去可理解性。\n不是代码不能跑了，而是没人说得清：\n\n这个系统到底是怎么分层的\n模块之间边界在哪里\n为什么这里要这么设计\n哪些接口是稳定契约\n哪些地方可以改，哪些地方一改就会牵一发动全身\n\n这就是 AI coding 时代最容易出现的失控点。\n问题从来不只是“代码质量差”，而是 代码产能被放大了，但系统治理没有同步升级。\n一、AI 为什么会让代码更容易失控很多人会以为，AI 写代码快，所以问题只是“写得不够严谨”。其实不是。更深层的原因是：\nAI 把第三层产出放大了，但没有自动把第一层和第二层治理能力一起补上。\n为什么会这样？\n\nAI 给出的反馈太快了。你描述一个需求，它立刻就能给出页面、函数、接口、配置。人会自然地进入“先做出来再说”的节奏。\n局部修补成本太低了。以前多写一层逻辑要思考半天，现在哪里不对就让 AI 补一块，局部最优越来越便宜。\n“能运行”很容易制造理解错觉。页面打开了，接口通了，测试也能过，于是团队误以为系统已经清晰了。\n大多数 AI coding 都围绕当前文件、当前任务、当前报错展开，它天然强化的是局部实现，而不是系统层思考。\n团队的激励机制也在推着大家追求“可见产出”，而不是优先建设“可长期演化的结构”。\n\n所以一句话总结就是：\nAI 让编码变快了，也让人更容易绕过思考。\n二、真正该盯住的，不是每一行代码，而是三层高度如果我们把一个代码库拆成三个高度来看，就会更清楚：\n第一层：Architecture这一层关心的是系统级问题：\n\n系统边界\n核心模块\n数据流向\n服务职责\n外部依赖\n安全、性能、幂等、可观测性等关键约束\n\n这一层决定的是：系统到底是什么。\n第二层：Patterns &amp; Abstractions这一层关心的是项目内部怎么组织：\n\n模块如何拆分\n接口如何定义\n前后端如何对齐契约\n组件、服务、仓储、Schema、状态管理如何分层\n哪些抽象是稳定的，哪些只是局部实现\n\n这一层决定的是：系统应该按什么方式生长。\n第三层：File-level Code这一层才是我们平时最容易看到的内容：\n\n函数\n类\n页面\n组件\n配置\n测试\n各种具体实现细节\n\n这一层决定的是：某个功能是怎么被写出来的。\n三、为什么前两层比第三层更重要这不是说第三层不重要，而是说：\n如果前两层没定住，第三层写得越快，系统越容易失控。\n因为第三层的代码，本质上是在执行前两层的设计意图。\n如果架构边界不清晰：\n\n前端会混入业务规则\n后端会承担展示逻辑\n同一个能力会在不同模块重复实现\n接口格式会越长越随意\n新功能每次都像临时拼接\n\n如果抽象层没定住：\n\n今天写一个 service\n明天加一个 utils\n后天再来一个 manager\n每个文件都“看起来合理”，但整体没有统一结构\n\n这就是典型的 AI 时代“局部都对，整体失控”。\n所以真正高杠杆的做法不是盯着 AI 写的每一行，而是先把前两层设计清楚，再让 AI 在约束内高速生产。\n一句话总结：\n人的职责，不再是阅读全部实现，而是定义系统边界、抽象层级和验收机制。\n四、前两层到底应该写什么很多人听到这里会点头，但一落地又会卡住：\n那前两层到底要写成什么？\n最简单的理解方式是：\n\n第一层文档回答：系统怎么组成\n第二层文档回答：团队应该怎么写\n\n下面我们直接用一个具体案例说明。\n五、案例：React 前端 + Python 后端，如何把前两层写出来假设你现在有两个项目：\n\nFront：React 前端\nBack：Python 后端\n\n很多团队在这个阶段最容易犯的错误是，直接给 AI 下需求：\n\n帮我把登录页做出来\n帮我写一个用户列表接口\n帮我接一下分页\n帮我补一个导出功能\n\n这样做短期非常爽，但中期一定会出现结构漂移。\n正确做法是，先把前两层落成文档，再让 AI 按文档干活。\n六、第一层：Architecture 文档应该写什么这一层你至少要写清楚下面这些内容。\n1. 系统边界\nFront 负责什么\nBack 负责什么\n哪些规则在前端做\n哪些规则必须在后端做\n\n例如：\n\nFront 负责展示、交互、路由、表单体验、用户态呈现\nBack 负责业务规则、权限校验、数据一致性、持久化、审计\n\n2. 前后端通信方式\nREST 还是 GraphQL\n是否有 SSE &#x2F; WebSocket\n文件上传怎么走\n鉴权 Token 怎么传\n\n3. 核心业务流至少写出 3 到 5 个关键流程，比如：\n\n用户登录\n列表查询\n表单提交\n文件上传\n管理员审批\n\n每个流程都应该明确：\n\n谁发起\n请求如何流转\n后端经过哪些层\n最终返回什么结果\n\n4. 核心模块图前端有哪些大模块：\n\nauth\ndashboard\nusers\nsettings\n\n后端有哪些大模块：\n\nauth\nuser\norder\nnotification\n\n5. 外部依赖\n数据库\nRedis\n对象存储\n消息队列\n第三方 API\n\n6. 关键约束这一块最容易被忽略，但恰恰最重要：\n\n权限模型\n审计要求\n接口幂等性\n分页规范\n错误码规范\n性能预算\n可观测性要求\n\n第一层的核心不是“写一堆描述”，而是把系统的边界和硬规则钉住。\n七、第二层：Patterns &amp; Abstractions 文档应该写什么这一层说的是：\n项目内部到底按什么方式生长。\n前端要定什么以 React 项目为例，至少应该定这些：\n\n页面层、组件层、hooks 层、services 层如何分工\n数据请求统一放哪里\n是否允许组件直接请求接口\n状态管理怎么做\n表单状态怎么管理\n错误提示和 loading 怎么统一\n权限控制放在哪一层\n通用组件与业务组件如何区分\n目录结构怎么组织\n\n后端要定什么以 Python 项目为例，至少应该定这些：\n\nrouter &#x2F; service &#x2F; repository 如何分层\nschema &#x2F; dto &#x2F; model 如何区分\n参数校验在哪一层做\n事务在哪一层控制\n异常如何统一抛出\n错误码怎么定义\n日志和 tracing 怎么埋\n配置管理怎么做\n单元测试和集成测试怎么分\n\n前后端共同要定什么这是最容易被低估的一层，也是最容易导致合作失控的地方：\n\nAPI 响应格式\n分页结构\n时间格式\n字段命名规范\n空值语义\n错误响应格式\n版本兼容策略\n\n很多项目不是代码写坏了，而是 前后端抽象没有稳定契约。\n八、是不是写到 AGENTS.md 里要写，但不能只写在 AGENTS.md 里。\n这是一个非常关键的区分：\n\n设计文档 负责定义世界\nAGENTS.md 负责约束 AI 怎么在这个世界里干活\n\n换句话说：\n\n前两层文档是系统真相\nAGENTS.md 是 AI 的执行手册\n\n如果你把所有内容都堆进 AGENTS.md，通常会出现两个问题：\n\n文档越来越长，但结构越来越散\nAI 看起来拿到了规则，实际上没有拿到清晰的设计对象\n\n更合理的做法是：\n\n详细设计独立成文档\nAGENTS.md 只写入口、硬约束、执行规则\n\n九、推荐目录结构如果是 Front 和 Back 两个项目，并且整个仓库只维护一个根目录 AGENTS.md，我建议目录至少这样组织：\n1234567891011121314151617181920212223242526272829project-root/├── AGENTS.md├── docs/│   ├── architecture.md│   ├── api-contract.md│   ├── frontend-patterns.md│   ├── backend-patterns.md│   └── core-flows.md├── Front/│   ├── src/│   │   ├── app/│   │   ├── pages/│   │   ├── features/│   │   ├── components/│   │   ├── hooks/│   │   ├── services/│   │   ├── models/│   │   └── utils/│   └── tests/└── Back/    ├── app/    │   ├── api/    │   ├── services/    │   ├── repositories/    │   ├── schemas/    │   ├── models/    │   ├── core/    │   └── utils/    └── tests/\n\n这个结构的关键不是“长得标准”，而是它把三件事拆清楚了：\n\ndocs/ 放前两层真相\n根目录 AGENTS.md 统一约束 AI 行为\nFront/ 和 Back/ 专注承载具体实现\n\n十、这 5 份文档分别写什么下面给一套最小可用模板。\n1. docs/architecture.md建议章节：\n12345678910111213141516171819202122232425262728# 系统架构## 目标- 系统解决什么问题## 系统边界- Front 负责什么- Back 负责什么## 核心模块- Front 模块- Back 模块## 数据流- 请求如何进入系统- 数据如何返回给前端## 外部依赖- 数据库- Redis- 对象存储- 第三方 API## 关键约束- 安全性- 性能- 幂等性- 可观测性\n\n2. docs/frontend-patterns.md建议章节：\n1234567891011121314151617181920212223242526# 前端模式与约定## 分层设计- pages- features- components- hooks- services## 状态管理- 本地状态- 服务端状态## 数据请求规则- 谁可以发请求- 谁不能直接发请求## 界面约定- 表单- loading- 错误处理- 权限控制## 命名与目录规则- 文件命名- 目录命名\n\n3. docs/backend-patterns.md建议章节：\n1234567891011121314151617181920212223242526# 后端模式与约定## 分层设计- api/router- service- repository- schema- model## 参数校验- 参数校验在哪做## 事务规则- 事务在哪一层开启## 错误处理- 异常类型- 错误码## 日志与可观测性- 日志规范- tracing 规则## 测试策略- 单元测试- 集成测试\n\n4. docs/api-contract.md建议章节：\n123456789101112131415161718192021222324252627# API 契约## 响应包结构- success- data- error## 错误格式- code- message- details## 分页结构- page- page_size- total- items## 命名规范- snake_case 或 camelCase## 时间格式- ISO 8601- 时区策略## 版本策略- v1 / 向后兼容\n\n5. docs/core-flows.md建议章节：\n12345678910111213141516171819# 核心业务流程## 登录流程- 用户输入账号密码- Front 调用登录接口- Back 校验并签发 token- Front 存储用户态并跳转## 列表查询流程- Front 发起查询- Back 校验权限- Back 查询并返回分页结构- Front 渲染列表## 提交流程- Front 表单校验- Back 业务校验- Back 落库并记录审计日志- Front 提示结果\n\n十一、根目录 AGENTS.md 应该怎么写这里不要再重复架构设计，而是告诉 AI：\n\n先读什么\n必须遵守什么\n改代码前后要检查什么\n\n可以这样写：\n12345678910111213141516171819202122232425262728293031323334353637383940# 项目协作规则在开始编码前，必须先阅读以下文档：- docs/architecture.md- docs/frontend-patterns.md- docs/backend-patterns.md- docs/api-contract.md- docs/core-flows.md硬性规则：- Front 只负责展示、路由、交互，不负责影响数据一致性的业务规则。- Back 负责业务规则、数据一致性、持久化和审计能力。- 不要把影响数据正确性的业务判断写进 React 组件。- 不要把校验逻辑、持久化逻辑混入界面层代码。- 不允许随意发明新的 API 响应结构。- 前端所有网络请求必须放在约定的 services 或 query 层。- 后端必须保持 router、service、repository 的职责分离。- 如果项目定义了视图模型层，页面组件不要直接耦合后端原始响应。- 必须遵守现有目录结构、命名规则和模块边界。前端实现规则：- 优先按功能组织代码，放在 `Front/src/features/` 下。- 通用 UI 组件放在 `Front/src/components/`。- 可复用的业务 hooks 放在 `Front/src/hooks/`。- 接口访问统一放在 `Front/src/services/`。- 页面层只负责组合，不要在页面里堆积过多数据处理逻辑。后端实现规则：- Router 只处理 HTTP 输入输出，不承载业务编排。- Service 负责业务逻辑。- Repository 负责数据访问。- Schema 负责输入输出边界和数据校验。- 任何写数据库的路径，都必须考虑事务、审计和异常处理。完成前检查：- 检查 loading、empty、error、permission 等状态是否完整。- 确认 API 结构符合 `docs/api-contract.md`。- 确认错误处理方式保持一致。- 确认需要的日志、审计点、事务边界已经补齐。- 避免重复造抽象，优先复用已有模式。\n\n十二、为什么一个根目录 AGENTS.md 更适合你这个场景如果你的仓库本身就是一个完整业务系统，只是实现上分成 Front 和 Back 两个子项目，那通常没必要拆成两个 AGENTS.md。\n一个根目录 AGENTS.md 的优势是：\n\nAI 一进入仓库就先看到统一规则\n前后端边界可以在同一个入口里被强调\nAPI 契约、核心流程、命名规则不会被拆散\n更适合做团队级讲解和规范推广\n\n只有在下面这种情况，才更适合拆多个 AGENTS.md：\n\nFront 和 Back 是两个独立仓库\n两边团队完全分离\n两边技术规范差异非常大\n工具链和交付方式不同到需要完全独立约束\n\n十三、lessions结论一AI 最大的风险，不是写错代码，而是让团队在没有系统设计的情况下，持续高速地产出代码。\n结论二真正高杠杆的治理点，不在逐行审查实现，而在架构边界和抽象约束。\n结论三AGENTS.md 很重要，但它不是设计文档，它只是设计文档的执行入口。\n结论四前两层定住，第三层才能放心交给 AI；前两层没定住，第三层越快，系统越乱。\n十四、最后给一个最实用的落地建议如果你现在就准备把 AI coding 引入一个 React + Python 的项目，不要先去优化提示词，也不要先追求让 AI 多写几个页面。\n先做下面这五件事：\n\n写 docs/architecture.md\n写 docs/frontend-patterns.md\n写 docs/backend-patterns.md\n写 docs/api-contract.md\n在根目录写一个统一的 AGENTS.md\n\n当这五件事完成后，你会明显感觉到：\n\nAI 写出来的代码更一致了\n前后端对接更稳定了\nreview 的关注点更高了\n重构不再那么痛苦\n代码库的可维护性开始真正积累\n\n因为从这一刻开始，你不是在“让 AI 帮你写代码”，而是在：\n让 AI 在你定义好的系统里生产代码。\n这两者的差别，决定了代码库最终是复利，还是失控。\nfrom x\n","dateCreated":"2026-06-02T16:48:05+08:00","dateModified":"2026-06-02T16:48:05+08:00","datePublished":"2026-06-02T16:48:05+08:00","description":"","headline":"","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/"}</script>
+    <meta name="description" content="核心： 先设计前架构，规范，再放大AI产能  昨天看到x上说的一句话，我觉得非常值得所有正在用 AI 写代码的人停下来想一想：  如果一个代码库一开始就是由 agent 写出来的，那你不应该把主要精力放在“逐行读懂它”上。  这句话听起来有点反直觉，但它点中了一个非常现实的问题。 很多团队在用了 AI 之后，代码产出速度会突然暴涨。页面能很快出来，接口能很快补齐，脚本能很快跑通，Bug 也能被快速">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="shaver&#39;s blog">
+<meta property="og:url" content="https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/index.html">
+<meta property="og:site_name" content="shaver&#39;s blog">
+<meta property="og:description" content="核心： 先设计前架构，规范，再放大AI产能  昨天看到x上说的一句话，我觉得非常值得所有正在用 AI 写代码的人停下来想一想：  如果一个代码库一开始就是由 agent 写出来的，那你不应该把主要精力放在“逐行读懂它”上。  这句话听起来有点反直觉，但它点中了一个非常现实的问题。 很多团队在用了 AI 之后，代码产出速度会突然暴涨。页面能很快出来，接口能很快补齐，脚本能很快跑通，Bug 也能被快速">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/image.png">
+<meta property="og:image" content="https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/image-1.png">
+<meta property="article:published_time" content="2026-06-02T08:48:05.742Z">
+<meta property="article:modified_time" content="2026-06-02T08:48:05.744Z">
+<meta property="article:author" content="shaver">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/image.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://shaver92.github.io/assets/images/avatar.png"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/mitbunny-home.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+            
+<link rel="stylesheet" href="/assets/css/gitalk.css">
+
+        
+    
+</head>
+
+    <body class=" ">
+        <div id="blog">
+            <div id="main">
+                
+                    <div class="page-topbar main-content-wrap">
+                        <div class="page-topbar__actions">
+                            <a
+                                class="mitbunny-home__search"
+                                href="/"
+                                aria-label="回到首页"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">⌂</span>
+                                <span>首页</span>
+                            </a>
+                            <button
+                                class="mitbunny-home__search"
+                                type="button"
+                                aria-label="返回上一层"
+                                onclick="window.__goBackSmart && window.__goBackSmart('/', '/search/');"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">←</span>
+                                <span>上一层</span>
+                            </button>
+                            <button
+                                class="mitbunny-home__search"
+                                type="button"
+                                aria-label="前往下一层"
+                                onclick="window.history.forward();"
+                            >
+                                <span class="mitbunny-home__icon" aria-hidden="true">→</span>
+                                <span>下一层</span>
+                            </button>
+                        </div>
+                        
+                    </div>
+                
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            (无标题)
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2026-06-02T16:48:05+08:00">
+	
+		    2026 年 6 月 2 日
+    	
+    </time>
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>核心： 先设计前架构，规范，再放大AI产能</p>
+<p><img src="/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/image.png" alt="alt text"></p>
+<p>昨天看到x上说的一句话，我觉得非常值得所有正在用 AI 写代码的人停下来想一想：</p>
+<blockquote>
+<p>如果一个代码库一开始就是由 agent 写出来的，那你不应该把主要精力放在“逐行读懂它”上。</p>
+</blockquote>
+<p>这句话听起来有点反直觉，但它点中了一个非常现实的问题。</p>
+<p>很多团队在用了 AI 之后，代码产出速度会突然暴涨。页面能很快出来，接口能很快补齐，脚本能很快跑通，Bug 也能被快速修掉。表面上看，一切都在提速；但过一段时间你再回头，会发现另外一件事也在同时发生：</p>
+<p><code>系统正在失去可理解性。</code></p>
+<p>不是代码不能跑了，而是没人说得清：</p>
+<ul>
+<li>这个系统到底是怎么分层的</li>
+<li>模块之间边界在哪里</li>
+<li>为什么这里要这么设计</li>
+<li>哪些接口是稳定契约</li>
+<li>哪些地方可以改，哪些地方一改就会牵一发动全身</li>
+</ul>
+<p>这就是 AI coding 时代最容易出现的失控点。</p>
+<p>问题从来不只是“代码质量差”，而是 <code>代码产能被放大了，但系统治理没有同步升级。</code></p>
+<h2 id="一、AI-为什么会让代码更容易失控"><a href="#一、AI-为什么会让代码更容易失控" class="headerlink" title="一、AI 为什么会让代码更容易失控"></a>一、AI 为什么会让代码更容易失控</h2><p>很多人会以为，AI 写代码快，所以问题只是“写得不够严谨”。其实不是。更深层的原因是：</p>
+<p><code>AI 把第三层产出放大了，但没有自动把第一层和第二层治理能力一起补上。</code></p>
+<p>为什么会这样？</p>
+<ul>
+<li>AI 给出的反馈太快了。你描述一个需求，它立刻就能给出页面、函数、接口、配置。人会自然地进入“先做出来再说”的节奏。</li>
+<li>局部修补成本太低了。以前多写一层逻辑要思考半天，现在哪里不对就让 AI 补一块，局部最优越来越便宜。</li>
+<li>“能运行”很容易制造理解错觉。页面打开了，接口通了，测试也能过，于是团队误以为系统已经清晰了。</li>
+<li>大多数 AI coding 都围绕当前文件、当前任务、当前报错展开，它天然强化的是局部实现，而不是系统层思考。</li>
+<li>团队的激励机制也在推着大家追求“可见产出”，而不是优先建设“可长期演化的结构”。</li>
+</ul>
+<p>所以一句话总结就是：</p>
+<p><code>AI 让编码变快了，也让人更容易绕过思考。</code></p>
+<h2 id="二、真正该盯住的，不是每一行代码，而是三层高度"><a href="#二、真正该盯住的，不是每一行代码，而是三层高度" class="headerlink" title="二、真正该盯住的，不是每一行代码，而是三层高度"></a>二、真正该盯住的，不是每一行代码，而是三层高度</h2><p>如果我们把一个代码库拆成三个高度来看，就会更清楚：</p>
+<h3 id="第一层：Architecture"><a href="#第一层：Architecture" class="headerlink" title="第一层：Architecture"></a>第一层：Architecture</h3><p>这一层关心的是系统级问题：</p>
+<ul>
+<li>系统边界</li>
+<li>核心模块</li>
+<li>数据流向</li>
+<li>服务职责</li>
+<li>外部依赖</li>
+<li>安全、性能、幂等、可观测性等关键约束</li>
+</ul>
+<p>这一层决定的是：<code>系统到底是什么。</code></p>
+<h3 id="第二层：Patterns-Abstractions"><a href="#第二层：Patterns-Abstractions" class="headerlink" title="第二层：Patterns &amp; Abstractions"></a>第二层：Patterns &amp; Abstractions</h3><p>这一层关心的是项目内部怎么组织：</p>
+<ul>
+<li>模块如何拆分</li>
+<li>接口如何定义</li>
+<li>前后端如何对齐契约</li>
+<li>组件、服务、仓储、Schema、状态管理如何分层</li>
+<li>哪些抽象是稳定的，哪些只是局部实现</li>
+</ul>
+<p>这一层决定的是：<code>系统应该按什么方式生长。</code></p>
+<h3 id="第三层：File-level-Code"><a href="#第三层：File-level-Code" class="headerlink" title="第三层：File-level Code"></a>第三层：File-level Code</h3><p>这一层才是我们平时最容易看到的内容：</p>
+<ul>
+<li>函数</li>
+<li>类</li>
+<li>页面</li>
+<li>组件</li>
+<li>配置</li>
+<li>测试</li>
+<li>各种具体实现细节</li>
+</ul>
+<p>这一层决定的是：<code>某个功能是怎么被写出来的。</code></p>
+<h2 id="三、为什么前两层比第三层更重要"><a href="#三、为什么前两层比第三层更重要" class="headerlink" title="三、为什么前两层比第三层更重要"></a>三、为什么前两层比第三层更重要</h2><p>这不是说第三层不重要，而是说：</p>
+<p><code>如果前两层没定住，第三层写得越快，系统越容易失控。</code></p>
+<p>因为第三层的代码，本质上是在执行前两层的设计意图。</p>
+<p>如果架构边界不清晰：</p>
+<ul>
+<li>前端会混入业务规则</li>
+<li>后端会承担展示逻辑</li>
+<li>同一个能力会在不同模块重复实现</li>
+<li>接口格式会越长越随意</li>
+<li>新功能每次都像临时拼接</li>
+</ul>
+<p>如果抽象层没定住：</p>
+<ul>
+<li>今天写一个 <code>service</code></li>
+<li>明天加一个 <code>utils</code></li>
+<li>后天再来一个 <code>manager</code></li>
+<li>每个文件都“看起来合理”，但整体没有统一结构</li>
+</ul>
+<p>这就是典型的 AI 时代“局部都对，整体失控”。</p>
+<p>所以真正高杠杆的做法不是盯着 AI 写的每一行，而是先把前两层设计清楚，再让 AI 在约束内高速生产。</p>
+<p>一句话总结：</p>
+<p><code>人的职责，不再是阅读全部实现，而是定义系统边界、抽象层级和验收机制。</code></p>
+<h2 id="四、前两层到底应该写什么"><a href="#四、前两层到底应该写什么" class="headerlink" title="四、前两层到底应该写什么"></a>四、前两层到底应该写什么</h2><p>很多人听到这里会点头，但一落地又会卡住：</p>
+<p><code>那前两层到底要写成什么？</code></p>
+<p>最简单的理解方式是：</p>
+<ul>
+<li>第一层文档回答：<code>系统怎么组成</code></li>
+<li>第二层文档回答：<code>团队应该怎么写</code></li>
+</ul>
+<p>下面我们直接用一个具体案例说明。</p>
+<h2 id="五、案例：React-前端-Python-后端，如何把前两层写出来"><a href="#五、案例：React-前端-Python-后端，如何把前两层写出来" class="headerlink" title="五、案例：React 前端 + Python 后端，如何把前两层写出来"></a>五、案例：React 前端 + Python 后端，如何把前两层写出来</h2><p>假设你现在有两个项目：</p>
+<ul>
+<li><code>Front</code>：React 前端</li>
+<li><code>Back</code>：Python 后端</li>
+</ul>
+<p>很多团队在这个阶段最容易犯的错误是，直接给 AI 下需求：</p>
+<ul>
+<li>帮我把登录页做出来</li>
+<li>帮我写一个用户列表接口</li>
+<li>帮我接一下分页</li>
+<li>帮我补一个导出功能</li>
+</ul>
+<p>这样做短期非常爽，但中期一定会出现结构漂移。</p>
+<p>正确做法是，先把前两层落成文档，再让 AI 按文档干活。</p>
+<h2 id="六、第一层：Architecture-文档应该写什么"><a href="#六、第一层：Architecture-文档应该写什么" class="headerlink" title="六、第一层：Architecture 文档应该写什么"></a>六、第一层：Architecture 文档应该写什么</h2><p>这一层你至少要写清楚下面这些内容。</p>
+<h3 id="1-系统边界"><a href="#1-系统边界" class="headerlink" title="1. 系统边界"></a>1. 系统边界</h3><ul>
+<li><code>Front</code> 负责什么</li>
+<li><code>Back</code> 负责什么</li>
+<li>哪些规则在前端做</li>
+<li>哪些规则必须在后端做</li>
+</ul>
+<p>例如：</p>
+<ul>
+<li><code>Front</code> 负责展示、交互、路由、表单体验、用户态呈现</li>
+<li><code>Back</code> 负责业务规则、权限校验、数据一致性、持久化、审计</li>
+</ul>
+<h3 id="2-前后端通信方式"><a href="#2-前后端通信方式" class="headerlink" title="2. 前后端通信方式"></a>2. 前后端通信方式</h3><ul>
+<li>REST 还是 GraphQL</li>
+<li>是否有 SSE &#x2F; WebSocket</li>
+<li>文件上传怎么走</li>
+<li>鉴权 Token 怎么传</li>
+</ul>
+<h3 id="3-核心业务流"><a href="#3-核心业务流" class="headerlink" title="3. 核心业务流"></a>3. 核心业务流</h3><p>至少写出 3 到 5 个关键流程，比如：</p>
+<ul>
+<li>用户登录</li>
+<li>列表查询</li>
+<li>表单提交</li>
+<li>文件上传</li>
+<li>管理员审批</li>
+</ul>
+<p>每个流程都应该明确：</p>
+<ul>
+<li>谁发起</li>
+<li>请求如何流转</li>
+<li>后端经过哪些层</li>
+<li>最终返回什么结果</li>
+</ul>
+<h3 id="4-核心模块图"><a href="#4-核心模块图" class="headerlink" title="4. 核心模块图"></a>4. 核心模块图</h3><p>前端有哪些大模块：</p>
+<ul>
+<li><code>auth</code></li>
+<li><code>dashboard</code></li>
+<li><code>users</code></li>
+<li><code>settings</code></li>
+</ul>
+<p>后端有哪些大模块：</p>
+<ul>
+<li><code>auth</code></li>
+<li><code>user</code></li>
+<li><code>order</code></li>
+<li><code>notification</code></li>
+</ul>
+<h3 id="5-外部依赖"><a href="#5-外部依赖" class="headerlink" title="5. 外部依赖"></a>5. 外部依赖</h3><ul>
+<li>数据库</li>
+<li>Redis</li>
+<li>对象存储</li>
+<li>消息队列</li>
+<li>第三方 API</li>
+</ul>
+<h3 id="6-关键约束"><a href="#6-关键约束" class="headerlink" title="6. 关键约束"></a>6. 关键约束</h3><p>这一块最容易被忽略，但恰恰最重要：</p>
+<ul>
+<li>权限模型</li>
+<li>审计要求</li>
+<li>接口幂等性</li>
+<li>分页规范</li>
+<li>错误码规范</li>
+<li>性能预算</li>
+<li>可观测性要求</li>
+</ul>
+<p>第一层的核心不是“写一堆描述”，而是把系统的边界和硬规则钉住。</p>
+<h2 id="七、第二层：Patterns-Abstractions-文档应该写什么"><a href="#七、第二层：Patterns-Abstractions-文档应该写什么" class="headerlink" title="七、第二层：Patterns &amp; Abstractions 文档应该写什么"></a>七、第二层：Patterns &amp; Abstractions 文档应该写什么</h2><p>这一层说的是：</p>
+<p><code>项目内部到底按什么方式生长。</code></p>
+<h3 id="前端要定什么"><a href="#前端要定什么" class="headerlink" title="前端要定什么"></a>前端要定什么</h3><p>以 React 项目为例，至少应该定这些：</p>
+<ul>
+<li>页面层、组件层、hooks 层、services 层如何分工</li>
+<li>数据请求统一放哪里</li>
+<li>是否允许组件直接请求接口</li>
+<li>状态管理怎么做</li>
+<li>表单状态怎么管理</li>
+<li>错误提示和 loading 怎么统一</li>
+<li>权限控制放在哪一层</li>
+<li>通用组件与业务组件如何区分</li>
+<li>目录结构怎么组织</li>
+</ul>
+<h3 id="后端要定什么"><a href="#后端要定什么" class="headerlink" title="后端要定什么"></a>后端要定什么</h3><p>以 Python 项目为例，至少应该定这些：</p>
+<ul>
+<li>router &#x2F; service &#x2F; repository 如何分层</li>
+<li>schema &#x2F; dto &#x2F; model 如何区分</li>
+<li>参数校验在哪一层做</li>
+<li>事务在哪一层控制</li>
+<li>异常如何统一抛出</li>
+<li>错误码怎么定义</li>
+<li>日志和 tracing 怎么埋</li>
+<li>配置管理怎么做</li>
+<li>单元测试和集成测试怎么分</li>
+</ul>
+<h3 id="前后端共同要定什么"><a href="#前后端共同要定什么" class="headerlink" title="前后端共同要定什么"></a>前后端共同要定什么</h3><p>这是最容易被低估的一层，也是最容易导致合作失控的地方：</p>
+<ul>
+<li>API 响应格式</li>
+<li>分页结构</li>
+<li>时间格式</li>
+<li>字段命名规范</li>
+<li>空值语义</li>
+<li>错误响应格式</li>
+<li>版本兼容策略</li>
+</ul>
+<p>很多项目不是代码写坏了，而是 <code>前后端抽象没有稳定契约</code>。</p>
+<h2 id="八、是不是写到-AGENTS-md-里"><a href="#八、是不是写到-AGENTS-md-里" class="headerlink" title="八、是不是写到 AGENTS.md 里"></a>八、是不是写到 AGENTS.md 里</h2><p>要写，但不能只写在 <code>AGENTS.md</code> 里。</p>
+<p>这是一个非常关键的区分：</p>
+<ul>
+<li><code>设计文档</code> 负责定义世界</li>
+<li><code>AGENTS.md</code> 负责约束 AI 怎么在这个世界里干活</li>
+</ul>
+<p>换句话说：</p>
+<ul>
+<li>前两层文档是系统真相</li>
+<li><code>AGENTS.md</code> 是 AI 的执行手册</li>
+</ul>
+<p>如果你把所有内容都堆进 <code>AGENTS.md</code>，通常会出现两个问题：</p>
+<ul>
+<li>文档越来越长，但结构越来越散</li>
+<li>AI 看起来拿到了规则，实际上没有拿到清晰的设计对象</li>
+</ul>
+<p>更合理的做法是：</p>
+<ul>
+<li>详细设计独立成文档</li>
+<li><code>AGENTS.md</code> 只写入口、硬约束、执行规则</li>
+</ul>
+<h2 id="九、推荐目录结构"><a href="#九、推荐目录结构" class="headerlink" title="九、推荐目录结构"></a>九、推荐目录结构</h2><p>如果是 <code>Front</code> 和 <code>Back</code> 两个项目，并且整个仓库只维护一个根目录 <code>AGENTS.md</code>，我建议目录至少这样组织：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">project-root/</span><br><span class="line">├── AGENTS.md</span><br><span class="line">├── docs/</span><br><span class="line">│   ├── architecture.md</span><br><span class="line">│   ├── api-contract.md</span><br><span class="line">│   ├── frontend-patterns.md</span><br><span class="line">│   ├── backend-patterns.md</span><br><span class="line">│   └── core-flows.md</span><br><span class="line">├── Front/</span><br><span class="line">│   ├── src/</span><br><span class="line">│   │   ├── app/</span><br><span class="line">│   │   ├── pages/</span><br><span class="line">│   │   ├── features/</span><br><span class="line">│   │   ├── components/</span><br><span class="line">│   │   ├── hooks/</span><br><span class="line">│   │   ├── services/</span><br><span class="line">│   │   ├── models/</span><br><span class="line">│   │   └── utils/</span><br><span class="line">│   └── tests/</span><br><span class="line">└── Back/</span><br><span class="line">    ├── app/</span><br><span class="line">    │   ├── api/</span><br><span class="line">    │   ├── services/</span><br><span class="line">    │   ├── repositories/</span><br><span class="line">    │   ├── schemas/</span><br><span class="line">    │   ├── models/</span><br><span class="line">    │   ├── core/</span><br><span class="line">    │   └── utils/</span><br><span class="line">    └── tests/</span><br></pre></td></tr></table></figure>
+
+<p>这个结构的关键不是“长得标准”，而是它把三件事拆清楚了：</p>
+<ul>
+<li><code>docs/</code> 放前两层真相</li>
+<li>根目录 <code>AGENTS.md</code> 统一约束 AI 行为</li>
+<li><code>Front/</code> 和 <code>Back/</code> 专注承载具体实现</li>
+</ul>
+<h2 id="十、这-5-份文档分别写什么"><a href="#十、这-5-份文档分别写什么" class="headerlink" title="十、这 5 份文档分别写什么"></a>十、这 5 份文档分别写什么</h2><p>下面给一套最小可用模板。</p>
+<h3 id="1-docs-architecture-md"><a href="#1-docs-architecture-md" class="headerlink" title="1. docs/architecture.md"></a>1. <code>docs/architecture.md</code></h3><p>建议章节：</p>
+<figure class="highlight md"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># 系统架构</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 目标</span></span><br><span class="line"><span class="bullet">-</span> 系统解决什么问题</span><br><span class="line"></span><br><span class="line"><span class="section">## 系统边界</span></span><br><span class="line"><span class="bullet">-</span> Front 负责什么</span><br><span class="line"><span class="bullet">-</span> Back 负责什么</span><br><span class="line"></span><br><span class="line"><span class="section">## 核心模块</span></span><br><span class="line"><span class="bullet">-</span> Front 模块</span><br><span class="line"><span class="bullet">-</span> Back 模块</span><br><span class="line"></span><br><span class="line"><span class="section">## 数据流</span></span><br><span class="line"><span class="bullet">-</span> 请求如何进入系统</span><br><span class="line"><span class="bullet">-</span> 数据如何返回给前端</span><br><span class="line"></span><br><span class="line"><span class="section">## 外部依赖</span></span><br><span class="line"><span class="bullet">-</span> 数据库</span><br><span class="line"><span class="bullet">-</span> Redis</span><br><span class="line"><span class="bullet">-</span> 对象存储</span><br><span class="line"><span class="bullet">-</span> 第三方 API</span><br><span class="line"></span><br><span class="line"><span class="section">## 关键约束</span></span><br><span class="line"><span class="bullet">-</span> 安全性</span><br><span class="line"><span class="bullet">-</span> 性能</span><br><span class="line"><span class="bullet">-</span> 幂等性</span><br><span class="line"><span class="bullet">-</span> 可观测性</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-docs-frontend-patterns-md"><a href="#2-docs-frontend-patterns-md" class="headerlink" title="2. docs/frontend-patterns.md"></a>2. <code>docs/frontend-patterns.md</code></h3><p>建议章节：</p>
+<figure class="highlight md"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># 前端模式与约定</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 分层设计</span></span><br><span class="line"><span class="bullet">-</span> pages</span><br><span class="line"><span class="bullet">-</span> features</span><br><span class="line"><span class="bullet">-</span> components</span><br><span class="line"><span class="bullet">-</span> hooks</span><br><span class="line"><span class="bullet">-</span> services</span><br><span class="line"></span><br><span class="line"><span class="section">## 状态管理</span></span><br><span class="line"><span class="bullet">-</span> 本地状态</span><br><span class="line"><span class="bullet">-</span> 服务端状态</span><br><span class="line"></span><br><span class="line"><span class="section">## 数据请求规则</span></span><br><span class="line"><span class="bullet">-</span> 谁可以发请求</span><br><span class="line"><span class="bullet">-</span> 谁不能直接发请求</span><br><span class="line"></span><br><span class="line"><span class="section">## 界面约定</span></span><br><span class="line"><span class="bullet">-</span> 表单</span><br><span class="line"><span class="bullet">-</span> loading</span><br><span class="line"><span class="bullet">-</span> 错误处理</span><br><span class="line"><span class="bullet">-</span> 权限控制</span><br><span class="line"></span><br><span class="line"><span class="section">## 命名与目录规则</span></span><br><span class="line"><span class="bullet">-</span> 文件命名</span><br><span class="line"><span class="bullet">-</span> 目录命名</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-docs-backend-patterns-md"><a href="#3-docs-backend-patterns-md" class="headerlink" title="3. docs/backend-patterns.md"></a>3. <code>docs/backend-patterns.md</code></h3><p>建议章节：</p>
+<figure class="highlight md"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># 后端模式与约定</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 分层设计</span></span><br><span class="line"><span class="bullet">-</span> api/router</span><br><span class="line"><span class="bullet">-</span> service</span><br><span class="line"><span class="bullet">-</span> repository</span><br><span class="line"><span class="bullet">-</span> schema</span><br><span class="line"><span class="bullet">-</span> model</span><br><span class="line"></span><br><span class="line"><span class="section">## 参数校验</span></span><br><span class="line"><span class="bullet">-</span> 参数校验在哪做</span><br><span class="line"></span><br><span class="line"><span class="section">## 事务规则</span></span><br><span class="line"><span class="bullet">-</span> 事务在哪一层开启</span><br><span class="line"></span><br><span class="line"><span class="section">## 错误处理</span></span><br><span class="line"><span class="bullet">-</span> 异常类型</span><br><span class="line"><span class="bullet">-</span> 错误码</span><br><span class="line"></span><br><span class="line"><span class="section">## 日志与可观测性</span></span><br><span class="line"><span class="bullet">-</span> 日志规范</span><br><span class="line"><span class="bullet">-</span> tracing 规则</span><br><span class="line"></span><br><span class="line"><span class="section">## 测试策略</span></span><br><span class="line"><span class="bullet">-</span> 单元测试</span><br><span class="line"><span class="bullet">-</span> 集成测试</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-docs-api-contract-md"><a href="#4-docs-api-contract-md" class="headerlink" title="4. docs/api-contract.md"></a>4. <code>docs/api-contract.md</code></h3><p>建议章节：</p>
+<figure class="highlight md"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># API 契约</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 响应包结构</span></span><br><span class="line"><span class="bullet">-</span> success</span><br><span class="line"><span class="bullet">-</span> data</span><br><span class="line"><span class="bullet">-</span> error</span><br><span class="line"></span><br><span class="line"><span class="section">## 错误格式</span></span><br><span class="line"><span class="bullet">-</span> code</span><br><span class="line"><span class="bullet">-</span> message</span><br><span class="line"><span class="bullet">-</span> details</span><br><span class="line"></span><br><span class="line"><span class="section">## 分页结构</span></span><br><span class="line"><span class="bullet">-</span> page</span><br><span class="line"><span class="bullet">-</span> page<span class="emphasis">_size</span></span><br><span class="line"><span class="emphasis">- total</span></span><br><span class="line"><span class="emphasis">- items</span></span><br><span class="line"><span class="emphasis"></span></span><br><span class="line"><span class="emphasis">## 命名规范</span></span><br><span class="line"><span class="emphasis">- snake_</span>case 或 camelCase</span><br><span class="line"></span><br><span class="line"><span class="section">## 时间格式</span></span><br><span class="line"><span class="bullet">-</span> ISO 8601</span><br><span class="line"><span class="bullet">-</span> 时区策略</span><br><span class="line"></span><br><span class="line"><span class="section">## 版本策略</span></span><br><span class="line"><span class="bullet">-</span> v1 / 向后兼容</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-docs-core-flows-md"><a href="#5-docs-core-flows-md" class="headerlink" title="5. docs/core-flows.md"></a>5. <code>docs/core-flows.md</code></h3><p>建议章节：</p>
+<figure class="highlight md"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># 核心业务流程</span></span><br><span class="line"></span><br><span class="line"><span class="section">## 登录流程</span></span><br><span class="line"><span class="bullet">-</span> 用户输入账号密码</span><br><span class="line"><span class="bullet">-</span> Front 调用登录接口</span><br><span class="line"><span class="bullet">-</span> Back 校验并签发 token</span><br><span class="line"><span class="bullet">-</span> Front 存储用户态并跳转</span><br><span class="line"></span><br><span class="line"><span class="section">## 列表查询流程</span></span><br><span class="line"><span class="bullet">-</span> Front 发起查询</span><br><span class="line"><span class="bullet">-</span> Back 校验权限</span><br><span class="line"><span class="bullet">-</span> Back 查询并返回分页结构</span><br><span class="line"><span class="bullet">-</span> Front 渲染列表</span><br><span class="line"></span><br><span class="line"><span class="section">## 提交流程</span></span><br><span class="line"><span class="bullet">-</span> Front 表单校验</span><br><span class="line"><span class="bullet">-</span> Back 业务校验</span><br><span class="line"><span class="bullet">-</span> Back 落库并记录审计日志</span><br><span class="line"><span class="bullet">-</span> Front 提示结果</span><br></pre></td></tr></table></figure>
+
+<h2 id="十一、根目录-AGENTS-md-应该怎么写"><a href="#十一、根目录-AGENTS-md-应该怎么写" class="headerlink" title="十一、根目录 AGENTS.md 应该怎么写"></a>十一、根目录 <code>AGENTS.md</code> 应该怎么写</h2><p>这里不要再重复架构设计，而是告诉 AI：</p>
+<ul>
+<li>先读什么</li>
+<li>必须遵守什么</li>
+<li>改代码前后要检查什么</li>
+</ul>
+<p>可以这样写：</p>
+<figure class="highlight md"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># 项目协作规则</span></span><br><span class="line"></span><br><span class="line">在开始编码前，必须先阅读以下文档：</span><br><span class="line"><span class="bullet">-</span> docs/architecture.md</span><br><span class="line"><span class="bullet">-</span> docs/frontend-patterns.md</span><br><span class="line"><span class="bullet">-</span> docs/backend-patterns.md</span><br><span class="line"><span class="bullet">-</span> docs/api-contract.md</span><br><span class="line"><span class="bullet">-</span> docs/core-flows.md</span><br><span class="line"></span><br><span class="line">硬性规则：</span><br><span class="line"><span class="bullet">-</span> Front 只负责展示、路由、交互，不负责影响数据一致性的业务规则。</span><br><span class="line"><span class="bullet">-</span> Back 负责业务规则、数据一致性、持久化和审计能力。</span><br><span class="line"><span class="bullet">-</span> 不要把影响数据正确性的业务判断写进 React 组件。</span><br><span class="line"><span class="bullet">-</span> 不要把校验逻辑、持久化逻辑混入界面层代码。</span><br><span class="line"><span class="bullet">-</span> 不允许随意发明新的 API 响应结构。</span><br><span class="line"><span class="bullet">-</span> 前端所有网络请求必须放在约定的 services 或 query 层。</span><br><span class="line"><span class="bullet">-</span> 后端必须保持 router、service、repository 的职责分离。</span><br><span class="line"><span class="bullet">-</span> 如果项目定义了视图模型层，页面组件不要直接耦合后端原始响应。</span><br><span class="line"><span class="bullet">-</span> 必须遵守现有目录结构、命名规则和模块边界。</span><br><span class="line"></span><br><span class="line">前端实现规则：</span><br><span class="line"><span class="bullet">-</span> 优先按功能组织代码，放在 <span class="code">`Front/src/features/`</span> 下。</span><br><span class="line"><span class="bullet">-</span> 通用 UI 组件放在 <span class="code">`Front/src/components/`</span>。</span><br><span class="line"><span class="bullet">-</span> 可复用的业务 hooks 放在 <span class="code">`Front/src/hooks/`</span>。</span><br><span class="line"><span class="bullet">-</span> 接口访问统一放在 <span class="code">`Front/src/services/`</span>。</span><br><span class="line"><span class="bullet">-</span> 页面层只负责组合，不要在页面里堆积过多数据处理逻辑。</span><br><span class="line"></span><br><span class="line">后端实现规则：</span><br><span class="line"><span class="bullet">-</span> Router 只处理 HTTP 输入输出，不承载业务编排。</span><br><span class="line"><span class="bullet">-</span> Service 负责业务逻辑。</span><br><span class="line"><span class="bullet">-</span> Repository 负责数据访问。</span><br><span class="line"><span class="bullet">-</span> Schema 负责输入输出边界和数据校验。</span><br><span class="line"><span class="bullet">-</span> 任何写数据库的路径，都必须考虑事务、审计和异常处理。</span><br><span class="line"></span><br><span class="line">完成前检查：</span><br><span class="line"><span class="bullet">-</span> 检查 loading、empty、error、permission 等状态是否完整。</span><br><span class="line"><span class="bullet">-</span> 确认 API 结构符合 <span class="code">`docs/api-contract.md`</span>。</span><br><span class="line"><span class="bullet">-</span> 确认错误处理方式保持一致。</span><br><span class="line"><span class="bullet">-</span> 确认需要的日志、审计点、事务边界已经补齐。</span><br><span class="line"><span class="bullet">-</span> 避免重复造抽象，优先复用已有模式。</span><br></pre></td></tr></table></figure>
+
+<h2 id="十二、为什么一个根目录-AGENTS-md-更适合你这个场景"><a href="#十二、为什么一个根目录-AGENTS-md-更适合你这个场景" class="headerlink" title="十二、为什么一个根目录 AGENTS.md 更适合你这个场景"></a>十二、为什么一个根目录 <code>AGENTS.md</code> 更适合你这个场景</h2><p>如果你的仓库本身就是一个完整业务系统，只是实现上分成 <code>Front</code> 和 <code>Back</code> 两个子项目，那通常没必要拆成两个 <code>AGENTS.md</code>。</p>
+<p>一个根目录 <code>AGENTS.md</code> 的优势是：</p>
+<ul>
+<li>AI 一进入仓库就先看到统一规则</li>
+<li>前后端边界可以在同一个入口里被强调</li>
+<li>API 契约、核心流程、命名规则不会被拆散</li>
+<li>更适合做团队级讲解和规范推广</li>
+</ul>
+<p>只有在下面这种情况，才更适合拆多个 <code>AGENTS.md</code>：</p>
+<ul>
+<li><code>Front</code> 和 <code>Back</code> 是两个独立仓库</li>
+<li>两边团队完全分离</li>
+<li>两边技术规范差异非常大</li>
+<li>工具链和交付方式不同到需要完全独立约束</li>
+</ul>
+<h2 id="十三、lessions"><a href="#十三、lessions" class="headerlink" title="十三、lessions"></a>十三、lessions</h2><h3 id="结论一"><a href="#结论一" class="headerlink" title="结论一"></a>结论一</h3><p><code>AI 最大的风险，不是写错代码，而是让团队在没有系统设计的情况下，持续高速地产出代码。</code></p>
+<h3 id="结论二"><a href="#结论二" class="headerlink" title="结论二"></a>结论二</h3><p><code>真正高杠杆的治理点，不在逐行审查实现，而在架构边界和抽象约束。</code></p>
+<h3 id="结论三"><a href="#结论三" class="headerlink" title="结论三"></a>结论三</h3><p><code>AGENTS.md 很重要，但它不是设计文档，它只是设计文档的执行入口。</code></p>
+<h3 id="结论四"><a href="#结论四" class="headerlink" title="结论四"></a>结论四</h3><p><code>前两层定住，第三层才能放心交给 AI；前两层没定住，第三层越快，系统越乱。</code></p>
+<h2 id="十四、最后给一个最实用的落地建议"><a href="#十四、最后给一个最实用的落地建议" class="headerlink" title="十四、最后给一个最实用的落地建议"></a>十四、最后给一个最实用的落地建议</h2><p>如果你现在就准备把 AI coding 引入一个 React + Python 的项目，不要先去优化提示词，也不要先追求让 AI 多写几个页面。</p>
+<p>先做下面这五件事：</p>
+<ol>
+<li>写 <code>docs/architecture.md</code></li>
+<li>写 <code>docs/frontend-patterns.md</code></li>
+<li>写 <code>docs/backend-patterns.md</code></li>
+<li>写 <code>docs/api-contract.md</code></li>
+<li>在根目录写一个统一的 <code>AGENTS.md</code></li>
+</ol>
+<p>当这五件事完成后，你会明显感觉到：</p>
+<ul>
+<li>AI 写出来的代码更一致了</li>
+<li>前后端对接更稳定了</li>
+<li>review 的关注点更高了</li>
+<li>重构不再那么痛苦</li>
+<li>代码库的可维护性开始真正积累</li>
+</ul>
+<p>因为从这一刻开始，你不是在“让 AI 帮你写代码”，而是在：</p>
+<p><code>让 AI 在你定义好的系统里生产代码。</code></p>
+<p>这两者的差别，决定了代码库最终是复利，还是失控。</p>
+<h2 id="from-x"><a href="#from-x" class="headerlink" title="from x"></a>from x</h2><p><img src="/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/image-1.png" alt="alt text"></p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2026/06/24/hexo_post/%E4%BD%B3%E6%98%8E%E6%89%8B%E8%A1%A8%E9%85%8D%E7%BD%AEopenweatherkey%E6%96%B9%E6%B3%95/"
+                    data-tooltip="佳明手表配置openweatherkey方法"
+                    aria-label="上一篇: 佳明手表配置openweatherkey方法"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2026/05/25/hexo_post/GStack/"
+                    data-tooltip="(无标题)"
+                    aria-label="下一篇: (无标题)"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#gitalk"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="gitalk"></div>
+
+            
+        
+    </div>
+</article>
+
+
+                
+
+            </div>
+        </div>
+        
+            <div id="algolia-search-modal" class="modal-container">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="close-button"><i class="fa fa-times"></i></span>
+            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
+                <span class="searchby-algolia-text text-color-light text-small">by</span>
+                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
+            </a>
+            <i class="search-icon fa fa-search"></i>
+            <form id="algolia-search-form">
+                <input type="text" id="algolia-search-input" name="search"
+                    class="form-control input--large search-input" placeholder="Search "
+                    />
+            </form>
+        </div>
+        <div class="modal-body">
+            <div class="no-result text-color-light text-center">没有找到文章</div>
+            <div class="results">
+                
+                <div
+                    class="media"
+                    data-search-text="第一篇日记  learn note"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/01/hexo_post/%E7%AC%AC%E4%B8%80%E7%AF%87%E6%97%A5%E8%AE%B0/?from=search"
+                            aria-label=": 第一篇日记"
+                        >
+                            <h3 class="media-heading">第一篇日记</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月1日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="dataview  learn obsidian插件 dataview"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/28/hexo_post/Dataview/?from=search"
+                            aria-label=": Dataview"
+                        >
+                            <h3 class="media-heading">Dataview</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月28日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="tasks  learn obsidian插件 productivity"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/28/hexo_post/Tasks/?from=search"
+                            aria-label=": Tasks"
+                        >
+                            <h3 class="media-heading">Tasks</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月28日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="multi-column markdown  learn obsidian插件 markdown"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Multi-Column%20Markdown/?from=search"
+                            aria-label=": Multi-Column Markdown"
+                        >
+                            <h3 class="media-heading">Multi-Column Markdown</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
+                        >
+                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
+                            aria-label=": HuggingFace 核心组件介绍"
+                        >
+                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="基于 gpt2 模型的微调训练实践  learn llm_application fine-tuning gpt-2"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EGPT2%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 基于 GPT2 模型的微调训练实践"
+                        >
+                            <h3 class="media-heading">基于 GPT2 模型的微调训练实践</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Xtuner 训练框架"
+                        >
+                            <h3 class="media-heading">Xtuner 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="gguf 模型  learn llm_application gguf quantization"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/?from=search"
+                            aria-label=": GGUF 模型"
+                        >
+                            <h3 class="media-heading">GGUF 模型</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="vllm 推理框架  learn llm_application inference vllm"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": vLLM 推理框架"
+                        >
+                            <h3 class="media-heading">vLLM 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="llama-factory 训练框架  learn llm_application llama-factory fine-tuning"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LLaMA-Factory 训练框架"
+                        >
+                            <h3 class="media-heading">LLaMA-Factory 训练框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": LMDeploy 推理框架"
+                        >
+                            <h3 class="media-heading">LMDeploy 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="opencompass 评估测试框架  learn llm_application opencompass evaluation"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/OpenCompass%E8%AF%84%E4%BC%B0%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": OpenCompass 评估测试框架"
+                        >
+                            <h3 class="media-heading">OpenCompass 评估测试框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
+                            aria-label=": Ollama 推理框架"
+                        >
+                            <h3 class="media-heading">Ollama 推理框架</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/?from=search"
+                            aria-label=": 大模型微调分布式训练"
+                        >
+                            <h3 class="media-heading">大模型微调分布式训练</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月29日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 情绪对话项目实践"
+                        >
+                            <h3 class="media-heading">情绪对话项目实践</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月31日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="大模型部署  learn llm_application inference"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
+                            aria-label=": 大模型部署"
+                        >
+                            <h3 class="media-heading">大模型部署</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年5月31日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="dify 学习  learn llm_application dify llmops"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/01/hexo_post/Dify%E5%AD%A6%E4%B9%A0/?from=search"
+                            aria-label=": Dify 学习"
+                        >
+                            <h3 class="media-heading">Dify 学习</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月1日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="mcp 学习  learn llm_application mcp"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/02/hexo_post/MCP%E5%AD%A6%E4%B9%A0/?from=search"
+                            aria-label=": MCP 学习"
+                        >
+                            <h3 class="media-heading">MCP 学习</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月2日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="集成多 mcp 应用及解决多表查询的解决方案  learn llm_application mcp sql"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/03/hexo_post/%E9%9B%86%E6%88%90%E5%A4%9AMCP%E5%BA%94%E7%94%A8%E5%8F%8A%E8%A7%A3%E5%86%B3%E5%A4%9A%E8%A1%A8%E6%9F%A5%E8%AF%A2%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/?from=search"
+                            aria-label=": 集成多 MCP 应用及解决多表查询的解决方案"
+                        >
+                            <h3 class="media-heading">集成多 MCP 应用及解决多表查询的解决方案</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月3日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="texttosql 解决方案试验  learn llm_application texttosql vanna"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/04/hexo_post/TextToSQL%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E8%AF%95%E9%AA%8C/?from=search"
+                            aria-label=": TextToSQL 解决方案试验"
+                        >
+                            <h3 class="media-heading">TextToSQL 解决方案试验</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="indextts-1.5 使用记录  learn llm_application tts"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/05/hexo_post/IndexTTS-1.5%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/?from=search"
+                            aria-label=": IndexTTS-1.5 使用记录"
+                        >
+                            <h3 class="media-heading">IndexTTS-1.5 使用记录</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月5日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="streamlit 与 crewai 实现自动生成测试用例  learn llm_application streamlit crewai testing"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/06/hexo_post/streamlit&amp;crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/?from=search"
+                            aria-label=": streamlit 与 crewai 实现自动生成测试用例"
+                        >
+                            <h3 class="media-heading">streamlit 与 crewai 实现自动生成测试用例</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="强制降低或升依赖包版本  learn pip python"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/06/hexo_post/%E5%BC%BA%E5%88%B6%E9%99%8D%E4%BD%8E%E6%88%96%E5%8D%87%E4%BE%9D%E8%B5%96%E5%8C%85%E7%89%88%E6%9C%AC/?from=search"
+                            aria-label=": 强制降低或升依赖包版本"
+                        >
+                            <h3 class="media-heading">强制降低或升依赖包版本</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="嵌入模型与向量数据库  learn llm_application embedding vector-database"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/?from=search"
+                            aria-label=": 嵌入模型与向量数据库"
+                        >
+                            <h3 class="media-heading">嵌入模型与向量数据库</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月10日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="rag 技术和应用  learn llm_application rag"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/14/hexo_post/RAG%E6%8A%80%E6%9C%AF%E5%92%8C%E5%BA%94%E7%94%A8/?from=search"
+                            aria-label=": RAG 技术和应用"
+                        >
+                            <h3 class="media-heading">RAG 技术和应用</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月14日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="rag 高级技术与实践  learn llm_application rag advanced"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/18/hexo_post/RAG%E9%AB%98%E7%BA%A7%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": RAG 高级技术与实践"
+                        >
+                            <h3 class="media-heading">RAG 高级技术与实践</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="pip 源切换  learn pip python"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/06/18/hexo_post/pip%E6%BA%90%E5%88%87%E6%8D%A2/?from=search"
+                            aria-label=": pip 源切换"
+                        >
+                            <h3 class="media-heading">pip 源切换</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年6月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="remote-ssh 插件  learn vscode remote-dev"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/07/09/hexo_post/Remote-SSH%E6%8F%92%E4%BB%B6/?from=search"
+                            aria-label=": Remote-SSH 插件"
+                        >
+                            <h3 class="media-heading">Remote-SSH 插件</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年7月9日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="llamaindex 知识库管理与信息检索  learn llm_application rag llamaindex"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/07/hexo_post/LlamaIndex%E7%9F%A5%E8%AF%86%E5%BA%93%E7%AE%A1%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/?from=search"
+                            aria-label=": LlamaIndex 知识库管理与信息检索"
+                        >
+                            <h3 class="media-heading">LlamaIndex 知识库管理与信息检索</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月7日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain langgraph rag"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/14/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%E5%92%8CLangGraph%E5%AE%9E%E7%8E%B0%E5%B7%A5%E4%BD%9C%E6%B5%81/?from=search"
+                            aria-label=": LangChain 实现 RAG 和 LangGraph 实现工作流"
+                        >
+                            <h3 class="media-heading">LangChain 实现 RAG 和 LangGraph 实现工作流</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月14日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="langchain 实现 function call  learn llm_application langchain function-calling"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/15/hexo_post/LangChain%E5%AE%9E%E7%8E%B0Function%20Call/?from=search"
+                            aria-label=": LangChain 实现 Function Call"
+                        >
+                            <h3 class="media-heading">LangChain 实现 Function Call</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="langchain 实现 rag + agent  learn agent langchain rag"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/?from=search"
+                            aria-label=": LangChain 实现 RAG + Agent"
+                        >
+                            <h3 class="media-heading">LangChain 实现 RAG + Agent</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="有声小说第一次尝试实现（pyttsx3）  learn llm_application tts python"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/?from=search"
+                            aria-label=": 有声小说第一次尝试实现（pyttsx3）"
+                        >
+                            <h3 class="media-heading">有声小说第一次尝试实现（pyttsx3）</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月20日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="chrome mcp server  learn llm_application mcp chrome"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/21/hexo_post/Chrome%20MCP%20Server/?from=search"
+                            aria-label=": Chrome MCP Server"
+                        >
+                            <h3 class="media-heading">Chrome MCP Server</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="homebrew 常用命令  learn homebrew mac"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/08/21/hexo_post/Homebrew%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/?from=search"
+                            aria-label=": Homebrew 常用命令"
+                        >
+                            <h3 class="media-heading">Homebrew 常用命令</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年8月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="利用 hexo 搭建博客网站  learn hexo static-site github-pages"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/11/04/hexo_post/%E5%88%A9%E7%94%A8hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99/?from=search"
+                            aria-label=": 利用 hexo 搭建博客网站"
+                        >
+                            <h3 class="media-heading">利用 hexo 搭建博客网站</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年11月4日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="连接不上第三方显示器  learn mac hardware"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2025/12/18/hexo_post/%E8%BF%9E%E6%8E%A5%E4%B8%8D%E4%B8%8A%E7%AC%AC%E4%B8%89%E6%96%B9%E6%98%BE%E7%A4%BA%E5%99%A8/?from=search"
+                            aria-label=": 连接不上第三方显示器"
+                        >
+                            <h3 class="media-heading">连接不上第三方显示器</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2025年12月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="丝滑切换 jdk 不同版本（jenv）  learn mac java jenv"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/01/08/hexo_post/%E4%B8%9D%E6%BB%91%E5%88%87%E6%8D%A2jdk%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC-jenv/?from=search"
+                            aria-label=": 丝滑切换 jdk 不同版本（jenv）"
+                        >
+                            <h3 class="media-heading">丝滑切换 jdk 不同版本（jenv）</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年1月8日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="代码中的nacos配置丢失的问题  learn nacos 配置管理"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/06/hexo_post/%E4%BB%A3%E7%A0%81%E4%B8%AD%E7%9A%84nacos%E9%85%8D%E7%BD%AE%E4%B8%A2%E5%A4%B1%E7%9A%84%E9%97%AE%E9%A2%98/?from=search"
+                            aria-label=": 代码中的nacos配置丢失的问题"
+                        >
+                            <h3 class="media-heading">代码中的nacos配置丢失的问题</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月6日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="全流程docker&k8s操作  ubuntun docker k8s linux"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/14/hexo_post/%E5%85%A8%E6%B5%81%E7%A8%8Bdocker&amp;k8s%E6%93%8D%E4%BD%9C%E5%AE%9E%E8%B7%B5/?from=search"
+                            aria-label=": 全流程docker&amp;k8s操作"
+                        >
+                            <h3 class="media-heading">全流程docker&amp;k8s操作</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月14日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="harness engineering理论  harness agent"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/15/hexo_post/Harness%20Engineering%E7%90%86%E8%AE%BA%E5%86%85%E6%A0%B8/?from=search"
+                            aria-label=": Harness Engineering理论"
+                        >
+                            <h3 class="media-heading">Harness Engineering理论</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月15日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="harness engineering 实现 — gstack  gstack harness claude code ai agent 软件工程"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/18/hexo_post/Harness%20Engineering%E5%AE%9E%E7%8E%B0-GStack/?from=search"
+                            aria-label=": Harness Engineering 实现 — GStack"
+                        >
+                            <h3 class="media-heading">Harness Engineering 实现 — GStack</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="gstack实际操作  gstack skills"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/18/hexo_post/GStack%E5%AE%9E%E9%99%85%E6%93%8D%E4%BD%9C/?from=search"
+                            aria-label=": GStack实际操作"
+                        >
+                            <h3 class="media-heading">GStack实际操作</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月18日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="  "
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/21/hexo_post/openclaw/?from=search"
+                            aria-label=": "
+                        >
+                            <h3 class="media-heading"></h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月21日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="  "
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/05/25/hexo_post/GStack/?from=search"
+                            aria-label=": "
+                        >
+                            <h3 class="media-heading"></h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年5月25日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="  "
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/?from=search"
+                            aria-label=": "
+                        >
+                            <h3 class="media-heading"></h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年6月2日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="佳明手表配置openweatherkey方法  佳明手表 weather openai_api_key"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/06/24/%E4%BD%B3%E6%98%8E%E6%89%8B%E8%A1%A8%E9%85%8D%E7%BD%AEopenweatherkey%E6%96%B9%E6%B3%95/?from=search"
+                            aria-label=": 佳明手表配置openweatherkey方法"
+                        >
+                            <h3 class="media-heading">佳明手表配置openweatherkey方法</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年6月24日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+                <div
+                    class="media"
+                    data-search-text="佳明手表配置openweatherkey方法  佳明手表 weather openai_api_key"
+                >
+                    
+                    
+                    
+                    <div class="media-body">
+                        <a
+                            class="link-unstyled search-result-link"
+                            href="https://shaver92.github.io/2026/06/24/hexo_post/%E4%BD%B3%E6%98%8E%E6%89%8B%E8%A1%A8%E9%85%8D%E7%BD%AEopenweatherkey%E6%96%B9%E6%B3%95/?from=search"
+                            aria-label=": 佳明手表配置openweatherkey方法"
+                        >
+                            <h3 class="media-heading">佳明手表配置openweatherkey方法</h3>
+                        </a>
+                        <span class="media-meta">
+                            <span class="media-date text-small">
+                                
+                                    2026年6月24日
+                                
+                            </span>
+                        </span>
+                        <div class="media-content hide-xs font-merryweather"></div>
+                    </div>
+                    <div style="clear:both;"></div>
+                    <hr>
+                </div>
+                
+            </div>
+        </div>
+        <div class="modal-footer">
+            <p class="results-count text-medium"
+                data-message-zero="没有找到文章"
+                data-message-one="找到 1 篇文章"
+                data-message-other="找到 {n} 篇文章">
+                找到 49 篇文章
+            </p>
+        </div>
+    </div>
+</div>
+
+        
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-fy2mgop5xl1tplwujicojo4xhlb80nrzsizgqk4jfrs5njk0qriczldyw7af.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        
+<script src="/assets/js/gitalk.js"></script>
+
+        <script type="text/javascript">
+          (function() {
+            var host = window.location.hostname;
+            if (host === 'localhost' || host === '127.0.0.1') {
+              var el = document.getElementById('gitalk');
+              if (el) {
+                el.innerHTML = '<p style="padding:12px 14px;border:1px solid #dbe5f5;border-radius:10px;background:#fff;color:#5b6475;">本地预览环境不启用 GitHub 登录评论，请在线上站点使用评论功能。</p>';
+              }
+              return;
+            }
+            new Gitalk({
+              clientID: 'Ov23lixY4RNkL6GaPepq',
+              clientSecret: '5bb8a010339dc3e6b5655b8ac336d3c0d0be226e',
+              repo: 'blog-comments',
+              owner: 'shaver92',
+              admin: ['shaver92'],
+              id: '2026/06/02/hexo_post/harness工业设计方式/',
+              ...{"language":"zh-CN","perPage":10,"distractionFreeMode":false,"createIssueManually":true,"labels":["Gitalk"],"pagerDirection":"last","proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"}
+            }).render('gitalk')
+          })()
+        </script>
+    
+
+
+
+    
+<script src="/assets/js/moment-with-locales.js"></script>
+
+    
+<script src="/assets/js/algoliasearch.js"></script>
+
+    <script>
+      var algoliaClient = algoliasearch('P7U39XTUUF', 'fcf10bcb3e25fb39b4cf37309facbba5');
+      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+    </script>
+
+
+<script>
+  (function() {
+    var searchPath = '/search/';
+
+    window.__goBackSmart = function(homeUrl, searchUrl) {
+      var params = new URLSearchParams(window.location.search || '');
+      var from = params.get('from');
+      var lastSearchPage = sessionStorage.getItem('last_search_page') || searchUrl;
+      if (from === 'search') {
+        window.location.href = lastSearchPage;
+        return;
+      }
+      if (window.history.length > 1) {
+        window.history.back();
+        return;
+      }
+      window.location.href = homeUrl;
+    };
+
+    if (window.location.pathname === searchPath || window.location.pathname === searchPath.replace(/\/$/, '')) {
+      sessionStorage.setItem('last_search_page', window.location.href);
+    }
+
+    Array.prototype.slice.call(document.querySelectorAll('.search-result-link')).forEach(function(link) {
+      link.addEventListener('click', function() {
+        sessionStorage.setItem('last_search_page', window.location.href);
+      });
+    });
+
+    var toolsToggle = document.querySelector('[data-tools-toggle]');
+    var toolsGroup = document.querySelector('[data-tools-group]');
+    if (toolsToggle && toolsGroup) {
+      toolsToggle.addEventListener('click', function() {
+        var expanded = toolsToggle.getAttribute('aria-expanded') === 'true';
+        toolsToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        toolsGroup.hidden = expanded;
+      });
+    }
+  })();
+</script>
+
+<script>
+  (function() {
+    var input = document.getElementById('algolia-search-input');
+    var modal = document.getElementById('algolia-search-modal');
+    if (!input || !modal) return;
+
+    if (window.location.pathname === '/search/' || window.location.pathname === '/search') {
+      modal.style.display = 'block';
+    }
+
+    var items = Array.prototype.slice.call(modal.querySelectorAll('.media'));
+    var noResult = modal.querySelector('.no-result');
+    var counter = modal.querySelector('.results-count');
+    var baseCount = items.length;
+
+    function updateCount(visibleCount) {
+      if (!counter) return;
+      counter.textContent = '共找到 ' + visibleCount + ' 篇';
+    }
+
+    function runLocalSearch() {
+      var keyword = (input.value || '').trim().toLowerCase();
+      var visibleCount = 0;
+
+      items.forEach(function(item) {
+        var text = item.getAttribute('data-search-text') || '';
+        var matched = !keyword || text.indexOf(keyword) !== -1;
+        item.style.display = matched ? '' : 'none';
+        if (matched) visibleCount += 1;
+      });
+
+      if (noResult) noResult.style.display = visibleCount === 0 ? '' : 'none';
+      updateCount(visibleCount);
+    }
+
+    input.addEventListener('input', runLocalSearch);
+    updateCount(baseCount);
+  })();
+</script>
+
+<script>
+  (function() {
+    function getHighlightPlainText(figure) {
+      var pre = figure.querySelector('td.code pre, .code pre');
+      if (!pre) return '';
+      var t = pre.innerText != null ? pre.innerText : pre.textContent;
+      return String(t || '').replace(/\u00a0/g, ' ');
+    }
+
+    function attachPostCodeCopyButtons() {
+      var scope = document.querySelector('.post-content');
+      if (!scope) return;
+      var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
+      for (var i = 0; i < blocks.length; i++) {
+        (function(fig) {
+          if (fig.getAttribute('data-copy-btn')) return;
+          if (!fig.querySelector('.code pre, td.code pre')) return;
+          fig.setAttribute('data-copy-btn', '1');
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'post-code-copy-btn';
+          btn.setAttribute('aria-label', '复制代码');
+          btn.textContent = '复制';
+          btn.addEventListener('click', function() {
+            var text = getHighlightPlainText(fig);
+            function showState(label) {
+              btn.textContent = label;
+              setTimeout(function() {
+                btn.textContent = '复制';
+                btn.disabled = false;
+              }, 2000);
+            }
+            btn.disabled = true;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function() {
+                showState('已复制');
+              }).catch(function() {
+                showState('复制失败');
+              });
+            } else {
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.left = '-10000px';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showState('已复制');
+              } catch (e) {
+                showState('复制失败');
+              }
+              document.body.removeChild(ta);
+            }
+          });
+          fig.appendChild(btn);
+        })(blocks[i]);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', attachPostCodeCopyButtons);
+    } else {
+      attachPostCodeCopyButtons();
+    }
+  })();
+</script>
+
+    </body>
+</html>
