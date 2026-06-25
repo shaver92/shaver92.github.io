@@ -1,23 +1,13 @@
-
 <!DOCTYPE html>
-<html lang="zh-cn,en,default">
-    
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="generator" content="shaver&#39;s blog">
-    <title>嵌入模型与向量数据库 - shaver&#39;s blog</title>
-    <meta name="author" content="shaver">
-    
-    
-    
-        
-            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
-        
-    
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"💡 学习目标\n理解向量表征\n向量与文本向量\n向量间的相似度计算\nEmbedding Models嵌入模型原理及选择\n向量数据库概述及核心原理\nChroma向量数据库核心操作\nMilvus向量数据库扩展学习\n\n1. 向量表征（Vector Representation）在人工智能领域，向量表征（Vector Representation）是核心概念之一。通过将文本、图像、声音、行为甚至复杂关系转化为高维向量（Embedding），AI系统能够以数学方式理解和处理现实世界中的复杂信息。这种表征方式为机器学习模型提供了统一的“语言”。\n1.1 向量表征的本质向量表征的本质：万物皆可数学化。\n1.1.1 核心思想降维抽象\t将复杂对象（如一段文字、一张图片）映射到低维稠密向量空间，保留关键语义或特征。相似性度量\t向量空间中的距离（如余弦相似度）反映对象之间的语义关联（如“猫”和“狗”的向量距离小于“猫”和“汽车”）。\n1.1.2 数学意义特征工程自动化\t传统机器学习依赖人工设计特征（如文本的TF-IDF），而向量表征通过深度学习自动提取高阶抽象特征。跨模态统一\t文本、图像、视频等不同模态数据可映射到同一向量空间，实现跨模态检索（如“用文字搜图片”）。\n\t\n1.2. 向量表征的典型应用场景1.2.1 自然语言处理（NLP）词向量（Word2Vec、GloVe）\t单词映射为向量，解决“一词多义”问题（如“苹果”在“水果”和“公司”上下文中的不同向量）。句向量（BERT、Sentence-BERT）\t整句语义编码，用于文本相似度计算、聚类（如客服问答匹配）。知识图谱潜入TransE、RotatE）\t将实体和关系表示为向量，支持推理（如预测“巴黎-首都-法国”的三元组可信度）。\n1.2.2 计算机视觉（CV）图像特征向量（CNN特征）\tResNet、ViT等模型提取图像语义，用于以图搜图、图像分类。跨模态对齐（CLIP）\t将图像和文本映射到同一空间，实现“描述文字生成图片”或反向搜索。\n1.2.3 推荐系统用户&#x2F;物品向量\t用户行为序列（点击、购买）编码为用户向量，商品属性编码为物品向量，通过向量内积预测兴趣匹配度（如YouTube推荐算法）。\n1.2.4 复杂系统建模图神经网络\t社交网络中的用户、商品、交互事件均表示为向量，捕捉网络结构信息（如社区发现、欺诈检测）。时间序列相量化\t将股票价格、传感器数据编码为向量，预测未来趋势（如LSTM、Transformer编码）。\n\t\n1.3. 向量表征的技术实现1.3.1 经典方法无监督学习\tWord2Vec通过上下文预测（Skip-Gram）或矩阵分解（GloVe）生成词向量。有监督学习\t微调预训练模型（如BERT）适应具体任务，提取任务相关向量。\n1.3.2 前沿方向对比学习（Contrastive Learning）\t通过构造正负样本对（如“同一图片的不同裁剪”为正样本），拉近正样本向量距离，推开负样本（SimCLR、MoCo）。多模态融合\t将文本、图像、语音等多模态信息融合为统一向量（如Google的MUM模型）。动态向量\t根据上下文动态调整向量（如Transformer的注意力机制），解决静态词向量无法适应多义性的问题\n\n2. 什么是向量向量是一种有大小和方向的数学对象。它可以表示为从一个点到另一个点的有向线段。例如，二维空间中的向量可以表示为 $(x,y)$，表示从原点 $(0,0)$ 到点 $(x,y)$ 的有向线段。\n\n以此类推，我可以用一组坐标 $(x_0, x_1, \\ldots, x_{N-1})$ 表示一个 $N$ 维空间中的向量，$N$ 叫向量的维度。\n2.1 文本向量（Text Embeddings）\n将文本转成一组 $N$ 维浮点数，即文本向量又叫 Embeddings\n向量之间可以计算距离，距离远近对应语义相似度大小\n\n\n2.2 文本向量是怎么得到的（选）文本向量的两种获取\n\n构建相关（正例）与不相关（负例）的句子对样本\n训练双塔式模型，让正例间的距离小，负例间的距离大\n\n例如：\n可扩展阅读  https://www.sbert.net\n2.3 向量间的相似度计算\n余弦相似度是通过计算两个向量夹角的余弦值来衡量相似性，等于两个向量的点积除以两个向量长度的乘积。\n\n2.4 代码演示2.4.1 代码地址https://github.com/skyshenzhen/ai_model_learn.git\n2.4.2 安装相关依赖12pip install --upgrade numpypip install --upgrade openai\n2.4.3 运行代码下面是对应embeddings的代码llm.py对应api调用大模型相关信息，tool.py对应工具类，test.py为具体实现llm.py\n12345678910111213141516171819202122# -*- coding: utf-8 -*-    # -------------------------------------------------------------------------------  # Name:         llm  # Description:  定义AI大模型  # Author:       shaver  # Date:         2025/6/10  # -------------------------------------------------------------------------------  import os  from openai import OpenAI    # 需要在系统环境变量中配置好相应的key  # OpenAI key（1 代理方式 2 官网注册购买）    # 阿里百炼配置  # DASHSCOPE_API_KEY sk-xxx  # DASHSCOPE_BASE_URL https://dashscope.aliyuncs.com/compatible-mode/v1  client = OpenAI(      # api_key=os.getenv(&quot;DASHSCOPE_API_KEY&quot;),  # 如果您没有配置环境变量，请在此处用您的API Key进行替换      api_key=&quot;xxxx&quot;,  # 如果您没有配置环境变量，请在此处用您的API Key进行替换      base_url=&quot;https://dashscope.aliyuncs.com/compatible-mode/v1&quot;  # 百炼服务的base_url  )\n\n\ntool.py\n1234567891011121314151617181920212223242526272829303132333435363738# -*- coding: utf-8 -*-    # -------------------------------------------------------------------------------  # Name:         tool  # Description:  定义工具 余弦相似度比较 欧式距离比较  # Author:       shaver  # Date:         2025/6/10  # -------------------------------------------------------------------------------    import numpy as np  from numpy import dot  from numpy.linalg import norm    from rag_01.llm import client      def cos_sim(a, b):      &quot;&quot;&quot;余弦距离 -- 越大越相似&quot;&quot;&quot;      return dot(a, b) / (norm(a) * norm(b))      def l2(a, b):      &quot;&quot;&quot;欧氏距离 -- 越小越相似&quot;&quot;&quot;      x = np.asarray(a) - np.asarray(b)      return norm(x)      def get_embeddings(texts, model=&quot;text-embedding-v1&quot;, dimensions=None):      &quot;&quot;&quot;获取embeddings&quot;&quot;&quot;      if model == &quot;text-embedding-v1&quot;:          dimensions = None      if dimensions:          data = client.embeddings.create(              input=texts, model=model, dimensions=dimensions).data      else:          data = client.embeddings.create(input=texts, model=model).data      return [x.embedding for x in data]\n\ntest.py\n12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152# -*- coding: utf-8 -*-    # -------------------------------------------------------------------------------  # Name:         test  # Description:  # Author:       shaver  # Date:         2025/6/10  # -------------------------------------------------------------------------------  from rag_01.tool import get_embeddings, cos_sim, l2      def test01():      &quot;&quot;&quot;测试返回embedding向量&quot;&quot;&quot;      test_query = [&quot;hello world&quot;, &quot;你好，世界&quot;]      print(f&quot;Embedding length: &#123;len(get_embeddings(test_query))&#125;&quot;)      vec = get_embeddings(test_query)[0]      print(f&quot;first vector Total dimension: &#123;len(vec)&#125;&quot;)      print(f&quot;First 10 elements: &#123;vec[:10]&#125;&quot;)      def test02():      &quot;&quot;&quot;测试余弦相似度 欧式距离&quot;&quot;&quot;      query = &quot;国际争端&quot;        # 且能支持跨语言      # query = &quot;global conflicts&quot;      documents = [          &quot;联合国就苏丹达尔富尔地区大规模暴力事件发出警告&quot;,          &quot;土耳其、芬兰、瑞典与北约代表将继续就瑞典“入约”问题进行谈判&quot;,          &quot;日本岐阜市陆上自卫队射击场内发生枪击事件 3人受伤&quot;,          &quot;国家游泳中心（水立方）：恢复游泳、嬉水乐园等水上项目运营&quot;,          &quot;我国首次在空间站开展舱外辐射生物学暴露实验&quot;,      ]        query_vec = get_embeddings([query])[0]      doc_vecs = get_embeddings(documents)        print(&quot;Query与自己的余弦距离: &#123;:.2f&#125;&quot;.format(cos_sim(query_vec, query_vec)))      print(&quot;Query与Documents的余弦距离:&quot;)      for vec in doc_vecs:          print(cos_sim(query_vec, vec))        print()        print(&quot;Query与自己的欧氏距离: &#123;:.2f&#125;&quot;.format(l2(query_vec, query_vec)))      print(&quot;Query与Documents的欧氏距离:&quot;)      for vec in doc_vecs:          print(l2(query_vec, vec))      if __name__ == &#x27;__main__&#x27;:      test01()\n\ntest01返回：\n123Embedding length: 2first vector Total dimension: 1536First 10 elements: [-3.7911133766174316, 2.288281202316284, -3.0936522483825684, 0.583300769329071, -2.5423827171325684, 2.9959473609924316, -1.860925316810608, -1.8154693841934204, -0.952343761920929, 1.1869385242462158]\n1将每句话转成向量列表，每个列表长度为1536\n\ntest02返回：\n123456789101112131415Query与自己的余弦距离: 1.00Query与Documents的余弦距离:0.339110476487306970.26882520416737280.070063578007273250.104529841875353110.12916023809848173Query与自己的欧氏距离: 0.00Query与Documents的欧氏距离:109.51274483356154109.95511077641505128.00071081019382123.82186767906518134.3252093117712\n12余弦距离相似度 [0,1] ,值越大，越相似  欧式距离[0, ∞) 值越小，越相似   \n\n3. Embedding Models 嵌入模型3.1. 什么是嵌入（Embedding）？嵌入（Embedding）是指非结构化数据转换为向量的过程，通过神经网络模型或相关大模型，将真实世界的离散数据投影到高维数据空间上，根据数据在空间中的不同距离，反映数据在物理世界的相似度。 \n\t\n3.2. 嵌入模型概念及原理3.2.1 嵌入模型的本质嵌入模型（Embedding Model）是一种将离散数据（如文本、图像）映射到连续向量空间的技术。通过高维向量表示（如 768 维或 3072 维），模型可捕捉数据的语义信息，使得语义相似的文本在向量空间中距离更近。例如，“忘记密码”和“账号锁定”会被编码为相近的向量，从而支持语义检索而非仅关键词匹配。\n3.2.2 核心作用语义编码\t将文本、图像等转换为向量，保留上下文信息（如 BERT 的 CLS Token 或均值池化。相似度计算：通过余弦相似度、欧氏距离等度量向量关联性，支撑检索增强生成（RAG）、推荐系统等应用。信息降维\t压缩复杂数据为低维稠密向量，提升存储与计算效率。\n3.2.3 关键技术原理上下文依赖\t现代模型（如 BGE-M3）动态调整向量，捕捉多义词在不同语境中的含义。训练方法\t对比学习（如 Word2Vec 的 Skip-gram&#x2F;CBOW）、预训练+微调（如 BERT）。\n\t\n3.3. 主流嵌入模型分类与选型指南\nEmbedding 模型将文本转换为数值向量，捕捉语义信息，使计算机能够理解和比较内容的”意义”。选择 Embedding 模型的考虑因素：\n任务性质：匹配任务需求(问答、搜索、聚类等)\n领域特性：通用vs专业领域(医学，法律等)\n多语言支持：需处理多语言内容时考虑\n纬度：权衡信息丰富度与计算成本\n许可条款：开源vs专有服务\n最大tokens：适合上下文窗口大小\n最佳实践：为特定应用测试多个 Embedding 模型，评估在实际数据上的性能而非仅依赖通用基准。\n\n3.3.1 嵌入模型分类通用全能类\n\nBGE-M3：北京智源研究院开发，支持多语言、混合检索（稠密+稀疏向量），处理 8K 上下文，适合企业级知识库。\nNV-Embed-v2：基于 Mistral-7B，检索精度高（MTEB 得分 62.65），但需较高计算资源。\n\n垂直领域特化型\n\n中文场景： BGE-large-zh-v1.5 （合同&#x2F;政策文件）、 M3E-base （社交媒体分析）。\n多模态场景： BGE-VL （图文跨模态检索），联合编码 OCR 文本与图像特征。\n\n轻量化部署型\n\nnomic-embed-text：768 维向量，推理速度比 OpenAI 快 3 倍，适合边缘设备。\ngte-qwen2-1.5b-instruct：1.5B 参数，16GB 显存即可运行，适合初创团队原型验。\n\n&#x3D;&#x3D;选型决策树：&#x3D;&#x3D; \n\n中文为主 → BGE 系列 &gt; M3E；\n\n多语言需求 → BGE-M3 &gt; multilingual-e5；\n\n预算有限 → 开源模型（如 Nomic Embed）\n\n\nEmbddding Leaderboard（嵌入模型排行榜） https://huggingface.co/spaces/mteb/leaderboard\t\n3.4. OpenAI 新发布的两个 Embedding 模型2024 年 1 月 25 日，OpenAI 新发布了两个 Embedding 模型\n\ntext-embedding-3-large\ntext-embedding-3-small\n\n其最大特点是，支持自定义的缩短向量维度，从而在几乎不影响最终效果的情况下降低向量检索与相似度计算的复杂度。\n通俗的说：越大越准、越小越快。 官方公布的评测结果:\n\n注：MTEB 是一个大规模多任务的 Embedding 模型公开评测集\n\n4. 向量数据库4.1. 什么是向量数据库？向量数据库，是专门为向量检索设计的中间件！高效存储、快速检索和管理高纬度向量数据的系统称为向量数据库\n一种专门用于存储和检索高维向量数据的数据库。它将数据（如文本、图像、音频等）通过嵌入模型转换为向量形式，并通过高效的索引和搜索算法实现快速检索。向量数据库的核心作用是实现相似性搜索，即通过计算向量之间的距离（如欧几里得距离、余弦相似度等）来找到与目标向量最相似的其他向量。它特别适合处理非结构化数据，支持语义搜索、内容推荐等场景。\n核心功能：\n\n向量存储\n相似性度量\n相似性搜索\n\n4.2. 如何存储和检索嵌入向量？\n存储：向量数据库将嵌入向量存储为高维空间中的点，并为每个向量分配唯一标识符（ID），同时支持存储元数据。\n检索：通过近似最近邻（ANN）算法（如PQ等）对向量进行索引和快速搜索。比如，FAISS和Milvus等数据库通过高效的索引结构加速检索。\n\n4.3 向量数据库与传统数据库对比\n数据类型\n\n\n传统数据库：存储结构化数据（如表格、行、列）。\n向量数据库：存储高维向量数据，适合非结构化数据。\n\n\n查询方式\n\n\n传统数据库：依赖精确匹配（如&#x3D;、&lt;、&gt;）。\n向量数据库：基于相似度或距离度量（如欧几里得距离、余弦相似度）。\n\n\n应用场景\n\n\n传统数据库：适合事务记录和结构化信息管理。\n向量数据库：适合语义搜索、内容推荐等需要相似性计算的场景。\n\n澄清几个关键概念：\n\n向量数据库的意义是快速的检索；\n向量数据库本身不生成向量，向量是由 Embedding 模型产生的；\n向量数据库与传统的关系型数据库是互补的，不是替代关系，在实际应用中根据实际需求经常同时使用。\n\n4.4. 主流向量数据库功能对比\n\nFAISS:  Meta 开源的向量检索引擎 https://github.com/facebookresearch/faiss\nPinecone:  商用向量数据库，只有云服务 https://www.pinecone.io/\nMilvus:  开源向量数据库，同时有云服务 https://milvus.io/\nWeaviate:  开源向量数据库，同时有云服务 https://weaviate.io/\nQdrant:  开源向量数据库，同时有云服务 https://qdrant.tech/\nPGVector:  Postgres 的开源向量检索引擎 https://github.com/pgvector/pgvector\nRediSearch:  Redis 的开源向量检索引擎 https://github.com/RediSearch/RediSearch\nElasticSearch 支持向量检索 https://www.elastic.co/enterprise-search/vector-search\n\n扩展阅读：https://guangzhengli.com/blog/zh/vector-database\n4.5 Chroma向量数据库官网地址：\thttps://docs.trychroma.com/docs/overview/introduction\n1. 什么是 Chroma？Chroma 是一款开源的向量数据库，专为高效存储和检索高维向量数据设计。其核心能力在于语义相似性搜索，支持文本、图像等嵌入向量的快速匹配，广泛应用于大模型上下文增强（RAG）、推荐系统、多模态检索等场景。与传统数据库不同，Chroma 基于向量距离（如余弦相似度、欧氏距离）衡量数据关联性，而非关键词匹配。\n2. 核心优势\n\n轻量易用：以 Python&#x2F;JS 包形式嵌入代码，无需独立部署，适合快速原型开发。\n灵活集成：支持自定义嵌入模型（如 OpenAI、HuggingFace），兼容 LangChain 等框架。\n高性能检索：采用 HNSW 算法优化索引，支持百万级向量毫秒级响应。\n多模式存储：内存模式用于开发调试，持久化模式支持生产环境数据落地。\n\n4.6. Chroma 安装与基础配置1. 安装\n1pip install chromadb\n\n2. 初始化客户端\n1234567import chromadb# 内存模式client = chromadb.Client()# 数据保存至本地目录client = chromadb.PersistentClient(path=&quot;/path/to/save&quot;)\n\n4.7 Chroma核心操作流程4.7.1 集合概念集合是 Chroma 中管理数据的基本单元，类似关系数据库的表\n4.7.2 集合与数据操作https://github.com/skyshenzhen/ai_model_learn.git\n创建集合（需要提前从huggingface上下载MiniLM-L6-v2模型到本地）\n\t\n123456789101112131415161718192021222324252627# 数据保存至本地目录  client = chromadb.PersistentClient(path=&quot;/Users/shaver/PycharmProjects/ai_model_learn/rag_01/save&quot;)    # 默认情况下，Chroma 使用 DefaultEmbeddingFunction，它是基于 Sentence Transformers 的 MiniLM-L6-v2 模型  default_ef = embedding_functions.DefaultEmbeddingFunction()def create_collection(name:str):      &quot;&quot;&quot;      :param name: collection 名称      :return: 返回      &quot;&quot;&quot;        collection = client.create_collection(          name = name,          configuration = &#123;              # HNSW 索引算法，基于图的近似最近邻搜索算法（Approximate Nearest Neighbor，ANN）              &quot;hnsw&quot;: &#123;                  &quot;space&quot;: &quot;cosine&quot;, # 指定余弦相似度计算                  &quot;ef_search&quot;: 100,                  &quot;ef_construction&quot;: 100,                  &quot;max_neighbors&quot;: 16,                  &quot;num_threads&quot;: 4              &#125;,              # 指定向量模型              &quot;embedding_function&quot;: default_ef          &#125;      )     return collection\n\n查询集合\n1234567def get_collection(name:str):      &quot;&quot;&quot;      :param name: collection 名称      :return: 返回 collection        &quot;&quot;&quot;        collection = client.get_collection(name)      return collection\n\n修改集合名称\n12345678def modify_collection_name(name:str, new_name:str):      &quot;&quot;&quot;      :param name: collection 名称      :param new_name: 新的 collection 名称      :return: 返回      &quot;&quot;&quot;        collection = client.get_collection(name)      collection.modify(name=new_name)\n\n删除集合\n123456def delete_collection(name:str):      &quot;&quot;&quot;      :param name: collection 名称      :return:        &quot;&quot;&quot;        client.delete_collection(name)\n\n向集合添加数据\n12345678910111213141516def insert_collection_data(collection, data):      &quot;&quot;&quot;        :param collection:    :param data:    :return:        &quot;&quot;&quot;        # 方式1：自动生成向量（使用集合指定的嵌入模型）      collection.add(          documents=data[&#x27;documents&#x27;],          metadatas=data[&#x27;metadatas&#x27;],          ids=data.[&#x27;ids&#x27;]      )        # 方式2：手动传入预计算向量      # collection.add(      #     embeddings = [[0.1, 0.2, ...], [0.3, 0.4, ...]],    #     documents = [&quot;文本1&quot;, &quot;文本2&quot;],      #     ids = [&quot;id3&quot;, &quot;id4&quot;]    # )\n\n查询集合中的数据\n1234567891011121314def search_collection_data(collection, query_texts, top_k=10):      &quot;&quot;&quot;      :param collection: collection 名称      :param query_texts:  查询文本      :param top_k:  返回结果数      :return:  返回查询结果      &quot;&quot;&quot;        results = collection.query(          query_texts=query_texts,          n_results=top_k,          # where = &#123;&quot;source&quot;: &quot;RAG&quot;&#125;, # 按元数据过滤          # where_document = &#123;&quot;$contains&quot;: &quot;检索增强生成&quot;&#125; # 按文档内容过滤      )      return results\n\n更新集合中的数据\n1234567891011def modify_collection_data(collection, data):      &quot;&quot;&quot;        :param collection:  collection 名称      :param data:  数据      :return:        &quot;&quot;&quot;        collection.update(          ids=data.ids,          documents=data.documents      )\n\n删除集合中的数据\n12345678def delete_collection_data(collection, ids):      &quot;&quot;&quot;      :param collection: collection 名称      :param ids:  删除ids      :return:        &quot;&quot;&quot;        collection.delete(ids=ids)\n\n注意：对应chroma向量数据库对应模型，会在第一次进行向量存储入库的时候从huggingface下载模型，需要保持网络正常\n注意：mac解决添加数据报错  # Python ChromaDB Error - Unable to compute the prediction using a neural network model\n1pip install onnxruntime==1.16.3\n\n\n如果能够进行数据库的插入和查询，说明我们上面的操作就可以正常执行了\n4.8. Chroma Client-Server Mode\nServer 端\n\n1chroma run --path /db_path\n\nClient 端\n\n12import chromadbchroma_client = chromadb.HttpClient(host=&#x27;localhost&#x27;, port=8000)\n\n5. Milvus 扩展学习Milvus的使用和chroma类似，可以自己查看官网操作\n中文官网：\thttps://milvus.io/docs/zh/quickstart.md\t\n\n6. 学习打卡\n掌握 Embedding 模型的原理及选型\n安装 Chroma 向量数据库\n使用 Chroma 本地持久化完成其核心操作\n使用 Chroma Client-Server 模式完成其核心操作\n掌握 Mivus 向量数据库的使用\n\n","dateCreated":"2025-06-10T08:56:17+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-06-10T08:56:17+08:00","description":"","headline":"嵌入模型与向量数据库","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/","keywords":"learn, LLM_Application, embedding, vector-database"}</script>
-    <meta name="description" content="💡 学习目标 理解向量表征 向量与文本向量 向量间的相似度计算 Embedding Models嵌入模型原理及选择 向量数据库概述及核心原理 Chroma向量数据库核心操作 Milvus向量数据库扩展学习  1. 向量表征（Vector Representation）在人工智能领域，向量表征（Vector Representation）是核心概念之一。通过将文本、图像、声音、行为甚至复杂关系转化">
-<meta property="og:type" content="blog">
+  <meta charset="utf-8">
+  
+  <title>嵌入模型与向量数据库 | shaver&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="author" content="shaver">
+  <meta name="description" content="💡 学习目标 理解向量表征 向量与文本向量 向量间的相似度计算 Embedding Models嵌入模型原理及选择 向量数据库概述及核心原理 Chroma向量数据库核心操作 Milvus向量数据库扩展学习  1. 向量表征（Vector Representation）在人工智能领域，向量表征（Vector Representation）是核心概念之一。通过将文本、图像、声音、行为甚至复杂关系转化">
+<meta property="og:type" content="article">
 <meta property="og:title" content="嵌入模型与向量数据库">
 <meta property="og:url" content="https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/index.html">
 <meta property="og:site_name" content="shaver&#39;s blog">
@@ -47,97 +37,93 @@
 <meta property="article:tag" content="vector-database">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131104536.png">
+  
+    <link rel="alternate" href="/atom.xml" title="shaver&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  <!-- Custom styles -->
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+  
     
-    
+  
+  
+
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-inner" class="inner">
+      <nav id="sub-nav">
         
-    
-    
-        <meta property="og:image" content="https://shaver92.github.io/assets/images/avatar.png"/>
-    
-    
-    
-    
-    <!--STYLES-->
-    
-<link rel="stylesheet" href="/assets/css/mitbunny-home.css">
-
-    <!--STYLES END-->
-    
-
-    
-
-    
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-            
-<link rel="stylesheet" href="/assets/css/gitalk.css">
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shaver92.github.io"></form>
+      </div>
 
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
         
-    
-</head>
+          <a class="main-nav-link" href="/">首页</a>
+        
+          <a class="main-nav-link" href="/archives">归档</a>
+        
+          <a class="main-nav-link" href="/all-categories">分类</a>
+        
+          <a class="main-nav-link" href="/all-tags">标签</a>
+        
+          <a class="main-nav-link" href="/search">搜索</a>
+        
+      </nav>
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">shaver&#39;s blog</a>
+      </h1>
+      
+    </div>
+  </div>
+</header>
 
-    <body class=" ">
-        <div id="blog">
-            <div id="main">
-                
-                    <div class="page-topbar main-content-wrap">
-                        <div class="page-topbar__actions">
-                            <a
-                                class="mitbunny-home__search"
-                                href="/"
-                                aria-label="回到首页"
-                            >
-                                <span class="mitbunny-home__icon" aria-hidden="true">⌂</span>
-                                <span>首页</span>
-                            </a>
-                            <button
-                                class="mitbunny-home__search"
-                                type="button"
-                                aria-label="返回上一层"
-                                onclick="window.__goBackSmart && window.__goBackSmart('/', '/search/');"
-                            >
-                                <span class="mitbunny-home__icon" aria-hidden="true">←</span>
-                                <span>上一层</span>
-                            </button>
-                            <button
-                                class="mitbunny-home__search"
-                                type="button"
-                                aria-label="前往下一层"
-                                onclick="window.history.forward();"
-                            >
-                                <span class="mitbunny-home__icon" aria-hidden="true">→</span>
-                                <span>下一层</span>
-                            </button>
-                        </div>
-                        
-                    </div>
-                
-                
-<article class="post">
+      <div class="outer">
+        <section id="main"><article id="post-hexo_post/嵌入模型与向量数据库" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/" class="article-date">
+  <time datetime="2025-06-10T00:56:17.000Z" itemprop="datePublished">2025-06-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
     
     
-        <div class="post-header main-content-wrap text-left">
-    
-        <h1 class="post-title">
-            嵌入模型与向量数据库
-        </h1>
-    
-    
-        <div class="post-meta">
-    <time datetime="2025-06-10T08:56:17+08:00">
-	
-		    2025 年 6 月 10 日
-    	
-    </time>
-    
-</div>
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      嵌入模型与向量数据库
+    </h1>
+  
 
+      </header>
     
-</div>
-
-    
-    <div class="post-content markdown">
-        <div class="main-content-wrap">
-            <h1 id="💡-学习目标"><a href="#💡-学习目标" class="headerlink" title="💡 学习目标"></a>💡 学习目标</h1><ol>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <!-- Table of Contents -->
+        
+        <h1 id="💡-学习目标"><a href="#💡-学习目标" class="headerlink" title="💡 学习目标"></a>💡 学习目标</h1><ol>
 <li>理解向量表征</li>
 <li>向量与文本向量</li>
 <li>向量间的相似度计算</li>
@@ -160,24 +146,24 @@
 <h3 id="1-3-2-前沿方向"><a href="#1-3-2-前沿方向" class="headerlink" title="1.3.2 前沿方向"></a>1.3.2 前沿方向</h3><p><strong>对比学习（Contrastive Learning）</strong><br>	通过构造正负样本对（如“同一图片的不同裁剪”为正样本），拉近正样本向量距离，推开负样本（SimCLR、MoCo）。<br><strong>多模态融合</strong><br>	将文本、图像、语音等多模态信息融合为统一向量（如Google的MUM模型）。<br><strong>动态向量</strong><br>	根据上下文动态调整向量（如Transformer的注意力机制），解决静态词向量无法适应多义性的问题</p>
 <hr>
 <h1 id="2-什么是向量"><a href="#2-什么是向量" class="headerlink" title="2. 什么是向量"></a>2. 什么是向量</h1><p>向量是一种有大小和方向的数学对象。它可以表示为从一个点到另一个点的有向线段。例如，二维空间中的向量可以表示为 $(x,y)$，表示从原点 $(0,0)$ 到点 $(x,y)$ 的有向线段。</p>
-<p><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131104536.png"></p>
+<p><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131104536.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131104536.png"></a></p>
 <p>以此类推，我可以用一组坐标 $(x_0, x_1, \ldots, x_{N-1})$ 表示一个 $N$ 维空间中的向量，$N$ 叫向量的维度。</p>
 <h2 id="2-1-文本向量（Text-Embeddings）"><a href="#2-1-文本向量（Text-Embeddings）" class="headerlink" title="2.1 文本向量（Text Embeddings）"></a>2.1 文本向量（Text Embeddings）</h2><ol>
 <li>将文本转成一组 $N$ 维浮点数，即<strong>文本向量</strong>又叫 Embeddings</li>
 <li>向量之间可以计算距离，距离远近对应<strong>语义相似度</strong>大小</li>
 </ol>
-<p><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131104826.png"></p>
+<p><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131104826.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131104826.png"></a></p>
 <h2 id="2-2-文本向量是怎么得到的（选）"><a href="#2-2-文本向量是怎么得到的（选）" class="headerlink" title="2.2 文本向量是怎么得到的（选）"></a>2.2 文本向量是怎么得到的（选）</h2><p>文本向量的两种获取</p>
 <ol>
 <li>构建相关（正例）与不相关（负例）的句子对样本</li>
 <li>训练双塔式模型，让正例间的距离小，负例间的距离大</li>
 </ol>
-<p>例如：<br><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105011.png"></p>
+<p>例如：<br><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105011.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105011.png"></a></p>
 <p>可扩展阅读  <a target="_blank" rel="noopener" href="https://www.sbert.net/">https://www.sbert.net</a></p>
-<h2 id="2-3-向量间的相似度计算"><a href="#2-3-向量间的相似度计算" class="headerlink" title="2.3 向量间的相似度计算"></a>2.3 向量间的相似度计算</h2><p><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105174.png"></p>
+<h2 id="2-3-向量间的相似度计算"><a href="#2-3-向量间的相似度计算" class="headerlink" title="2.3 向量间的相似度计算"></a>2.3 向量间的相似度计算</h2><p><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105174.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105174.png"></a></p>
 <p>余弦相似度是通过计算两个向量夹角的余弦值来衡量相似性，等于两个向量的点积除以两个向量长度的乘积。</p>
-<p><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105346.png"></p>
-<h2 id="2-4-代码演示"><a href="#2-4-代码演示" class="headerlink" title="2.4 代码演示"></a>2.4 代码演示</h2><h3 id="2-4-1-代码地址"><a href="#2-4-1-代码地址" class="headerlink" title="2.4.1 代码地址"></a>2.4.1 代码地址</h3><p><a target="_blank" rel="noopener" href="https://github.com/skyshenzhen/ai_model_learn.git">https://github.com/skyshenzhen/ai_model_learn.git</a><br><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105520.png"></p>
+<p><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105346.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105346.png"></a></p>
+<h2 id="2-4-代码演示"><a href="#2-4-代码演示" class="headerlink" title="2.4 代码演示"></a>2.4 代码演示</h2><h3 id="2-4-1-代码地址"><a href="#2-4-1-代码地址" class="headerlink" title="2.4.1 代码地址"></a>2.4.1 代码地址</h3><p><a target="_blank" rel="noopener" href="https://github.com/skyshenzhen/ai_model_learn.git">https://github.com/skyshenzhen/ai_model_learn.git</a><br><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105520.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105520.png"></a></p>
 <h3 id="2-4-2-安装相关依赖"><a href="#2-4-2-安装相关依赖" class="headerlink" title="2.4.2 安装相关依赖"></a>2.4.2 安装相关依赖</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip install --upgrade numpy</span><br><span class="line">pip install --upgrade openai</span><br></pre></td></tr></table></figure>
 <h3 id="2-4-3-运行代码"><a href="#2-4-3-运行代码" class="headerlink" title="2.4.3 运行代码"></a>2.4.3 运行代码</h3><p>下面是对应embeddings的代码llm.py对应api调用大模型相关信息，tool.py对应工具类，test.py为具体实现<br><strong>llm.py</strong></p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-  </span></span><br><span class="line">  </span><br><span class="line"><span class="comment"># -------------------------------------------------------------------------------  </span></span><br><span class="line"><span class="comment"># Name:         llm  </span></span><br><span class="line"><span class="comment"># Description:  定义AI大模型  </span></span><br><span class="line"><span class="comment"># Author:       shaver  </span></span><br><span class="line"><span class="comment"># Date:         2025/6/10  </span></span><br><span class="line"><span class="comment"># -------------------------------------------------------------------------------  </span></span><br><span class="line"><span class="keyword">import</span> os  </span><br><span class="line"><span class="keyword">from</span> openai <span class="keyword">import</span> OpenAI  </span><br><span class="line">  </span><br><span class="line"><span class="comment"># 需要在系统环境变量中配置好相应的key  </span></span><br><span class="line"><span class="comment"># OpenAI key（1 代理方式 2 官网注册购买）  </span></span><br><span class="line">  </span><br><span class="line"><span class="comment"># 阿里百炼配置  </span></span><br><span class="line"><span class="comment"># DASHSCOPE_API_KEY sk-xxx  </span></span><br><span class="line"><span class="comment"># DASHSCOPE_BASE_URL https://dashscope.aliyuncs.com/compatible-mode/v1  </span></span><br><span class="line">client = OpenAI(  </span><br><span class="line">    <span class="comment"># api_key=os.getenv(&quot;DASHSCOPE_API_KEY&quot;),  # 如果您没有配置环境变量，请在此处用您的API Key进行替换  </span></span><br><span class="line">    api_key=<span class="string">&quot;xxxx&quot;</span>,  <span class="comment"># 如果您没有配置环境变量，请在此处用您的API Key进行替换  </span></span><br><span class="line">    base_url=<span class="string">&quot;https://dashscope.aliyuncs.com/compatible-mode/v1&quot;</span>  <span class="comment"># 百炼服务的base_url  </span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
@@ -237,7 +223,7 @@
 <li><p>预算有限 → 开源模型（如 Nomic Embed）</p>
 </li>
 </ol>
-<p><strong>Embddding Leaderboard（嵌入模型排行榜）</strong> <a target="_blank" rel="noopener" href="https://huggingface.co/spaces/mteb/leaderboard">https://huggingface.co/spaces/mteb/leaderboard</a><br>	<img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105681.png"></p>
+<p><strong>Embddding Leaderboard（嵌入模型排行榜）</strong> <a target="_blank" rel="noopener" href="https://huggingface.co/spaces/mteb/leaderboard">https://huggingface.co/spaces/mteb/leaderboard</a><br>	<a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105681.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105681.png"></a></p>
 <h2 id="3-4-OpenAI-新发布的两个-Embedding-模型"><a href="#3-4-OpenAI-新发布的两个-Embedding-模型" class="headerlink" title="3.4. OpenAI 新发布的两个 Embedding 模型"></a>3.4. OpenAI 新发布的两个 Embedding 模型</h2><p>2024 年 1 月 25 日，OpenAI 新发布了两个 Embedding 模型</p>
 <ul>
 <li>text-embedding-3-large</li>
@@ -245,7 +231,7 @@
 </ul>
 <p>其最大特点是，支持自定义的缩短向量维度，从而在几乎不影响最终效果的情况下降低向量检索与相似度计算的复杂度。</p>
 <p>通俗的说：<strong>越大越准、越小越快。</strong> 官方公布的评测结果:</p>
-<p><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105875.png"></p>
+<p><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105875.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105875.png"></a></p>
 <p>注：<a target="_blank" rel="noopener" href="https://huggingface.co/blog/mteb">MTEB</a> 是一个大规模多任务的 Embedding 模型公开评测集</p>
 <hr>
 <h1 id="4-向量数据库"><a href="#4-向量数据库" class="headerlink" title="4. 向量数据库"></a>4. 向量数据库</h1><h2 id="4-1-什么是向量数据库？"><a href="#4-1-什么是向量数据库？" class="headerlink" title="4.1. 什么是向量数据库？"></a>4.1. 什么是向量数据库？</h2><p><strong>向量数据库，是专门为向量检索设计的中间件！</strong><br><strong>高效存储、快速检索和管理高纬度向量数据的系统称为向量数据库</strong></p>
@@ -254,7 +240,7 @@
 <ul>
 <li>向量存储</li>
 <li>相似性度量</li>
-<li>相似性搜索<br><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106057.png"></li>
+<li>相似性搜索<br><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106057.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106057.png"></a></li>
 </ul>
 <h2 id="4-2-如何存储和检索嵌入向量？"><a href="#4-2-如何存储和检索嵌入向量？" class="headerlink" title="4.2. 如何存储和检索嵌入向量？"></a>4.2. 如何存储和检索嵌入向量？</h2><ul>
 <li>存储：向量数据库将嵌入向量存储为高维空间中的点，并为每个向量分配唯一标识符（ID），同时支持存储元数据。</li>
@@ -287,7 +273,7 @@
 <li>向量数据库本身不生成向量，向量是由 Embedding 模型产生的；</li>
 <li>向量数据库与传统的关系型数据库是互补的，不是替代关系，在实际应用中根据实际需求经常同时使用。</li>
 </ul>
-<h2 id="4-4-主流向量数据库功能对比"><a href="#4-4-主流向量数据库功能对比" class="headerlink" title="4.4. 主流向量数据库功能对比"></a>4.4. 主流向量数据库功能对比</h2><p><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106214.png"></p>
+<h2 id="4-4-主流向量数据库功能对比"><a href="#4-4-主流向量数据库功能对比" class="headerlink" title="4.4. 主流向量数据库功能对比"></a>4.4. 主流向量数据库功能对比</h2><p><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106214.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106214.png"></a></p>
 <ul>
 <li><strong>FAISS</strong>:  Meta 开源的向量检索引擎 <a target="_blank" rel="noopener" href="https://github.com/facebookresearch/faiss">https://github.com/facebookresearch/faiss</a></li>
 <li><strong>Pinecone</strong>:  商用向量数据库，只有云服务 <a target="_blank" rel="noopener" href="https://www.pinecone.io/">https://www.pinecone.io/</a></li>
@@ -299,7 +285,7 @@
 <li><strong>ElasticSearch</strong> 支持向量检索 <a target="_blank" rel="noopener" href="https://www.elastic.co/enterprise-search/vector-search">https://www.elastic.co/enterprise-search/vector-search</a></li>
 </ul>
 <p><strong>扩展阅读：<a target="_blank" rel="noopener" href="https://guangzhengli.com/blog/zh/vector-database">https://guangzhengli.com/blog/zh/vector-database</a></strong></p>
-<h2 id="4-5-Chroma向量数据库"><a href="#4-5-Chroma向量数据库" class="headerlink" title="4.5 Chroma向量数据库"></a>4.5 Chroma向量数据库</h2><p>官网地址：<br>	<a target="_blank" rel="noopener" href="https://docs.trychroma.com/docs/overview/introduction">https://docs.trychroma.com/docs/overview/introduction</a><br><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106385.png"></p>
+<h2 id="4-5-Chroma向量数据库"><a href="#4-5-Chroma向量数据库" class="headerlink" title="4.5 Chroma向量数据库"></a>4.5 Chroma向量数据库</h2><p>官网地址：<br>	<a target="_blank" rel="noopener" href="https://docs.trychroma.com/docs/overview/introduction">https://docs.trychroma.com/docs/overview/introduction</a><br><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106385.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106385.png"></a></p>
 <p><strong>1. 什么是 Chroma？</strong><br>Chroma 是一款开源的向量数据库，专为高效存储和检索高维向量数据设计。其核心能力在于语义相似性搜索，支持文本、图像等嵌入向量的快速匹配，广泛应用于大模型上下文增强（RAG）、推荐系统、多模态检索等场景。与传统数据库不同，Chroma 基于向量距离（如余弦相似度、欧氏距离）衡量数据关联性，而非关键词匹配。</p>
 <p><strong>2. 核心优势</strong></p>
 <ul>
@@ -315,7 +301,7 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">import chromadb</span><br><span class="line"></span><br><span class="line"># 内存模式</span><br><span class="line">client = chromadb.Client()</span><br><span class="line"></span><br><span class="line"># 数据保存至本地目录</span><br><span class="line">client = chromadb.PersistentClient(path=&quot;/path/to/save&quot;)</span><br></pre></td></tr></table></figure>
 
 <h2 id="4-7-Chroma核心操作流程"><a href="#4-7-Chroma核心操作流程" class="headerlink" title="4.7 Chroma核心操作流程"></a>4.7 Chroma核心操作流程</h2><h3 id="4-7-1-集合概念"><a href="#4-7-1-集合概念" class="headerlink" title="4.7.1 集合概念"></a>4.7.1 集合概念</h3><p>集合是 Chroma 中管理数据的基本单元，类似关系数据库的表</p>
-<h3 id="4-7-2-集合与数据操作"><a href="#4-7-2-集合与数据操作" class="headerlink" title="4.7.2 集合与数据操作"></a>4.7.2 集合与数据操作</h3><p><a target="_blank" rel="noopener" href="https://github.com/skyshenzhen/ai_model_learn.git">https://github.com/skyshenzhen/ai_model_learn.git</a><br><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105520.png"></p>
+<h3 id="4-7-2-集合与数据操作"><a href="#4-7-2-集合与数据操作" class="headerlink" title="4.7.2 集合与数据操作"></a>4.7.2 集合与数据操作</h3><p><a target="_blank" rel="noopener" href="https://github.com/skyshenzhen/ai_model_learn.git">https://github.com/skyshenzhen/ai_model_learn.git</a><br><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105520.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131105520.png"></a></p>
 <p><strong>创建集合（需要提前从huggingface上下载MiniLM-L6-v2模型到本地）</strong>
 	</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 数据保存至本地目录  </span></span><br><span class="line">client = chromadb.PersistentClient(path=<span class="string">&quot;/Users/shaver/PycharmProjects/ai_model_learn/rag_01/save&quot;</span>)  </span><br><span class="line">  </span><br><span class="line"><span class="comment"># 默认情况下，Chroma 使用 DefaultEmbeddingFunction，它是基于 Sentence Transformers 的 MiniLM-L6-v2 模型  </span></span><br><span class="line">default_ef = embedding_functions.DefaultEmbeddingFunction()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create_collection</span>(<span class="params">name:<span class="built_in">str</span></span>):  </span><br><span class="line">    <span class="string">&quot;&quot;&quot;  </span></span><br><span class="line"><span class="string">    :param name: collection 名称  </span></span><br><span class="line"><span class="string">    :return: 返回  </span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span>    </span><br><span class="line">    collection = client.create_collection(  </span><br><span class="line">        name = name,  </span><br><span class="line">        configuration = &#123;  </span><br><span class="line">            <span class="comment"># HNSW 索引算法，基于图的近似最近邻搜索算法（Approximate Nearest Neighbor，ANN）  </span></span><br><span class="line">            <span class="string">&quot;hnsw&quot;</span>: &#123;  </span><br><span class="line">                <span class="string">&quot;space&quot;</span>: <span class="string">&quot;cosine&quot;</span>, <span class="comment"># 指定余弦相似度计算  </span></span><br><span class="line">                <span class="string">&quot;ef_search&quot;</span>: <span class="number">100</span>,  </span><br><span class="line">                <span class="string">&quot;ef_construction&quot;</span>: <span class="number">100</span>,  </span><br><span class="line">                <span class="string">&quot;max_neighbors&quot;</span>: <span class="number">16</span>,  </span><br><span class="line">                <span class="string">&quot;num_threads&quot;</span>: <span class="number">4</span>  </span><br><span class="line">            &#125;,  </span><br><span class="line">            <span class="comment"># 指定向量模型  </span></span><br><span class="line">            <span class="string">&quot;embedding_function&quot;</span>: default_ef  </span><br><span class="line">        &#125;  </span><br><span class="line">    )  </span><br><span class="line">   <span class="keyword">return</span> collection</span><br></pre></td></tr></table></figure>
@@ -341,12 +327,12 @@
 <p><strong>删除集合中的数据</strong></p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">delete_collection_data</span>(<span class="params">collection, ids</span>):  </span><br><span class="line">    <span class="string">&quot;&quot;&quot;  </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    :param collection: collection 名称  </span></span><br><span class="line"><span class="string">    :param ids:  删除ids  </span></span><br><span class="line"><span class="string">    :return:    </span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span>    </span><br><span class="line">    collection.delete(ids=ids)</span><br></pre></td></tr></table></figure>
 
-<p><em>注意：对应chroma向量数据库对应模型，会在第一次进行向量存储入库的时候从huggingface下载模型</em>，需要保持网络正常<br><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106552.png"></p>
+<p><em>注意：对应chroma向量数据库对应模型，会在第一次进行向量存储入库的时候从huggingface下载模型</em>，需要保持网络正常<br><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106552.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106552.png"></a></p>
 <p><em>注意：mac解决添加数据报错  # <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/78745137/python-chromadb-error-unable-to-compute-the-prediction-using-a-neural-network">Python ChromaDB Error - Unable to compute the prediction using a neural network model</a></em></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install onnxruntime==1.16.3</span><br></pre></td></tr></table></figure>
 
 
-<p>如果能够进行数据库的插入和查询，说明我们上面的操作就可以正常执行了<br><img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106709.png"></p>
+<p>如果能够进行数据库的插入和查询，说明我们上面的操作就可以正常执行了<br><a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106709.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106709.png"></a></p>
 <h2 id="4-8-Chroma-Client-Server-Mode"><a href="#4-8-Chroma-Client-Server-Mode" class="headerlink" title="4.8. Chroma Client-Server Mode"></a>4.8. Chroma Client-Server Mode</h2><ul>
 <li>Server 端</li>
 </ul>
@@ -357,7 +343,7 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import chromadb</span><br><span class="line">chroma_client = chromadb.HttpClient(host=&#x27;localhost&#x27;, port=8000)</span><br></pre></td></tr></table></figure>
 <hr>
 <h2 id="5-Milvus-扩展学习"><a href="#5-Milvus-扩展学习" class="headerlink" title="5. Milvus 扩展学习"></a>5. Milvus 扩展学习</h2><p>Milvus的使用和chroma类似，可以自己查看官网操作</p>
-<p>中文官网：<br>	<a target="_blank" rel="noopener" href="https://milvus.io/docs/zh/quickstart.md">https://milvus.io/docs/zh/quickstart.md</a><br>	<img src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106864.png"></p>
+<p>中文官网：<br>	<a target="_blank" rel="noopener" href="https://milvus.io/docs/zh/quickstart.md">https://milvus.io/docs/zh/quickstart.md</a><br>	<a class="fancybox" href="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106864.png" data-fancybox="post-group"><img loading="lazy" src="/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93-IMG-20260506131106864.png"></a></p>
 <hr>
 <h2 id="6-学习打卡"><a href="#6-学习打卡" class="headerlink" title="6. 学习打卡"></a>6. 学习打卡</h2><ol>
 <li>掌握 Embedding 模型的原理及选型</li>
@@ -367,1595 +353,216 @@
 <li>掌握 Mivus 向量数据库的使用</li>
 </ol>
 
-            
-
-
-        </div>
+      
     </div>
-    <div id="post-footer" class="post-footer main-content-wrap">
-        
-            <div class="post-footer-tags">
-                <span class="text-color-light text-small">标签</span><br/>
-                
-    <a class="tag tag--primary tag--small t-none-link" href="/tags/LLM-Application/" rel="tag">LLM_Application</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/embedding/" rel="tag">embedding</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/learn/" rel="tag">learn</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/vector-database/" rel="tag">vector-database</a>
+    <footer class="article-footer">
+      <a data-url="https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/" data-id="cuid6kmpEovYUPkyEppUFjQ1R" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LLM-Application/" rel="tag">LLM_Application</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/embedding/" rel="tag">embedding</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/learn/" rel="tag">learn</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vector-database/" rel="tag">vector-database</a></li></ul>
 
-            </div>
-        
-        
-            <div class="post-actions-wrap">
-    <nav>
-        <ul class="post-actions post-action-nav">
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/06/14/hexo_post/RAG%E6%8A%80%E6%9C%AF%E5%92%8C%E5%BA%94%E7%94%A8/"
-                    data-tooltip="RAG 技术和应用"
-                    aria-label="上一篇: RAG 技术和应用"
-                >
-                    
-                        <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
-                    </a>
-            </li>
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/06/06/hexo_post/%E5%BC%BA%E5%88%B6%E9%99%8D%E4%BD%8E%E6%88%96%E5%8D%87%E4%BE%9D%E8%B5%96%E5%8C%85%E7%89%88%E6%9C%AC/"
-                    data-tooltip="强制降低或升依赖包版本"
-                    aria-label="下一篇: 强制降低或升依赖包版本"
-                >
-                    
-                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
-                        <i class="fa fa-angle-right" aria-hidden="true"></i>
-                    </a>
-            </li>
-        </ul>
-    </nav>
-    <ul class="post-actions post-action-share">
-        <li class="post-action hide-lg hide-md hide-sm">
-            <a
-                class="post-action-btn btn btn--default btn-open-shareoptions"
-                href="#btn-open-shareoptions"
-                aria-label="Share this post"
-            >
-                <i class="fa fa-share-alt" aria-hidden="true"></i>
-            </a>
-        </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/"
-                    title="分享到 Facebook"
-                    aria-label="分享到 Facebook"
-                >
-                    <i class="fab fa-facebook" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/"
-                    title="分享到 Twitter"
-                    aria-label="分享到 Twitter"
-                >
-                    <i class="fab fa-twitter" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/"
-                    title="分享到 Google+"
-                    aria-label="分享到 Google+"
-                >
-                    <i class="fab fa-google-plus" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-        
-            
-                <li class="post-action">
-                    <a
-                        class="post-action-btn btn btn--default"
-                        href="#gitalk"
-                        aria-label="Leave a comment"
-                    >
-                        <i class="fa fa-comment"></i>
-                    </a>
-                </li>
-            
-        
-        <li class="post-action">
-            
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
-            
-                <i class="fa fa-list" aria-hidden="true"></i>
-            </a>
-        </li>
-    </ul>
-</div>
-
-
-        
-        
-            
-                <div id="gitalk"></div>
-
-            
-        
-    </div>
-</article>
-
-
-                
-
-            </div>
-        </div>
-        
-            <div id="algolia-search-modal" class="modal-container">
-    <div class="modal">
-        <div class="modal-header">
-            <span class="close-button"><i class="fa fa-times"></i></span>
-            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
-                <span class="searchby-algolia-text text-color-light text-small">by</span>
-                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
-            </a>
-            <i class="search-icon fa fa-search"></i>
-            <form id="algolia-search-form">
-                <input type="text" id="algolia-search-input" name="search"
-                    class="form-control input--large search-input" placeholder="Search "
-                    />
-            </form>
-        </div>
-        <div class="modal-body">
-            <div class="no-result text-color-light text-center">没有找到文章</div>
-            <div class="results">
-                
-                <div
-                    class="media"
-                    data-search-text="第一篇日记  learn note"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/01/hexo_post/%E7%AC%AC%E4%B8%80%E7%AF%87%E6%97%A5%E8%AE%B0/?from=search"
-                            aria-label=": 第一篇日记"
-                        >
-                            <h3 class="media-heading">第一篇日记</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月1日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="dataview  learn obsidian插件 dataview"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/28/hexo_post/Dataview/?from=search"
-                            aria-label=": Dataview"
-                        >
-                            <h3 class="media-heading">Dataview</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月28日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="tasks  learn obsidian插件 productivity"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/28/hexo_post/Tasks/?from=search"
-                            aria-label=": Tasks"
-                        >
-                            <h3 class="media-heading">Tasks</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月28日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="multi-column markdown  learn obsidian插件 markdown"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Multi-Column%20Markdown/?from=search"
-                            aria-label=": Multi-Column Markdown"
-                        >
-                            <h3 class="media-heading">Multi-Column Markdown</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
-                        >
-                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
-                            aria-label=": HuggingFace 核心组件介绍"
-                        >
-                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="基于 gpt2 模型的微调训练实践  learn llm_application fine-tuning gpt-2"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EGPT2%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 基于 GPT2 模型的微调训练实践"
-                        >
-                            <h3 class="media-heading">基于 GPT2 模型的微调训练实践</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Xtuner 训练框架"
-                        >
-                            <h3 class="media-heading">Xtuner 训练框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="gguf 模型  learn llm_application gguf quantization"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/?from=search"
-                            aria-label=": GGUF 模型"
-                        >
-                            <h3 class="media-heading">GGUF 模型</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="vllm 推理框架  learn llm_application inference vllm"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": vLLM 推理框架"
-                        >
-                            <h3 class="media-heading">vLLM 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="llama-factory 训练框架  learn llm_application llama-factory fine-tuning"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LLaMA-Factory 训练框架"
-                        >
-                            <h3 class="media-heading">LLaMA-Factory 训练框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LMDeploy 推理框架"
-                        >
-                            <h3 class="media-heading">LMDeploy 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="opencompass 评估测试框架  learn llm_application opencompass evaluation"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/OpenCompass%E8%AF%84%E4%BC%B0%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": OpenCompass 评估测试框架"
-                        >
-                            <h3 class="media-heading">OpenCompass 评估测试框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Ollama 推理框架"
-                        >
-                            <h3 class="media-heading">Ollama 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 大模型微调分布式训练"
-                        >
-                            <h3 class="media-heading">大模型微调分布式训练</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 情绪对话项目实践"
-                        >
-                            <h3 class="media-heading">情绪对话项目实践</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月31日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="大模型部署  learn llm_application inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
-                            aria-label=": 大模型部署"
-                        >
-                            <h3 class="media-heading">大模型部署</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月31日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="dify 学习  learn llm_application dify llmops"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/01/hexo_post/Dify%E5%AD%A6%E4%B9%A0/?from=search"
-                            aria-label=": Dify 学习"
-                        >
-                            <h3 class="media-heading">Dify 学习</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月1日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="mcp 学习  learn llm_application mcp"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/02/hexo_post/MCP%E5%AD%A6%E4%B9%A0/?from=search"
-                            aria-label=": MCP 学习"
-                        >
-                            <h3 class="media-heading">MCP 学习</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月2日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="集成多 mcp 应用及解决多表查询的解决方案  learn llm_application mcp sql"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/03/hexo_post/%E9%9B%86%E6%88%90%E5%A4%9AMCP%E5%BA%94%E7%94%A8%E5%8F%8A%E8%A7%A3%E5%86%B3%E5%A4%9A%E8%A1%A8%E6%9F%A5%E8%AF%A2%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/?from=search"
-                            aria-label=": 集成多 MCP 应用及解决多表查询的解决方案"
-                        >
-                            <h3 class="media-heading">集成多 MCP 应用及解决多表查询的解决方案</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月3日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="texttosql 解决方案试验  learn llm_application texttosql vanna"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/04/hexo_post/TextToSQL%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E8%AF%95%E9%AA%8C/?from=search"
-                            aria-label=": TextToSQL 解决方案试验"
-                        >
-                            <h3 class="media-heading">TextToSQL 解决方案试验</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月4日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="indextts-1.5 使用记录  learn llm_application tts"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/05/hexo_post/IndexTTS-1.5%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/?from=search"
-                            aria-label=": IndexTTS-1.5 使用记录"
-                        >
-                            <h3 class="media-heading">IndexTTS-1.5 使用记录</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月5日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="streamlit 与 crewai 实现自动生成测试用例  learn llm_application streamlit crewai testing"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/06/hexo_post/streamlit&amp;crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/?from=search"
-                            aria-label=": streamlit 与 crewai 实现自动生成测试用例"
-                        >
-                            <h3 class="media-heading">streamlit 与 crewai 实现自动生成测试用例</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月6日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="强制降低或升依赖包版本  learn pip python"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/06/hexo_post/%E5%BC%BA%E5%88%B6%E9%99%8D%E4%BD%8E%E6%88%96%E5%8D%87%E4%BE%9D%E8%B5%96%E5%8C%85%E7%89%88%E6%9C%AC/?from=search"
-                            aria-label=": 强制降低或升依赖包版本"
-                        >
-                            <h3 class="media-heading">强制降低或升依赖包版本</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月6日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="嵌入模型与向量数据库  learn llm_application embedding vector-database"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/?from=search"
-                            aria-label=": 嵌入模型与向量数据库"
-                        >
-                            <h3 class="media-heading">嵌入模型与向量数据库</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月10日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="rag 技术和应用  learn llm_application rag"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/14/hexo_post/RAG%E6%8A%80%E6%9C%AF%E5%92%8C%E5%BA%94%E7%94%A8/?from=search"
-                            aria-label=": RAG 技术和应用"
-                        >
-                            <h3 class="media-heading">RAG 技术和应用</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月14日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="rag 高级技术与实践  learn llm_application rag advanced"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/18/hexo_post/RAG%E9%AB%98%E7%BA%A7%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": RAG 高级技术与实践"
-                        >
-                            <h3 class="media-heading">RAG 高级技术与实践</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="pip 源切换  learn pip python"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/18/hexo_post/pip%E6%BA%90%E5%88%87%E6%8D%A2/?from=search"
-                            aria-label=": pip 源切换"
-                        >
-                            <h3 class="media-heading">pip 源切换</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="remote-ssh 插件  learn vscode remote-dev"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/07/09/hexo_post/Remote-SSH%E6%8F%92%E4%BB%B6/?from=search"
-                            aria-label=": Remote-SSH 插件"
-                        >
-                            <h3 class="media-heading">Remote-SSH 插件</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年7月9日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="llamaindex 知识库管理与信息检索  learn llm_application rag llamaindex"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/07/hexo_post/LlamaIndex%E7%9F%A5%E8%AF%86%E5%BA%93%E7%AE%A1%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/?from=search"
-                            aria-label=": LlamaIndex 知识库管理与信息检索"
-                        >
-                            <h3 class="media-heading">LlamaIndex 知识库管理与信息检索</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月7日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/14/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%E5%92%8CLangGraph%E5%AE%9E%E7%8E%B0%E5%B7%A5%E4%BD%9C%E6%B5%81/?from=search"
-                            aria-label=": LangChain 实现 RAG 和 LangGraph 实现工作流"
-                        >
-                            <h3 class="media-heading">LangChain 实现 RAG 和 LangGraph 实现工作流</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月14日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="langchain 实现 function call  learn llm_application langchain function-calling"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/15/hexo_post/LangChain%E5%AE%9E%E7%8E%B0Function%20Call/?from=search"
-                            aria-label=": LangChain 实现 Function Call"
-                        >
-                            <h3 class="media-heading">LangChain 实现 Function Call</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月15日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="langchain 实现 rag + agent  learn agent langchain rag"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/?from=search"
-                            aria-label=": LangChain 实现 RAG + Agent"
-                        >
-                            <h3 class="media-heading">LangChain 实现 RAG + Agent</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="有声小说第一次尝试实现（pyttsx3）  learn llm_application tts python"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/?from=search"
-                            aria-label=": 有声小说第一次尝试实现（pyttsx3）"
-                        >
-                            <h3 class="media-heading">有声小说第一次尝试实现（pyttsx3）</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月20日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="chrome mcp server  learn llm_application mcp chrome"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/21/hexo_post/Chrome%20MCP%20Server/?from=search"
-                            aria-label=": Chrome MCP Server"
-                        >
-                            <h3 class="media-heading">Chrome MCP Server</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月21日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="homebrew 常用命令  learn homebrew mac"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/21/hexo_post/Homebrew%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/?from=search"
-                            aria-label=": Homebrew 常用命令"
-                        >
-                            <h3 class="media-heading">Homebrew 常用命令</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月21日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="利用 hexo 搭建博客网站  learn hexo static-site github-pages"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/11/04/hexo_post/%E5%88%A9%E7%94%A8hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99/?from=search"
-                            aria-label=": 利用 hexo 搭建博客网站"
-                        >
-                            <h3 class="media-heading">利用 hexo 搭建博客网站</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年11月4日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="连接不上第三方显示器  learn mac hardware"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/12/18/hexo_post/%E8%BF%9E%E6%8E%A5%E4%B8%8D%E4%B8%8A%E7%AC%AC%E4%B8%89%E6%96%B9%E6%98%BE%E7%A4%BA%E5%99%A8/?from=search"
-                            aria-label=": 连接不上第三方显示器"
-                        >
-                            <h3 class="media-heading">连接不上第三方显示器</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年12月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="丝滑切换 jdk 不同版本（jenv）  learn mac java jenv"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/01/08/hexo_post/%E4%B8%9D%E6%BB%91%E5%88%87%E6%8D%A2jdk%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC-jenv/?from=search"
-                            aria-label=": 丝滑切换 jdk 不同版本（jenv）"
-                        >
-                            <h3 class="media-heading">丝滑切换 jdk 不同版本（jenv）</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年1月8日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="代码中的nacos配置丢失的问题  learn nacos 配置管理"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/06/hexo_post/%E4%BB%A3%E7%A0%81%E4%B8%AD%E7%9A%84nacos%E9%85%8D%E7%BD%AE%E4%B8%A2%E5%A4%B1%E7%9A%84%E9%97%AE%E9%A2%98/?from=search"
-                            aria-label=": 代码中的nacos配置丢失的问题"
-                        >
-                            <h3 class="media-heading">代码中的nacos配置丢失的问题</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月6日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="全流程docker&k8s操作  ubuntun docker k8s linux"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/14/hexo_post/%E5%85%A8%E6%B5%81%E7%A8%8Bdocker&amp;k8s%E6%93%8D%E4%BD%9C%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 全流程docker&amp;k8s操作"
-                        >
-                            <h3 class="media-heading">全流程docker&amp;k8s操作</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月14日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="harness engineering理论  harness agent"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/15/hexo_post/Harness%20Engineering%E7%90%86%E8%AE%BA%E5%86%85%E6%A0%B8/?from=search"
-                            aria-label=": Harness Engineering理论"
-                        >
-                            <h3 class="media-heading">Harness Engineering理论</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月15日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="harness engineering 实现 — gstack  gstack harness claude code ai agent 软件工程"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/18/hexo_post/Harness%20Engineering%E5%AE%9E%E7%8E%B0-GStack/?from=search"
-                            aria-label=": Harness Engineering 实现 — GStack"
-                        >
-                            <h3 class="media-heading">Harness Engineering 实现 — GStack</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="gstack实际操作  gstack skills"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/18/hexo_post/GStack%E5%AE%9E%E9%99%85%E6%93%8D%E4%BD%9C/?from=search"
-                            aria-label=": GStack实际操作"
-                        >
-                            <h3 class="media-heading">GStack实际操作</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="  "
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/21/hexo_post/openclaw/?from=search"
-                            aria-label=": "
-                        >
-                            <h3 class="media-heading"></h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月21日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="  "
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/25/hexo_post/GStack/?from=search"
-                            aria-label=": "
-                        >
-                            <h3 class="media-heading"></h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月25日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="  "
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/?from=search"
-                            aria-label=": "
-                        >
-                            <h3 class="media-heading"></h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年6月2日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="佳明手表配置openweatherkey方法  佳明手表 weather openai_api_key"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/06/24/%E4%BD%B3%E6%98%8E%E6%89%8B%E8%A1%A8%E9%85%8D%E7%BD%AEopenweatherkey%E6%96%B9%E6%B3%95/?from=search"
-                            aria-label=": 佳明手表配置openweatherkey方法"
-                        >
-                            <h3 class="media-heading">佳明手表配置openweatherkey方法</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年6月24日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="佳明手表配置openweatherkey方法  佳明手表 weather openai_api_key learn"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/06/24/hexo_post/%E4%BD%B3%E6%98%8E%E6%89%8B%E8%A1%A8%E9%85%8D%E7%BD%AEopenweatherkey%E6%96%B9%E6%B3%95/?from=search"
-                            aria-label=": 佳明手表配置openweatherkey方法"
-                        >
-                            <h3 class="media-heading">佳明手表配置openweatherkey方法</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年6月24日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-            </div>
-        </div>
-        <div class="modal-footer">
-            <p class="results-count text-medium"
-                data-message-zero="没有找到文章"
-                data-message-one="找到 1 篇文章"
-                data-message-other="找到 {n} 篇文章">
-                找到 49 篇文章
-            </p>
-        </div>
-    </div>
-</div>
-
-        
-        <!--SCRIPTS-->
-
-<script src="/assets/js/script-fy2mgop5xl1tplwujicojo4xhlb80nrzsizgqk4jfrs5njk0qriczldyw7af.min.js"></script>
-
-<!--SCRIPTS END-->
-
-
+    </footer>
+  </div>
+  
     
-        
-<script src="/assets/js/gitalk.js"></script>
+ 
+<script src="/jquery/jquery.min.js"></script>
 
-        <script type="text/javascript">
-          (function() {
-            var host = window.location.hostname;
-            if (host === 'localhost' || host === '127.0.0.1') {
-              var el = document.getElementById('gitalk');
-              if (el) {
-                el.innerHTML = '<p style="padding:12px 14px;border:1px solid #dbe5f5;border-radius:10px;background:#fff;color:#5b6475;">本地预览环境不启用 GitHub 登录评论，请在线上站点使用评论功能。</p>';
+  <div id="random_posts">
+    <h2>Recommended Posts</h2>
+    <div class="random_posts_ul">
+      <script>
+          var random_count =4
+          var site = {BASE_URI:'/'};
+          function load_random_posts(obj) {
+              var arr=site.posts;
+              if (!obj) return;
+              // var count = $(obj).attr('data-count') || 6;
+              for (var i, tmp, n = arr.length; n; i = Math.floor(Math.random() * n), tmp = arr[--n], arr[n] = arr[i], arr[i] = tmp);
+              arr = arr.slice(0, random_count);
+              var html = '<ul>';
+            
+              for(var j=0;j<arr.length;j++){
+                var item=arr[j];
+                html += '<li><strong>' + 
+                item.date + ':&nbsp;&nbsp;<a href="' + (site.BASE_URI+item.uri) + '">' + 
+                (item.title || item.uri) + '</a></strong>';
+                if(item.excerpt){
+                  html +='<div class="post-excerpt">'+item.excerpt+'</div>';
+                }
+                html +='</li>';
+                
               }
-              return;
-            }
-            new Gitalk({
-              clientID: 'Ov23lixY4RNkL6GaPepq',
-              clientSecret: '5bb8a010339dc3e6b5655b8ac336d3c0d0be226e',
-              repo: 'blog-comments',
-              owner: 'shaver92',
-              admin: ['shaver92'],
-              id: '2025/06/10/hexo_post/嵌入模型与向量数据库/',
-              ...{"language":"zh-CN","perPage":10,"distractionFreeMode":false,"createIssueManually":true,"labels":["Gitalk"],"pagerDirection":"last","proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"}
-            }).render('gitalk')
-          })()
-        </script>
-    
-
-
+              $(obj).html(html + '</ul>');
+          }
+          $('.random_posts_ul').each(function () {
+              var c = this;
+              if (!site.posts || !site.posts.length){
+                  $.getJSON(site.BASE_URI + 'js/posts.js',function(json){site.posts = json;load_random_posts(c)});
+              } 
+               else{
+                load_random_posts(c);
+              }
+          });
+      </script>
+    </div>
+  </div>
 
     
-<script src="/assets/js/moment-with-locales.js"></script>
+<nav id="article-nav">
+  
+    <a href="/2025/06/14/hexo_post/RAG%E6%8A%80%E6%9C%AF%E5%92%8C%E5%BA%94%E7%94%A8/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          RAG 技术和应用
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2025/06/06/hexo_post/%E5%BC%BA%E5%88%B6%E9%99%8D%E4%BD%8E%E6%88%96%E5%8D%87%E4%BE%9D%E8%B5%96%E5%8C%85%E7%89%88%E6%9C%AC/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">强制降低或升依赖包版本</div>
+    </a>
+  
+</nav>
 
+  
+</article>
+ 
+     
+  <div class="comments" id="comments">
     
-<script src="/assets/js/algoliasearch.js"></script>
+     
+       
+       
+      
+      
+      
+  </div>
+ 
+  
 
-    <script>
-      var algoliaClient = algoliasearch('P7U39XTUUF', 'fcf10bcb3e25fb39b4cf37309facbba5');
-      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+</section>
+           
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-left">
+      &copy; 2014 - 2026 shaver&nbsp;|&nbsp;
+      Theme by <a href="https://github.com/giscafer/hexo-theme-cafe/" target="_blank">Cafe</a>
+    </div>
+     <div id="footer-right">
+      Contact&nbsp;|&nbsp;https://shaver92.github.io
+    </div>
+  </div>
+</footer>
+ 
+<script src="/jquery/jquery.min.js"></script>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首页</a>
+  
+    <a href="/archives" class="mobile-nav-link">归档</a>
+  
+    <a href="/all-categories" class="mobile-nav-link">分类</a>
+  
+    <a href="/all-tags" class="mobile-nav-link">标签</a>
+  
+    <a href="/search" class="mobile-nav-link">搜索</a>
+  
+</nav>
+    <img class="back-to-top-btn" src="/images/fly-to-top.png"/>
+<script>
+// Elevator script included on the page, already.
+window.onload = function() {
+  var elevator = new Elevator({
+    selector:'.back-to-top-btn',
+    element: document.querySelector('.back-to-top-btn'),
+    duration: 1000 // milliseconds
+  });
+}
+</script>
+      
+
+  
+
+  
+
+
+
+
+
+
+
+<!-- author:forvoid begin -->
+<!-- author:forvoid begin -->
+
+<!-- author:forvoid end -->
+
+<!-- author:forvoid end -->
+
+
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      })
     </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      })
+    </script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+
+<script src="/js/is.js"></script>
+
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+<script src="/js/elevator.js"></script>
+
+
+<!-- Custom scripts -->
+
+  
+<script src="/js/moment-with-locales.js"></script>
+
+  
+<script src="/js/algoliasearch.js"></script>
+
+  <script>
+    var algoliaClient = algoliasearch('P7U39XTUUF', 'fcf10bcb3e25fb39b4cf37309facbba5');
+    var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+  </script>
 
 
 <script>
@@ -2045,11 +652,11 @@
       var pre = figure.querySelector('td.code pre, .code pre');
       if (!pre) return '';
       var t = pre.innerText != null ? pre.innerText : pre.textContent;
-      return String(t || '').replace(/\u00a0/g, ' ');
+      return String(t || '').replace(/ /g, ' ');
     }
 
     function attachPostCodeCopyButtons() {
-      var scope = document.querySelector('.post-content');
+      var scope = document.querySelector('.article-entry');
       if (!scope) return;
       var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
       for (var i = 0; i < blocks.length; i++) {
@@ -2108,5 +715,11 @@
   })();
 </script>
 
-    </body>
+<!-- Gitalk comments -->
+
+  
+
+
+  </div>
+</body>
 </html>

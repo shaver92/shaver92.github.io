@@ -1,23 +1,13 @@
-
 <!DOCTYPE html>
-<html lang="zh-cn,en,default">
-    
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="generator" content="shaver&#39;s blog">
-    <title>LangChain 实现 RAG + Agent - shaver&#39;s blog</title>
-    <meta name="author" content="shaver">
-    
-    
-    
-        
-            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
-        
-    
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png"},"articleBody":"LLM 可以理解为一个超级大脑，Agent可以理解为手，脚，嘴等，LLM做决策，Agent接收LLM的决策，进行下一步的行动\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128129130131132133134135136137138139140141142143144145146147148149150151152153154155156157158159160161162163164165166167168169170171172173174175176177178179180181182183184185186187188189190191192# -*- coding: utf-8 -*-# -------------------------------------------------------------------------------# Name:         demo16# Description:  langchain 实现 RAG + agent# Author:       shaver# Date:         2025/8/18# -------------------------------------------------------------------------------import osfrom typing import Optional, Anyimport bs4from dotenv import load_dotenvfrom langchain import hubfrom langchain.agents import AgentExecutor, create_openai_functions_agentfrom langchain.chat_models import init_chat_modelfrom langchain.tools.retriever import create_retriever_toolfrom langchain_community.document_loaders import WebBaseLoaderfrom langchain_community.embeddings import DashScopeEmbeddingsfrom langchain_community.vectorstores import FAISSfrom langchain_text_splitters import RecursiveCharacterTextSplitterclass Config:    &quot;&quot;&quot; 配置项 延迟实例化    Attributes:        embeddings: 嵌入模型        llm: 语言模型        prompt: 语言模型提示    Methods:        initialize: 实例化配置项    &quot;&quot;&quot;    embeddings: Optional[DashScopeEmbeddings] = None    llm: Optional[Any] = None    prompt: Optional[Any] = None    @classmethod    def initialize(cls):        &quot;&quot;&quot;延迟初始化所有配置项（避免类定义时执行）        :arg cls: 配置类        :return: None        &quot;&quot;&quot;        cls.embeddings = DashScopeEmbeddings(model=&quot;text-embedding-v1&quot;)        cls.llm = init_chat_model(&quot;deepseek-chat&quot;, model_provider=&quot;deepseek&quot;, temperature=0.5)        cls.prompt = hub.pull(&quot;hwchase17/openai-functions-agent&quot;)class FAISSTool:    &quot;&quot;&quot; FAISS 向量存储工具    Attributes:        Methods:        save_web_docs: 将在线网页信息文档保存到 FAISS 向量数据库中    &quot;&quot;&quot;    @staticmethod    def save_web_docs(web_path, folder_path):        &quot;&quot;&quot;将文档保存到 FAISS 向量数据库中        &quot;&quot;&quot;        # 显式配置代理和请求参数        loader = WebBaseLoader(            # web_path=&quot;https://www.gov.cn/xinwen/2020-06/01/content_5516649.htm&quot;,            web_path=web_path,            bs_kwargs=dict(parse_only=bs4.SoupStrainer(id=&quot;UCAP-CONTENT&quot;)),            proxies=&#123;                &quot;http&quot;: &quot;http://127.0.0.1:1083&quot;,                &quot;https&quot;: &quot;http://127.0.0.1:1083&quot;            &#125;,            requests_kwargs=&#123;                &quot;headers&quot;: &#123;&quot;User-Agent&quot;: &quot;Mozilla/5.0&quot;&#125;,                &quot;timeout&quot;: 10,                &quot;verify&quot;: False  # 仅调试时禁用SSL验证            &#125;        )        docs = loader.load()        # 使用分割器分割文档        text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)        documents = text_splitter.split_documents(docs)        vector_db = FAISS.from_documents(documents, Config.embeddings)        # 5. 持久化到本地（包含index.faiss和index.pkl文件）        os.makedirs(folder_path, exist_ok=True)  # 确保目录存在        vector_db.save_local(            folder_path=folder_path,        )        print(f&quot;向量库已保存至 &#123;folder_path&#125;&quot;)    @staticmethod    def load_web_docs(folder_path):        &quot;&quot;&quot; 记载本地 FAISS 向量数据库        :param folder_path: 本地向量数据库路径        :return: 返回 FAISS 向量数据库        &quot;&quot;&quot;        return FAISS.load_local(            folder_path=folder_path,            embeddings=Config.embeddings,            allow_dangerous_deserialization=True        )class AgentTool:    &quot;&quot;&quot; Agent 工具        Attributes:    Methods:        create_agent_tool: 创建检索器工具        crete_agent: 创建 agent    &quot;&quot;&quot;    @staticmethod    def create_agent_tool(vector_db, name, description):        &quot;&quot;&quot;创建 agent 工具        :param vector_db: 向量数据库        :param name: 名称        :param description: 描述        :return: 工具        &quot;&quot;&quot;        retriever = vector_db.as_retriever()        retriever.search_kwargs = &#123;&quot;k&quot;: 3&#125;  # 限制为最多检索3个文档        # 检索器工具        return create_retriever_tool(            retriever,            name,            description,        )    @staticmethod    def crete_agent(llm, tools, prompt):        &quot;&quot;&quot; 创建 agent        :param llm: 语言模型        :param tools: 工具列表        :param prompt: 语言模型提示        :return: agent        &quot;&quot;&quot;        return create_openai_functions_agent(llm, tools, prompt)    @staticmethod    def crete_agent_executor(agent, tools):        &quot;&quot;&quot; 创建 agent 执行器        :param agent: agent 名称        :param tools: 工具列表        :return: agent 执行器        &quot;&quot;&quot;        return AgentExecutor(agent=agent, tools=tools, verbose=True)if __name__ == &#x27;__main__&#x27;:    # 1. 记载环境变量    load_dotenv()    # 2. 初始化配置项    Config.initialize()    # 3. 加载网页文档到向量数据库  or 加载本地向量数据库    # FAISSTool.save_web_docs(&quot;https://www.gov.cn/xinwen/2020-06/01/content_5516649.htm&quot;,    #                         &quot;./web_docs&quot;)    vertex_db = FAISSTool.load_web_docs(&quot;./web_docs&quot;)    # 4.创建检索器工具 可以根据需要创建多个检索器工具    retriever_tools = []    retriever_tool_web_docs = AgentTool.create_agent_tool(vertex_db, &quot;web_docs&quot;, &quot;web_docs&quot;)    retriever_tools.append(retriever_tool_web_docs)    # 5.创建agent    agent = AgentTool.crete_agent(Config.llm, retriever_tools, Config.prompt)    # 6. 创建代理执行器 并运行    agent_executor = AgentTool.crete_agent_executor(agent, retriever_tools)    # 7. 启动交互    while True:        # 6. 输入文本        text = input(&quot;请输入文本：&quot;)        if not text:            continue        # 7. 执行agent        result = agent_executor.invoke(&#123;&quot;input&quot;: text&#125;)        # 8. 输出结果        print(result.get(&quot;output&quot;))\n\n效果：\n123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104/Users/shaver/Documents/conda_space/envs/langchain/bin/python3.11 /Users/shaver/PycharmProjects/AI/langchain/demo16.py USER_AGENT environment variable not set, consider setting it to identify your requests.请输入文本：建设用地使用权是什么？&gt; Entering new AgentExecutor chain...建设用地使用权是中国《物权法》和《民法典》中规定的一项重要用益物权，指权利人依法对国家所有的土地享有占有、使用和收益的权利，有权利用该土地建造建筑物、构筑物及其附属设施。以下是其核心要点：---### **1. 基本概念**- **所有权归属**：土地归国家或集体所有，但使用权可依法分离。- **用途限制**：仅用于建造建筑物、构筑物（如房屋、桥梁、道路等），不可直接用于农业耕作。- **权利来源**：通过划拨、出让、租赁等方式取得，其中出让（招拍挂）是最常见方式。---### **2. 主要类型**- **国有建设用地使用权**：  - **出让方式**：有偿取得，需支付土地出让金，期限一般为40年（商业）、50年（工业）、70年（住宅）。  - **划拨方式**：无偿或低偿取得，用于公益或特定项目（如学校、市政设施），无固定期限，但转让时需补缴出让金。- **集体建设用地使用权**：限于集体土地，需符合乡村规划，流转受限（需依法经集体同意）。---### **3. 权利内容**- **占有使用**：在土地上合法建设并保有建筑物。- **收益权**：通过出租、转让、抵押等方式获得收益。- **处分权**：可依法转让、抵押、继承（划拨土地需补缴出让金后处分）。---### **4. 法律依据**- **《民法典》物权编**（第344-361条）：明确权利设立、转让、续期等规则。- **《土地管理法》**：规定土地用途管制、审批程序等。- **《城市房地产管理法》**：细化房地产开发中的使用权问题。---### **5. 注意事项**- **期限与续期**：住宅用地到期自动续期；非住宅用地需依法申请续期，未获批准则收回。- **闲置土地**：满2年未开发可能被无偿收回。- **转让条件**：需完成开发投资总额的25%以上（防止炒地）。---### **6. 与土地使用权的区别**- **广义土地使用权**：包括建设用地、农用地、未利用地等。- **建设用地使用权**：特指用于建设的土地，属于土地使用权的一种具体类型。---若涉及具体问题（如拆迁补偿、续期流程等），需结合当地政策和合同条款进一步分析。&gt; Finished chain.建设用地使用权是中国《物权法》和《民法典》中规定的一项重要用益物权，指权利人依法对国家所有的土地享有占有、使用和收益的权利，有权利用该土地建造建筑物、构筑物及其附属设施。以下是其核心要点：---### **1. 基本概念**- **所有权归属**：土地归国家或集体所有，但使用权可依法分离。- **用途限制**：仅用于建造建筑物、构筑物（如房屋、桥梁、道路等），不可直接用于农业耕作。- **权利来源**：通过划拨、出让、租赁等方式取得，其中出让（招拍挂）是最常见方式。---### **2. 主要类型**- **国有建设用地使用权**：  - **出让方式**：有偿取得，需支付土地出让金，期限一般为40年（商业）、50年（工业）、70年（住宅）。  - **划拨方式**：无偿或低偿取得，用于公益或特定项目（如学校、市政设施），无固定期限，但转让时需补缴出让金。- **集体建设用地使用权**：限于集体土地，需符合乡村规划，流转受限（需依法经集体同意）。---### **3. 权利内容**- **占有使用**：在土地上合法建设并保有建筑物。- **收益权**：通过出租、转让、抵押等方式获得收益。- **处分权**：可依法转让、抵押、继承（划拨土地需补缴出让金后处分）。---### **4. 法律依据**- **《民法典》物权编**（第344-361条）：明确权利设立、转让、续期等规则。- **《土地管理法》**：规定土地用途管制、审批程序等。- **《城市房地产管理法》**：细化房地产开发中的使用权问题。---### **5. 注意事项**- **期限与续期**：住宅用地到期自动续期；非住宅用地需依法申请续期，未获批准则收回。- **闲置土地**：满2年未开发可能被无偿收回。- **转让条件**：需完成开发投资总额的25%以上（防止炒地）。---### **6. 与土地使用权的区别**- **广义土地使用权**：包括建设用地、农用地、未利用地等。- **建设用地使用权**：特指用于建设的土地，属于土地使用权的一种具体类型。---若涉及具体问题（如拆迁补偿、续期流程等），需结合当地政策和合同条款进一步分析。请输入文本：","dateCreated":"2025-08-18T12:36:22+08:00","dateModified":"2026-05-06T14:17:57+08:00","datePublished":"2025-08-18T12:36:22+08:00","description":"","headline":"LangChain 实现 RAG + Agent","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/"},"publisher":{"@type":"Organization","name":"shaver","sameAs":["https://github.com/","http://stackoverflow.com/users","https://twitter.com/","https://facebook.com/","https://plus.google.com/","https://www.linkedin.com/profile/","mailto"],"image":"avatar.png","logo":{"@type":"ImageObject","url":"avatar.png"}},"url":"https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/","keywords":"learn, Agent, LangChain, RAG"}</script>
-    <meta name="description" content="LLM 可以理解为一个超级大脑，Agent可以理解为手，脚，嘴等，LLM做决策，Agent接收LLM的决策，进行下一步的行动 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273">
-<meta property="og:type" content="blog">
+  <meta charset="utf-8">
+  
+  <title>LangChain 实现 RAG + Agent | shaver&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="author" content="shaver">
+  <meta name="description" content="LLM 可以理解为一个超级大脑，Agent可以理解为手，脚，嘴等，LLM做决策，Agent接收LLM的决策，进行下一步的行动 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273">
+<meta property="og:type" content="article">
 <meta property="og:title" content="LangChain 实现 RAG + Agent">
 <meta property="og:url" content="https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/index.html">
 <meta property="og:site_name" content="shaver&#39;s blog">
@@ -31,1690 +21,307 @@
 <meta property="article:tag" content="RAG">
 <meta property="article:tag" content="learn">
 <meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="shaver&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  <!-- Custom styles -->
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+  
     
-    
+  
+  
+
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-inner" class="inner">
+      <nav id="sub-nav">
         
-    
-    
-        <meta property="og:image" content="https://shaver92.github.io/assets/images/avatar.png"/>
-    
-    
-    
-    
-    <!--STYLES-->
-    
-<link rel="stylesheet" href="/assets/css/mitbunny-home.css">
-
-    <!--STYLES END-->
-    
-
-    
-
-    
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-            
-<link rel="stylesheet" href="/assets/css/gitalk.css">
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://shaver92.github.io"></form>
+      </div>
 
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
         
-    
-</head>
+          <a class="main-nav-link" href="/">首页</a>
+        
+          <a class="main-nav-link" href="/archives">归档</a>
+        
+          <a class="main-nav-link" href="/all-categories">分类</a>
+        
+          <a class="main-nav-link" href="/all-tags">标签</a>
+        
+          <a class="main-nav-link" href="/search">搜索</a>
+        
+      </nav>
+    </div>
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">shaver&#39;s blog</a>
+      </h1>
+      
+    </div>
+  </div>
+</header>
 
-    <body class=" ">
-        <div id="blog">
-            <div id="main">
-                
-                    <div class="page-topbar main-content-wrap">
-                        <div class="page-topbar__actions">
-                            <a
-                                class="mitbunny-home__search"
-                                href="/"
-                                aria-label="回到首页"
-                            >
-                                <span class="mitbunny-home__icon" aria-hidden="true">⌂</span>
-                                <span>首页</span>
-                            </a>
-                            <button
-                                class="mitbunny-home__search"
-                                type="button"
-                                aria-label="返回上一层"
-                                onclick="window.__goBackSmart && window.__goBackSmart('/', '/search/');"
-                            >
-                                <span class="mitbunny-home__icon" aria-hidden="true">←</span>
-                                <span>上一层</span>
-                            </button>
-                            <button
-                                class="mitbunny-home__search"
-                                type="button"
-                                aria-label="前往下一层"
-                                onclick="window.history.forward();"
-                            >
-                                <span class="mitbunny-home__icon" aria-hidden="true">→</span>
-                                <span>下一层</span>
-                            </button>
-                        </div>
-                        
-                    </div>
-                
-                
-<article class="post">
+      <div class="outer">
+        <section id="main"><article id="post-hexo_post/LangChain实现RAG + Agent" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/" class="article-date">
+  <time datetime="2025-08-18T04:36:22.000Z" itemprop="datePublished">2025-08-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
     
     
-        <div class="post-header main-content-wrap text-left">
-    
-        <h1 class="post-title">
-            LangChain 实现 RAG + Agent
-        </h1>
-    
-    
-        <div class="post-meta">
-    <time datetime="2025-08-18T12:36:22+08:00">
-	
-		    2025 年 8 月 18 日
-    	
-    </time>
-    
-</div>
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      LangChain 实现 RAG + Agent
+    </h1>
+  
 
+      </header>
     
-</div>
-
-    
-    <div class="post-content markdown">
-        <div class="main-content-wrap">
-            <p>LLM 可以理解为一个超级大脑，Agent可以理解为手，脚，嘴等，LLM做决策，Agent接收LLM的决策，进行下一步的行动</p>
+    <div class="article-entry" itemprop="articleBody">
+      
+        <!-- Table of Contents -->
+        
+        <p>LLM 可以理解为一个超级大脑，Agent可以理解为手，脚，嘴等，LLM做决策，Agent接收LLM的决策，进行下一步的行动</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="comment"># -------------------------------------------------------------------------------</span></span><br><span class="line"><span class="comment"># Name:         demo16</span></span><br><span class="line"><span class="comment"># Description:  langchain 实现 RAG + agent</span></span><br><span class="line"><span class="comment"># Author:       shaver</span></span><br><span class="line"><span class="comment"># Date:         2025/8/18</span></span><br><span class="line"><span class="comment"># -------------------------------------------------------------------------------</span></span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Optional</span>, <span class="type">Any</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> bs4</span><br><span class="line"><span class="keyword">from</span> dotenv <span class="keyword">import</span> load_dotenv</span><br><span class="line"><span class="keyword">from</span> langchain <span class="keyword">import</span> hub</span><br><span class="line"><span class="keyword">from</span> langchain.agents <span class="keyword">import</span> AgentExecutor, create_openai_functions_agent</span><br><span class="line"><span class="keyword">from</span> langchain.chat_models <span class="keyword">import</span> init_chat_model</span><br><span class="line"><span class="keyword">from</span> langchain.tools.retriever <span class="keyword">import</span> create_retriever_tool</span><br><span class="line"><span class="keyword">from</span> langchain_community.document_loaders <span class="keyword">import</span> WebBaseLoader</span><br><span class="line"><span class="keyword">from</span> langchain_community.embeddings <span class="keyword">import</span> DashScopeEmbeddings</span><br><span class="line"><span class="keyword">from</span> langchain_community.vectorstores <span class="keyword">import</span> FAISS</span><br><span class="line"><span class="keyword">from</span> langchain_text_splitters <span class="keyword">import</span> RecursiveCharacterTextSplitter</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Config</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot; 配置项 延迟实例化</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Attributes:</span></span><br><span class="line"><span class="string">        embeddings: 嵌入模型</span></span><br><span class="line"><span class="string">        llm: 语言模型</span></span><br><span class="line"><span class="string">        prompt: 语言模型提示</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Methods:</span></span><br><span class="line"><span class="string">        initialize: 实例化配置项</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    embeddings: <span class="type">Optional</span>[DashScopeEmbeddings] = <span class="literal">None</span></span><br><span class="line">    llm: <span class="type">Optional</span>[<span class="type">Any</span>] = <span class="literal">None</span></span><br><span class="line">    prompt: <span class="type">Optional</span>[<span class="type">Any</span>] = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @classmethod</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">initialize</span>(<span class="params">cls</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;延迟初始化所有配置项（避免类定义时执行）</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        :arg cls: 配置类</span></span><br><span class="line"><span class="string">        :return: None</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">        cls.embeddings = DashScopeEmbeddings(model=<span class="string">&quot;text-embedding-v1&quot;</span>)</span><br><span class="line">        cls.llm = init_chat_model(<span class="string">&quot;deepseek-chat&quot;</span>, model_provider=<span class="string">&quot;deepseek&quot;</span>, temperature=<span class="number">0.5</span>)</span><br><span class="line">        cls.prompt = hub.pull(<span class="string">&quot;hwchase17/openai-functions-agent&quot;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">FAISSTool</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot; FAISS 向量存储工具</span></span><br><span class="line"><span class="string">    Attributes:</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Methods:</span></span><br><span class="line"><span class="string">        save_web_docs: 将在线网页信息文档保存到 FAISS 向量数据库中</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">save_web_docs</span>(<span class="params">web_path, folder_path</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;将文档保存到 FAISS 向量数据库中</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="comment"># 显式配置代理和请求参数</span></span><br><span class="line">        loader = WebBaseLoader(</span><br><span class="line">            <span class="comment"># web_path=&quot;https://www.gov.cn/xinwen/2020-06/01/content_5516649.htm&quot;,</span></span><br><span class="line">            web_path=web_path,</span><br><span class="line">            bs_kwargs=<span class="built_in">dict</span>(parse_only=bs4.SoupStrainer(<span class="built_in">id</span>=<span class="string">&quot;UCAP-CONTENT&quot;</span>)),</span><br><span class="line">            proxies=&#123;</span><br><span class="line">                <span class="string">&quot;http&quot;</span>: <span class="string">&quot;http://127.0.0.1:1083&quot;</span>,</span><br><span class="line">                <span class="string">&quot;https&quot;</span>: <span class="string">&quot;http://127.0.0.1:1083&quot;</span></span><br><span class="line">            &#125;,</span><br><span class="line">            requests_kwargs=&#123;</span><br><span class="line">                <span class="string">&quot;headers&quot;</span>: &#123;<span class="string">&quot;User-Agent&quot;</span>: <span class="string">&quot;Mozilla/5.0&quot;</span>&#125;,</span><br><span class="line">                <span class="string">&quot;timeout&quot;</span>: <span class="number">10</span>,</span><br><span class="line">                <span class="string">&quot;verify&quot;</span>: <span class="literal">False</span>  <span class="comment"># 仅调试时禁用SSL验证</span></span><br><span class="line">            &#125;</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        docs = loader.load()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 使用分割器分割文档</span></span><br><span class="line">        text_splitter = RecursiveCharacterTextSplitter(chunk_size=<span class="number">500</span>, chunk_overlap=<span class="number">50</span>)</span><br><span class="line">        documents = text_splitter.split_documents(docs)</span><br><span class="line"></span><br><span class="line">        vector_db = FAISS.from_documents(documents, Config.embeddings)</span><br><span class="line">        <span class="comment"># 5. 持久化到本地（包含index.faiss和index.pkl文件）</span></span><br><span class="line">        os.makedirs(folder_path, exist_ok=<span class="literal">True</span>)  <span class="comment"># 确保目录存在</span></span><br><span class="line">        vector_db.save_local(</span><br><span class="line">            folder_path=folder_path,</span><br><span class="line">        )</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;向量库已保存至 <span class="subst">&#123;folder_path&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">load_web_docs</span>(<span class="params">folder_path</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot; 记载本地 FAISS 向量数据库</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        :param folder_path: 本地向量数据库路径</span></span><br><span class="line"><span class="string">        :return: 返回 FAISS 向量数据库</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">return</span> FAISS.load_local(</span><br><span class="line">            folder_path=folder_path,</span><br><span class="line">            embeddings=Config.embeddings,</span><br><span class="line">            allow_dangerous_deserialization=<span class="literal">True</span></span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">AgentTool</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot; Agent 工具</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Attributes:</span></span><br><span class="line"><span class="string">    Methods:</span></span><br><span class="line"><span class="string">        create_agent_tool: 创建检索器工具</span></span><br><span class="line"><span class="string">        crete_agent: 创建 agent</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">create_agent_tool</span>(<span class="params">vector_db, name, description</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot;创建 agent 工具</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        :param vector_db: 向量数据库</span></span><br><span class="line"><span class="string">        :param name: 名称</span></span><br><span class="line"><span class="string">        :param description: 描述</span></span><br><span class="line"><span class="string">        :return: 工具</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">        retriever = vector_db.as_retriever()</span><br><span class="line">        retriever.search_kwargs = &#123;<span class="string">&quot;k&quot;</span>: <span class="number">3</span>&#125;  <span class="comment"># 限制为最多检索3个文档</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 检索器工具</span></span><br><span class="line">        <span class="keyword">return</span> create_retriever_tool(</span><br><span class="line">            retriever,</span><br><span class="line">            name,</span><br><span class="line">            description,</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">crete_agent</span>(<span class="params">llm, tools, prompt</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot; 创建 agent</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        :param llm: 语言模型</span></span><br><span class="line"><span class="string">        :param tools: 工具列表</span></span><br><span class="line"><span class="string">        :param prompt: 语言模型提示</span></span><br><span class="line"><span class="string">        :return: agent</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> create_openai_functions_agent(llm, tools, prompt)</span><br><span class="line"></span><br><span class="line"><span class="meta">    @staticmethod</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">crete_agent_executor</span>(<span class="params">agent, tools</span>):</span><br><span class="line">        <span class="string">&quot;&quot;&quot; 创建 agent 执行器</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        :param agent: agent 名称</span></span><br><span class="line"><span class="string">        :param tools: 工具列表</span></span><br><span class="line"><span class="string">        :return: agent 执行器</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> AgentExecutor(agent=agent, tools=tools, verbose=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    <span class="comment"># 1. 记载环境变量</span></span><br><span class="line">    load_dotenv()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 2. 初始化配置项</span></span><br><span class="line">    Config.initialize()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 3. 加载网页文档到向量数据库  or 加载本地向量数据库</span></span><br><span class="line">    <span class="comment"># FAISSTool.save_web_docs(&quot;https://www.gov.cn/xinwen/2020-06/01/content_5516649.htm&quot;,</span></span><br><span class="line">    <span class="comment">#                         &quot;./web_docs&quot;)</span></span><br><span class="line">    vertex_db = FAISSTool.load_web_docs(<span class="string">&quot;./web_docs&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 4.创建检索器工具 可以根据需要创建多个检索器工具</span></span><br><span class="line">    retriever_tools = []</span><br><span class="line">    retriever_tool_web_docs = AgentTool.create_agent_tool(vertex_db, <span class="string">&quot;web_docs&quot;</span>, <span class="string">&quot;web_docs&quot;</span>)</span><br><span class="line">    retriever_tools.append(retriever_tool_web_docs)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 5.创建agent</span></span><br><span class="line">    agent = AgentTool.crete_agent(Config.llm, retriever_tools, Config.prompt)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 6. 创建代理执行器 并运行</span></span><br><span class="line">    agent_executor = AgentTool.crete_agent_executor(agent, retriever_tools)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 7. 启动交互</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        <span class="comment"># 6. 输入文本</span></span><br><span class="line">        text = <span class="built_in">input</span>(<span class="string">&quot;请输入文本：&quot;</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> text:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        <span class="comment"># 7. 执行agent</span></span><br><span class="line">        result = agent_executor.invoke(&#123;<span class="string">&quot;input&quot;</span>: text&#125;)</span><br><span class="line">        <span class="comment"># 8. 输出结果</span></span><br><span class="line">        <span class="built_in">print</span>(result.get(<span class="string">&quot;output&quot;</span>))</span><br></pre></td></tr></table></figure>
 
 <p>效果：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><span class="line">/Users/shaver/Documents/conda_space/envs/langchain/bin/python3.11 /Users/shaver/PycharmProjects/AI/langchain/demo16.py </span><br><span class="line">USER_AGENT environment variable not set, consider setting it to identify your requests.</span><br><span class="line">请输入文本：建设用地使用权是什么？</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&gt; Entering new AgentExecutor chain...</span><br><span class="line">建设用地使用权是中国《物权法》和《民法典》中规定的一项重要用益物权，指权利人依法对国家所有的土地享有占有、使用和收益的权利，有权利用该土地建造建筑物、构筑物及其附属设施。以下是其核心要点：</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **1. 基本概念**</span><br><span class="line">- **所有权归属**：土地归国家或集体所有，但使用权可依法分离。</span><br><span class="line">- **用途限制**：仅用于建造建筑物、构筑物（如房屋、桥梁、道路等），不可直接用于农业耕作。</span><br><span class="line">- **权利来源**：通过划拨、出让、租赁等方式取得，其中出让（招拍挂）是最常见方式。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **2. 主要类型**</span><br><span class="line">- **国有建设用地使用权**：</span><br><span class="line">  - **出让方式**：有偿取得，需支付土地出让金，期限一般为40年（商业）、50年（工业）、70年（住宅）。</span><br><span class="line">  - **划拨方式**：无偿或低偿取得，用于公益或特定项目（如学校、市政设施），无固定期限，但转让时需补缴出让金。</span><br><span class="line">- **集体建设用地使用权**：限于集体土地，需符合乡村规划，流转受限（需依法经集体同意）。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **3. 权利内容**</span><br><span class="line">- **占有使用**：在土地上合法建设并保有建筑物。</span><br><span class="line">- **收益权**：通过出租、转让、抵押等方式获得收益。</span><br><span class="line">- **处分权**：可依法转让、抵押、继承（划拨土地需补缴出让金后处分）。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **4. 法律依据**</span><br><span class="line">- **《民法典》物权编**（第344-361条）：明确权利设立、转让、续期等规则。</span><br><span class="line">- **《土地管理法》**：规定土地用途管制、审批程序等。</span><br><span class="line">- **《城市房地产管理法》**：细化房地产开发中的使用权问题。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **5. 注意事项**</span><br><span class="line">- **期限与续期**：住宅用地到期自动续期；非住宅用地需依法申请续期，未获批准则收回。</span><br><span class="line">- **闲置土地**：满2年未开发可能被无偿收回。</span><br><span class="line">- **转让条件**：需完成开发投资总额的25%以上（防止炒地）。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **6. 与土地使用权的区别**</span><br><span class="line">- **广义土地使用权**：包括建设用地、农用地、未利用地等。</span><br><span class="line">- **建设用地使用权**：特指用于建设的土地，属于土地使用权的一种具体类型。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">若涉及具体问题（如拆迁补偿、续期流程等），需结合当地政策和合同条款进一步分析。</span><br><span class="line"></span><br><span class="line">&gt; Finished chain.</span><br><span class="line">建设用地使用权是中国《物权法》和《民法典》中规定的一项重要用益物权，指权利人依法对国家所有的土地享有占有、使用和收益的权利，有权利用该土地建造建筑物、构筑物及其附属设施。以下是其核心要点：</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **1. 基本概念**</span><br><span class="line">- **所有权归属**：土地归国家或集体所有，但使用权可依法分离。</span><br><span class="line">- **用途限制**：仅用于建造建筑物、构筑物（如房屋、桥梁、道路等），不可直接用于农业耕作。</span><br><span class="line">- **权利来源**：通过划拨、出让、租赁等方式取得，其中出让（招拍挂）是最常见方式。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **2. 主要类型**</span><br><span class="line">- **国有建设用地使用权**：</span><br><span class="line">  - **出让方式**：有偿取得，需支付土地出让金，期限一般为40年（商业）、50年（工业）、70年（住宅）。</span><br><span class="line">  - **划拨方式**：无偿或低偿取得，用于公益或特定项目（如学校、市政设施），无固定期限，但转让时需补缴出让金。</span><br><span class="line">- **集体建设用地使用权**：限于集体土地，需符合乡村规划，流转受限（需依法经集体同意）。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **3. 权利内容**</span><br><span class="line">- **占有使用**：在土地上合法建设并保有建筑物。</span><br><span class="line">- **收益权**：通过出租、转让、抵押等方式获得收益。</span><br><span class="line">- **处分权**：可依法转让、抵押、继承（划拨土地需补缴出让金后处分）。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **4. 法律依据**</span><br><span class="line">- **《民法典》物权编**（第344-361条）：明确权利设立、转让、续期等规则。</span><br><span class="line">- **《土地管理法》**：规定土地用途管制、审批程序等。</span><br><span class="line">- **《城市房地产管理法》**：细化房地产开发中的使用权问题。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **5. 注意事项**</span><br><span class="line">- **期限与续期**：住宅用地到期自动续期；非住宅用地需依法申请续期，未获批准则收回。</span><br><span class="line">- **闲置土地**：满2年未开发可能被无偿收回。</span><br><span class="line">- **转让条件**：需完成开发投资总额的25%以上（防止炒地）。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">### **6. 与土地使用权的区别**</span><br><span class="line">- **广义土地使用权**：包括建设用地、农用地、未利用地等。</span><br><span class="line">- **建设用地使用权**：特指用于建设的土地，属于土地使用权的一种具体类型。</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">若涉及具体问题（如拆迁补偿、续期流程等），需结合当地政策和合同条款进一步分析。</span><br><span class="line">请输入文本：</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-            
-
-
-        </div>
+      
     </div>
-    <div id="post-footer" class="post-footer main-content-wrap">
-        
-            <div class="post-footer-tags">
-                <span class="text-color-light text-small">标签</span><br/>
-                
-    <a class="tag tag--primary tag--small t-none-link" href="/tags/Agent/" rel="tag">Agent</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/LangChain/" rel="tag">LangChain</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/RAG/" rel="tag">RAG</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/learn/" rel="tag">learn</a>
+    <footer class="article-footer">
+      <a data-url="https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/" data-id="cuidqEkGcmladm5yN2pUZ22E8" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Agent/" rel="tag">Agent</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LangChain/" rel="tag">LangChain</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/RAG/" rel="tag">RAG</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/learn/" rel="tag">learn</a></li></ul>
 
-            </div>
-        
-        
-            <div class="post-actions-wrap">
-    <nav>
-        <ul class="post-actions post-action-nav">
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/"
-                    data-tooltip="有声小说第一次尝试实现（pyttsx3）"
-                    aria-label="上一篇: 有声小说第一次尝试实现（pyttsx3）"
-                >
-                    
-                        <i class="fa fa-angle-left" aria-hidden="true"></i>
-                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
-                    </a>
-            </li>
-            <li class="post-action">
-                
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2025/08/15/hexo_post/LangChain%E5%AE%9E%E7%8E%B0Function%20Call/"
-                    data-tooltip="LangChain 实现 Function Call"
-                    aria-label="下一篇: LangChain 实现 Function Call"
-                >
-                    
-                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
-                        <i class="fa fa-angle-right" aria-hidden="true"></i>
-                    </a>
-            </li>
-        </ul>
-    </nav>
-    <ul class="post-actions post-action-share">
-        <li class="post-action hide-lg hide-md hide-sm">
-            <a
-                class="post-action-btn btn btn--default btn-open-shareoptions"
-                href="#btn-open-shareoptions"
-                aria-label="Share this post"
-            >
-                <i class="fa fa-share-alt" aria-hidden="true"></i>
-            </a>
-        </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/"
-                    title="分享到 Facebook"
-                    aria-label="分享到 Facebook"
-                >
-                    <i class="fab fa-facebook" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/"
-                    title="分享到 Twitter"
-                    aria-label="分享到 Twitter"
-                >
-                    <i class="fab fa-twitter" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-            
-            
-            <li class="post-action hide-xs">
-                <a
-                    class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/"
-                    title="分享到 Google+"
-                    aria-label="分享到 Google+"
-                >
-                    <i class="fab fa-google-plus" aria-hidden="true"></i>
-                </a>
-            </li>
-        
-        
-            
-                <li class="post-action">
-                    <a
-                        class="post-action-btn btn btn--default"
-                        href="#gitalk"
-                        aria-label="Leave a comment"
-                    >
-                        <i class="fa fa-comment"></i>
-                    </a>
-                </li>
-            
-        
-        <li class="post-action">
-            
-                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
-            
-                <i class="fa fa-list" aria-hidden="true"></i>
-            </a>
-        </li>
-    </ul>
-</div>
-
-
-        
-        
-            
-                <div id="gitalk"></div>
-
-            
-        
-    </div>
-</article>
-
-
-                
-
-            </div>
-        </div>
-        
-            <div id="algolia-search-modal" class="modal-container">
-    <div class="modal">
-        <div class="modal-header">
-            <span class="close-button"><i class="fa fa-times"></i></span>
-            <a href="https://algolia.com" target="_blank" rel="noopener" class="searchby-algolia text-color-light link-unstyled">
-                <span class="searchby-algolia-text text-color-light text-small">by</span>
-                <img class="searchby-algolia-logo" src="/assets/images/logo-algolia-nebula-blue-full.svg">
-            </a>
-            <i class="search-icon fa fa-search"></i>
-            <form id="algolia-search-form">
-                <input type="text" id="algolia-search-input" name="search"
-                    class="form-control input--large search-input" placeholder="Search "
-                    />
-            </form>
-        </div>
-        <div class="modal-body">
-            <div class="no-result text-color-light text-center">没有找到文章</div>
-            <div class="results">
-                
-                <div
-                    class="media"
-                    data-search-text="第一篇日记  learn note"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/01/hexo_post/%E7%AC%AC%E4%B8%80%E7%AF%87%E6%97%A5%E8%AE%B0/?from=search"
-                            aria-label=": 第一篇日记"
-                        >
-                            <h3 class="media-heading">第一篇日记</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月1日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="dataview  learn obsidian插件 dataview"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/28/hexo_post/Dataview/?from=search"
-                            aria-label=": Dataview"
-                        >
-                            <h3 class="media-heading">Dataview</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月28日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="tasks  learn obsidian插件 productivity"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/28/hexo_post/Tasks/?from=search"
-                            aria-label=": Tasks"
-                        >
-                            <h3 class="media-heading">Tasks</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月28日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="multi-column markdown  learn obsidian插件 markdown"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Multi-Column%20Markdown/?from=search"
-                            aria-label=": Multi-Column Markdown"
-                        >
-                            <h3 class="media-heading">Multi-Column Markdown</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="基于 bert 模型进行情感分析微调训练  learn llm_application fine-tuning bert nlp"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EBert%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 基于 Bert 模型进行情感分析微调训练"
-                        >
-                            <h3 class="media-heading">基于 Bert 模型进行情感分析微调训练</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="huggingface 核心组件介绍  learn llm_application huggingface"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/HuggingFace%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6%E4%BB%8B%E7%BB%8D/?from=search"
-                            aria-label=": HuggingFace 核心组件介绍"
-                        >
-                            <h3 class="media-heading">HuggingFace 核心组件介绍</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="基于 gpt2 模型的微调训练实践  learn llm_application fine-tuning gpt-2"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%9F%BA%E4%BA%8EGPT2%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%BE%AE%E8%B0%83%E8%AE%AD%E7%BB%83%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 基于 GPT2 模型的微调训练实践"
-                        >
-                            <h3 class="media-heading">基于 GPT2 模型的微调训练实践</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="xtuner 训练框架  learn llm_application fine-tuning xtuner"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Xtuner%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Xtuner 训练框架"
-                        >
-                            <h3 class="media-heading">Xtuner 训练框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="gguf 模型  learn llm_application gguf quantization"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/GGUF%E6%A8%A1%E5%9E%8B/?from=search"
-                            aria-label=": GGUF 模型"
-                        >
-                            <h3 class="media-heading">GGUF 模型</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="vllm 推理框架  learn llm_application inference vllm"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/vllm%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": vLLM 推理框架"
-                        >
-                            <h3 class="media-heading">vLLM 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="llama-factory 训练框架  learn llm_application llama-factory fine-tuning"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LLaMA-Factory%E8%AE%AD%E7%BB%83%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LLaMA-Factory 训练框架"
-                        >
-                            <h3 class="media-heading">LLaMA-Factory 训练框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="lmdeploy 推理框架  learn llm_application lmdeploy inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/LmDeploy%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": LMDeploy 推理框架"
-                        >
-                            <h3 class="media-heading">LMDeploy 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="opencompass 评估测试框架  learn llm_application opencompass evaluation"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/OpenCompass%E8%AF%84%E4%BC%B0%E6%B5%8B%E8%AF%95%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": OpenCompass 评估测试框架"
-                        >
-                            <h3 class="media-heading">OpenCompass 评估测试框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="ollama 推理框架  learn llm_application inference ollama"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/Ollama%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/?from=search"
-                            aria-label=": Ollama 推理框架"
-                        >
-                            <h3 class="media-heading">Ollama 推理框架</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="大模型微调分布式训练  learn llm_application fine-tuning distributed-training"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/29/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E5%88%86%E5%B8%83%E5%BC%8F%E8%AE%AD%E7%BB%83/?from=search"
-                            aria-label=": 大模型微调分布式训练"
-                        >
-                            <h3 class="media-heading">大模型微调分布式训练</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月29日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="情绪对话项目实践  learn llm_application fine-tuning chatbot"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E6%83%85%E7%BB%AA%E5%AF%B9%E8%AF%9D%E9%A1%B9%E7%9B%AE%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 情绪对话项目实践"
-                        >
-                            <h3 class="media-heading">情绪对话项目实践</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月31日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="大模型部署  learn llm_application inference"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/05/31/hexo_post/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2/?from=search"
-                            aria-label=": 大模型部署"
-                        >
-                            <h3 class="media-heading">大模型部署</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年5月31日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="dify 学习  learn llm_application dify llmops"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/01/hexo_post/Dify%E5%AD%A6%E4%B9%A0/?from=search"
-                            aria-label=": Dify 学习"
-                        >
-                            <h3 class="media-heading">Dify 学习</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月1日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="mcp 学习  learn llm_application mcp"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/02/hexo_post/MCP%E5%AD%A6%E4%B9%A0/?from=search"
-                            aria-label=": MCP 学习"
-                        >
-                            <h3 class="media-heading">MCP 学习</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月2日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="集成多 mcp 应用及解决多表查询的解决方案  learn llm_application mcp sql"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/03/hexo_post/%E9%9B%86%E6%88%90%E5%A4%9AMCP%E5%BA%94%E7%94%A8%E5%8F%8A%E8%A7%A3%E5%86%B3%E5%A4%9A%E8%A1%A8%E6%9F%A5%E8%AF%A2%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/?from=search"
-                            aria-label=": 集成多 MCP 应用及解决多表查询的解决方案"
-                        >
-                            <h3 class="media-heading">集成多 MCP 应用及解决多表查询的解决方案</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月3日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="texttosql 解决方案试验  learn llm_application texttosql vanna"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/04/hexo_post/TextToSQL%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88%E8%AF%95%E9%AA%8C/?from=search"
-                            aria-label=": TextToSQL 解决方案试验"
-                        >
-                            <h3 class="media-heading">TextToSQL 解决方案试验</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月4日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="indextts-1.5 使用记录  learn llm_application tts"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/05/hexo_post/IndexTTS-1.5%E4%BD%BF%E7%94%A8%E8%AE%B0%E5%BD%95/?from=search"
-                            aria-label=": IndexTTS-1.5 使用记录"
-                        >
-                            <h3 class="media-heading">IndexTTS-1.5 使用记录</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月5日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="streamlit 与 crewai 实现自动生成测试用例  learn llm_application streamlit crewai testing"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/06/hexo_post/streamlit&amp;crewai%E5%AE%9E%E7%8E%B0%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B/?from=search"
-                            aria-label=": streamlit 与 crewai 实现自动生成测试用例"
-                        >
-                            <h3 class="media-heading">streamlit 与 crewai 实现自动生成测试用例</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月6日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="强制降低或升依赖包版本  learn pip python"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/06/hexo_post/%E5%BC%BA%E5%88%B6%E9%99%8D%E4%BD%8E%E6%88%96%E5%8D%87%E4%BE%9D%E8%B5%96%E5%8C%85%E7%89%88%E6%9C%AC/?from=search"
-                            aria-label=": 强制降低或升依赖包版本"
-                        >
-                            <h3 class="media-heading">强制降低或升依赖包版本</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月6日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="嵌入模型与向量数据库  learn llm_application embedding vector-database"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/10/hexo_post/%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%90%91%E9%87%8F%E6%95%B0%E6%8D%AE%E5%BA%93/?from=search"
-                            aria-label=": 嵌入模型与向量数据库"
-                        >
-                            <h3 class="media-heading">嵌入模型与向量数据库</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月10日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="rag 技术和应用  learn llm_application rag"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/14/hexo_post/RAG%E6%8A%80%E6%9C%AF%E5%92%8C%E5%BA%94%E7%94%A8/?from=search"
-                            aria-label=": RAG 技术和应用"
-                        >
-                            <h3 class="media-heading">RAG 技术和应用</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月14日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="rag 高级技术与实践  learn llm_application rag advanced"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/18/hexo_post/RAG%E9%AB%98%E7%BA%A7%E6%8A%80%E6%9C%AF%E4%B8%8E%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": RAG 高级技术与实践"
-                        >
-                            <h3 class="media-heading">RAG 高级技术与实践</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="pip 源切换  learn pip python"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/06/18/hexo_post/pip%E6%BA%90%E5%88%87%E6%8D%A2/?from=search"
-                            aria-label=": pip 源切换"
-                        >
-                            <h3 class="media-heading">pip 源切换</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年6月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="remote-ssh 插件  learn vscode remote-dev"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/07/09/hexo_post/Remote-SSH%E6%8F%92%E4%BB%B6/?from=search"
-                            aria-label=": Remote-SSH 插件"
-                        >
-                            <h3 class="media-heading">Remote-SSH 插件</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年7月9日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="llamaindex 知识库管理与信息检索  learn llm_application rag llamaindex"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/07/hexo_post/LlamaIndex%E7%9F%A5%E8%AF%86%E5%BA%93%E7%AE%A1%E7%90%86%E4%B8%8E%E4%BF%A1%E6%81%AF%E6%A3%80%E7%B4%A2/?from=search"
-                            aria-label=": LlamaIndex 知识库管理与信息检索"
-                        >
-                            <h3 class="media-heading">LlamaIndex 知识库管理与信息检索</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月7日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="langchain 实现 rag 和 langgraph 实现工作流  learn llm_application langchain rag langgraph"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/14/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%E5%92%8CLangGraph%E5%AE%9E%E7%8E%B0%E5%B7%A5%E4%BD%9C%E6%B5%81/?from=search"
-                            aria-label=": LangChain 实现 RAG 和 LangGraph 实现工作流"
-                        >
-                            <h3 class="media-heading">LangChain 实现 RAG 和 LangGraph 实现工作流</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月14日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="langchain 实现 function call  learn llm_application langchain function-calling"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/15/hexo_post/LangChain%E5%AE%9E%E7%8E%B0Function%20Call/?from=search"
-                            aria-label=": LangChain 实现 Function Call"
-                        >
-                            <h3 class="media-heading">LangChain 实现 Function Call</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月15日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="langchain 实现 rag + agent  learn agent langchain rag"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/18/hexo_post/LangChain%E5%AE%9E%E7%8E%B0RAG%20+%20Agent/?from=search"
-                            aria-label=": LangChain 实现 RAG + Agent"
-                        >
-                            <h3 class="media-heading">LangChain 实现 RAG + Agent</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="有声小说第一次尝试实现（pyttsx3）  learn llm_application tts python"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/?from=search"
-                            aria-label=": 有声小说第一次尝试实现（pyttsx3）"
-                        >
-                            <h3 class="media-heading">有声小说第一次尝试实现（pyttsx3）</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月20日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="chrome mcp server  learn llm_application mcp chrome"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/21/hexo_post/Chrome%20MCP%20Server/?from=search"
-                            aria-label=": Chrome MCP Server"
-                        >
-                            <h3 class="media-heading">Chrome MCP Server</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月21日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="homebrew 常用命令  learn homebrew mac"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/08/21/hexo_post/Homebrew%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/?from=search"
-                            aria-label=": Homebrew 常用命令"
-                        >
-                            <h3 class="media-heading">Homebrew 常用命令</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年8月21日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="利用 hexo 搭建博客网站  learn hexo static-site github-pages"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/11/04/hexo_post/%E5%88%A9%E7%94%A8hexo%E6%90%AD%E5%BB%BA%E5%8D%9A%E5%AE%A2%E7%BD%91%E7%AB%99/?from=search"
-                            aria-label=": 利用 hexo 搭建博客网站"
-                        >
-                            <h3 class="media-heading">利用 hexo 搭建博客网站</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年11月4日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="连接不上第三方显示器  learn mac hardware"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2025/12/18/hexo_post/%E8%BF%9E%E6%8E%A5%E4%B8%8D%E4%B8%8A%E7%AC%AC%E4%B8%89%E6%96%B9%E6%98%BE%E7%A4%BA%E5%99%A8/?from=search"
-                            aria-label=": 连接不上第三方显示器"
-                        >
-                            <h3 class="media-heading">连接不上第三方显示器</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2025年12月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="丝滑切换 jdk 不同版本（jenv）  learn mac java jenv"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/01/08/hexo_post/%E4%B8%9D%E6%BB%91%E5%88%87%E6%8D%A2jdk%E4%B8%8D%E5%90%8C%E7%89%88%E6%9C%AC-jenv/?from=search"
-                            aria-label=": 丝滑切换 jdk 不同版本（jenv）"
-                        >
-                            <h3 class="media-heading">丝滑切换 jdk 不同版本（jenv）</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年1月8日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="代码中的nacos配置丢失的问题  learn nacos 配置管理"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/06/hexo_post/%E4%BB%A3%E7%A0%81%E4%B8%AD%E7%9A%84nacos%E9%85%8D%E7%BD%AE%E4%B8%A2%E5%A4%B1%E7%9A%84%E9%97%AE%E9%A2%98/?from=search"
-                            aria-label=": 代码中的nacos配置丢失的问题"
-                        >
-                            <h3 class="media-heading">代码中的nacos配置丢失的问题</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月6日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="全流程docker&k8s操作  ubuntun docker k8s linux"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/14/hexo_post/%E5%85%A8%E6%B5%81%E7%A8%8Bdocker&amp;k8s%E6%93%8D%E4%BD%9C%E5%AE%9E%E8%B7%B5/?from=search"
-                            aria-label=": 全流程docker&amp;k8s操作"
-                        >
-                            <h3 class="media-heading">全流程docker&amp;k8s操作</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月14日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="harness engineering理论  harness agent"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/15/hexo_post/Harness%20Engineering%E7%90%86%E8%AE%BA%E5%86%85%E6%A0%B8/?from=search"
-                            aria-label=": Harness Engineering理论"
-                        >
-                            <h3 class="media-heading">Harness Engineering理论</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月15日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="harness engineering 实现 — gstack  gstack harness claude code ai agent 软件工程"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/18/hexo_post/Harness%20Engineering%E5%AE%9E%E7%8E%B0-GStack/?from=search"
-                            aria-label=": Harness Engineering 实现 — GStack"
-                        >
-                            <h3 class="media-heading">Harness Engineering 实现 — GStack</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="gstack实际操作  gstack skills"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/18/hexo_post/GStack%E5%AE%9E%E9%99%85%E6%93%8D%E4%BD%9C/?from=search"
-                            aria-label=": GStack实际操作"
-                        >
-                            <h3 class="media-heading">GStack实际操作</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月18日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="  "
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/21/hexo_post/openclaw/?from=search"
-                            aria-label=": "
-                        >
-                            <h3 class="media-heading"></h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月21日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="  "
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/05/25/hexo_post/GStack/?from=search"
-                            aria-label=": "
-                        >
-                            <h3 class="media-heading"></h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年5月25日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="  "
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/06/02/hexo_post/harness%E5%B7%A5%E4%B8%9A%E8%AE%BE%E8%AE%A1%E6%96%B9%E5%BC%8F/?from=search"
-                            aria-label=": "
-                        >
-                            <h3 class="media-heading"></h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年6月2日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="佳明手表配置openweatherkey方法  佳明手表 weather openai_api_key"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/06/24/%E4%BD%B3%E6%98%8E%E6%89%8B%E8%A1%A8%E9%85%8D%E7%BD%AEopenweatherkey%E6%96%B9%E6%B3%95/?from=search"
-                            aria-label=": 佳明手表配置openweatherkey方法"
-                        >
-                            <h3 class="media-heading">佳明手表配置openweatherkey方法</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年6月24日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-                <div
-                    class="media"
-                    data-search-text="佳明手表配置openweatherkey方法  佳明手表 weather openai_api_key learn"
-                >
-                    
-                    
-                    
-                    <div class="media-body">
-                        <a
-                            class="link-unstyled search-result-link"
-                            href="https://shaver92.github.io/2026/06/24/hexo_post/%E4%BD%B3%E6%98%8E%E6%89%8B%E8%A1%A8%E9%85%8D%E7%BD%AEopenweatherkey%E6%96%B9%E6%B3%95/?from=search"
-                            aria-label=": 佳明手表配置openweatherkey方法"
-                        >
-                            <h3 class="media-heading">佳明手表配置openweatherkey方法</h3>
-                        </a>
-                        <span class="media-meta">
-                            <span class="media-date text-small">
-                                
-                                    2026年6月24日
-                                
-                            </span>
-                        </span>
-                        <div class="media-content hide-xs font-merryweather"></div>
-                    </div>
-                    <div style="clear:both;"></div>
-                    <hr>
-                </div>
-                
-            </div>
-        </div>
-        <div class="modal-footer">
-            <p class="results-count text-medium"
-                data-message-zero="没有找到文章"
-                data-message-one="找到 1 篇文章"
-                data-message-other="找到 {n} 篇文章">
-                找到 49 篇文章
-            </p>
-        </div>
-    </div>
-</div>
-
-        
-        <!--SCRIPTS-->
-
-<script src="/assets/js/script-fy2mgop5xl1tplwujicojo4xhlb80nrzsizgqk4jfrs5njk0qriczldyw7af.min.js"></script>
-
-<!--SCRIPTS END-->
-
-
+    </footer>
+  </div>
+  
     
-        
-<script src="/assets/js/gitalk.js"></script>
+ 
+<script src="/jquery/jquery.min.js"></script>
 
-        <script type="text/javascript">
-          (function() {
-            var host = window.location.hostname;
-            if (host === 'localhost' || host === '127.0.0.1') {
-              var el = document.getElementById('gitalk');
-              if (el) {
-                el.innerHTML = '<p style="padding:12px 14px;border:1px solid #dbe5f5;border-radius:10px;background:#fff;color:#5b6475;">本地预览环境不启用 GitHub 登录评论，请在线上站点使用评论功能。</p>';
+  <div id="random_posts">
+    <h2>Recommended Posts</h2>
+    <div class="random_posts_ul">
+      <script>
+          var random_count =4
+          var site = {BASE_URI:'/'};
+          function load_random_posts(obj) {
+              var arr=site.posts;
+              if (!obj) return;
+              // var count = $(obj).attr('data-count') || 6;
+              for (var i, tmp, n = arr.length; n; i = Math.floor(Math.random() * n), tmp = arr[--n], arr[n] = arr[i], arr[i] = tmp);
+              arr = arr.slice(0, random_count);
+              var html = '<ul>';
+            
+              for(var j=0;j<arr.length;j++){
+                var item=arr[j];
+                html += '<li><strong>' + 
+                item.date + ':&nbsp;&nbsp;<a href="' + (site.BASE_URI+item.uri) + '">' + 
+                (item.title || item.uri) + '</a></strong>';
+                if(item.excerpt){
+                  html +='<div class="post-excerpt">'+item.excerpt+'</div>';
+                }
+                html +='</li>';
+                
               }
-              return;
-            }
-            new Gitalk({
-              clientID: 'Ov23lixY4RNkL6GaPepq',
-              clientSecret: '5bb8a010339dc3e6b5655b8ac336d3c0d0be226e',
-              repo: 'blog-comments',
-              owner: 'shaver92',
-              admin: ['shaver92'],
-              id: '2025/08/18/hexo_post/LangChain实现RAG + Agent/',
-              ...{"language":"zh-CN","perPage":10,"distractionFreeMode":false,"createIssueManually":true,"labels":["Gitalk"],"pagerDirection":"last","proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token"}
-            }).render('gitalk')
-          })()
-        </script>
-    
-
-
+              $(obj).html(html + '</ul>');
+          }
+          $('.random_posts_ul').each(function () {
+              var c = this;
+              if (!site.posts || !site.posts.length){
+                  $.getJSON(site.BASE_URI + 'js/posts.js',function(json){site.posts = json;load_random_posts(c)});
+              } 
+               else{
+                load_random_posts(c);
+              }
+          });
+      </script>
+    </div>
+  </div>
 
     
-<script src="/assets/js/moment-with-locales.js"></script>
+<nav id="article-nav">
+  
+    <a href="/2025/08/20/hexo_post/%E6%9C%89%E5%A3%B0%E5%B0%8F%E8%AF%B4%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95%E5%AE%9E%E7%8E%B0-pyttsx3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          有声小说第一次尝试实现（pyttsx3）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2025/08/15/hexo_post/LangChain%E5%AE%9E%E7%8E%B0Function%20Call/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">LangChain 实现 Function Call</div>
+    </a>
+  
+</nav>
 
+  
+</article>
+ 
+     
+  <div class="comments" id="comments">
     
-<script src="/assets/js/algoliasearch.js"></script>
+     
+       
+       
+      
+      
+      
+  </div>
+ 
+  
 
-    <script>
-      var algoliaClient = algoliasearch('P7U39XTUUF', 'fcf10bcb3e25fb39b4cf37309facbba5');
-      var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+</section>
+           
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-left">
+      &copy; 2014 - 2026 shaver&nbsp;|&nbsp;
+      Theme by <a href="https://github.com/giscafer/hexo-theme-cafe/" target="_blank">Cafe</a>
+    </div>
+     <div id="footer-right">
+      Contact&nbsp;|&nbsp;https://shaver92.github.io
+    </div>
+  </div>
+</footer>
+ 
+<script src="/jquery/jquery.min.js"></script>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">首页</a>
+  
+    <a href="/archives" class="mobile-nav-link">归档</a>
+  
+    <a href="/all-categories" class="mobile-nav-link">分类</a>
+  
+    <a href="/all-tags" class="mobile-nav-link">标签</a>
+  
+    <a href="/search" class="mobile-nav-link">搜索</a>
+  
+</nav>
+    <img class="back-to-top-btn" src="/images/fly-to-top.png"/>
+<script>
+// Elevator script included on the page, already.
+window.onload = function() {
+  var elevator = new Elevator({
+    selector:'.back-to-top-btn',
+    element: document.querySelector('.back-to-top-btn'),
+    duration: 1000 // milliseconds
+  });
+}
+</script>
+      
+
+  
+
+  
+
+
+
+
+
+
+
+<!-- author:forvoid begin -->
+<!-- author:forvoid begin -->
+
+<!-- author:forvoid end -->
+
+<!-- author:forvoid end -->
+
+
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      })
     </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      })
+    </script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/mathjax/MathJax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+
+<script src="/js/is.js"></script>
+
+
+
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+<script src="/js/elevator.js"></script>
+
+
+<!-- Custom scripts -->
+
+  
+<script src="/js/moment-with-locales.js"></script>
+
+  
+<script src="/js/algoliasearch.js"></script>
+
+  <script>
+    var algoliaClient = algoliasearch('P7U39XTUUF', 'fcf10bcb3e25fb39b4cf37309facbba5');
+    var algoliaIndex = algoliaClient.initIndex('my-hexo-blog');
+  </script>
 
 
 <script>
@@ -1804,11 +411,11 @@
       var pre = figure.querySelector('td.code pre, .code pre');
       if (!pre) return '';
       var t = pre.innerText != null ? pre.innerText : pre.textContent;
-      return String(t || '').replace(/\u00a0/g, ' ');
+      return String(t || '').replace(/ /g, ' ');
     }
 
     function attachPostCodeCopyButtons() {
-      var scope = document.querySelector('.post-content');
+      var scope = document.querySelector('.article-entry');
       if (!scope) return;
       var blocks = scope.querySelectorAll('figure.highlight, .codeblock');
       for (var i = 0; i < blocks.length; i++) {
@@ -1867,5 +474,11 @@
   })();
 </script>
 
-    </body>
+<!-- Gitalk comments -->
+
+  
+
+
+  </div>
+</body>
 </html>
